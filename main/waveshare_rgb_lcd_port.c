@@ -6,6 +6,8 @@
 
 #include "waveshare_rgb_lcd_port.h"
 
+static const char *TAG = "waveshare_rgb_lcd";
+
 // VSYNC event callback function
 IRAM_ATTR static bool rgb_lcd_on_vsync_event(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx)
 {
@@ -181,7 +183,7 @@ esp_err_t waveshare_esp32_s3_rgb_lcd_init()
 }
 
 /******************************* Turn on the screen backlight **************************************/
-esp_err_t wavesahre_rgb_lcd_bl_on()
+esp_err_t waveshare_rgb_lcd_bl_on()
 {
     //Configure CH422G to output mode 
     uint8_t write_buf = 0x01;
@@ -194,7 +196,7 @@ esp_err_t wavesahre_rgb_lcd_bl_on()
 }
 
 /******************************* Turn off the screen backlight **************************************/
-esp_err_t wavesahre_rgb_lcd_bl_off()
+esp_err_t waveshare_rgb_lcd_bl_off()
 {
     //Configure CH422G to output mode 
     uint8_t write_buf = 0x01;

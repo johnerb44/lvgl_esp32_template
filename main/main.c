@@ -21,7 +21,7 @@ void app_main()
 {
     // Initialize hardware
     waveshare_esp32_s3_rgb_lcd_init(); // Initialize the Waveshare ESP32-S3 RGB LCD 
-    wavesahre_rgb_lcd_bl_on();  // Turn on the screen backlight 
+    waveshare_rgb_lcd_bl_on();  // Turn on the screen backlight 
     
     ESP_LOGI(APP_TAG, "LVGL 9.3 Template - Creating UI");
     

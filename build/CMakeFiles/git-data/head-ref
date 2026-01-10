@@ -1,3 +1,1 @@
-0000000000000000000000000000000000000000 bc23fc8c918639962d83aac6f02e0367a3568fa8 John <erb.john@gmail.com> 1768016745 -0600	branch: Created from master
-bc23fc8c918639962d83aac6f02e0367a3568fa8 490c5fb669e61137a8cd4efbdd422cb117466d82 John <erb.john@gmail.com> 1768017143 -0600	commit: Migrate to LVGL 9.3 and create minimal template
-490c5fb669e61137a8cd4efbdd422cb117466d82 49a2f247540f4ec38d606e0e086765eb4200cde4 John <erb.john@gmail.com> 1768020062 -0600	commit: Fix LVGL 9.3 compilation errors
+d8a0b41706a226372bfd089df118d8b0039b48c7

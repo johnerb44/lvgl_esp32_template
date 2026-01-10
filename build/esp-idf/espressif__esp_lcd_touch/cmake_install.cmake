@@ -1,4 +1,4 @@
-# Install script for directory: D:/vscode-lvgl/projects/lvgl_esp32_template/components/espressif__esp_lcd_touch
+# Install script for directory: G:/vscode/lvgl/projects/lvgl_esp32_template/managed_components/espressif__esp_lcd_touch
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,6 +34,6 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "D:/vscode-lvgl/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "G:/vscode/lvgl/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-objdump.exe")
 endif()
 

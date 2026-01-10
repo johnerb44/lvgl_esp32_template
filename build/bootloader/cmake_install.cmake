@@ -1,4 +1,4 @@
-# Install script for directory: D:/vscode-lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject
+# Install script for directory: G:/vscode/lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,12 +34,12 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "D:/vscode-lvgl/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "G:/vscode/lvgl/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader/esp-idf/cmake_install.cmake")
+  include("G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -57,6 +57,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

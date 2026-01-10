@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/erbjo/vscode/projects-lvgl/08_lvgl_Porting/components/lvgl__lvgl
+# Install script for directory: D:/vscode-lvgl/projects/lvgl_esp32_template/managed_components/lvgl__lvgl
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

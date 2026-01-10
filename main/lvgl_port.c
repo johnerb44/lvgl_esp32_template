@@ -200,7 +200,7 @@ static void flush_dirty_copy(void *dst, void *src, lv_port_dirty_area_t *dirty_a
 }
 
 
-static void flush_callback(lv_display_t *disp, const lv_area_t *area, lv_color_t *color_map)
+static void flush_callback(lv_display_t *disp, const lv_area_t *area, uint8_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) lv_display_get_user_data(disp); // Get the panel handle from display user data
     const int offsetx1 = area->x1; // Start X coordinate of the area to flush
@@ -276,7 +276,7 @@ static void flush_callback(lv_display_t *disp, const lv_area_t *area, lv_color_t
 
 #else
 
-static void flush_callback(lv_display_t *disp, const lv_area_t *area, lv_color_t *color_map)
+static void flush_callback(lv_display_t *disp, const lv_area_t *area, uint8_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) lv_display_get_user_data(disp); // Get the panel handle from display user data
     const int offsetx1 = area->x1; // Start X coordinate of the area to flush
@@ -300,7 +300,7 @@ static void flush_callback(lv_display_t *disp, const lv_area_t *area, lv_color_t
 
 #elif LVGL_PORT_FULL_REFRESH && LVGL_PORT_LCD_RGB_BUFFER_NUMS == 2
 
-static void flush_callback(lv_display_t *disp, const lv_area_t *area, lv_color_t *color_map)
+static void flush_callback(lv_display_t *disp, const lv_area_t *area, uint8_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) lv_display_get_user_data(disp); // Get the panel handle from display user data
     const int offsetx1 = area->x1; // Start X coordinate of the area to flush

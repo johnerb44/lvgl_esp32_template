@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/erbjo/vscode/projects-lvgl/08_lvgl_Porting/components/espressif__esp_lcd_touch
+# Install script for directory: D:/vscode-lvgl/projects/lvgl_esp32_template/components/espressif__esp_lcd_touch
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

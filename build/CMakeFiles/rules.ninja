@@ -1445,6 +1445,16 @@ rule C_COMPILER____idf_lvgl__lvgl_unscanned_
 
 
 #############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER____idf_lvgl__lvgl_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}D:\vscode-lvgl\.espressif\tools\xtensa-esp32s3-elf\esp-12.2.0_20230208\xtensa-esp32s3-elf\bin\xtensa-esp32s3-elf-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
 # Rule for linking C static library.
 
 rule C_STATIC_LIBRARY_LINKER____idf_lvgl__lvgl_

@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lvgl_porting",
-    "project_version":    "9b01bf3-dirty",
+    "project_version":    "5143dd0-dirty",
     "project_path":       "G:/vscode/lvgl/projects/lvgl_esp32_template",
     "idf_path":           "G:/vscode/lvgl/esp/v5.1.6/esp-idf",
     "build_dir":          "G:/vscode/lvgl/projects/lvgl_esp32_template/build",

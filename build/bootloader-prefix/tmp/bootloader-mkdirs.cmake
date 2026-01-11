@@ -6,22 +6,22 @@ cmake_minimum_required(VERSION 3.5)
 # If CMAKE_DISABLE_SOURCE_CHANGES is set to true and the source directory is an
 # existing directory in our source tree, calling file(MAKE_DIRECTORY) on it
 # would cause a fatal error, even though it would be a no-op.
-if(NOT EXISTS "G:/vscode/lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject")
-  file(MAKE_DIRECTORY "G:/vscode/lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject")
+if(NOT EXISTS "D:/vscode-lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject")
+  file(MAKE_DIRECTORY "D:/vscode-lvgl/esp/v5.1.6/esp-idf/components/bootloader/subproject")
 endif()
 file(MAKE_DIRECTORY
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader"
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix"
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/tmp"
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp"
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src"
-  "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/tmp"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src"
+  "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

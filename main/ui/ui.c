@@ -6,12 +6,14 @@
 
 #include "ui.h"
 #include "screens/ui_screen_start.h"
+#include "screens/ui_screen_main.h"
 #include "esp_log.h"
 
 static const char *UI_TAG = "UI";
 
 // Screen objects
 lv_obj_t *ui_screen_start = NULL;
+lv_obj_t *ui_screen_main = NULL;
 
 void ui_init(void)
 {
@@ -19,6 +21,7 @@ void ui_init(void)
     
     // Create all screens
     ui_screen_start_create();
+    ui_screen_main_create();
     
     ESP_LOGI(UI_TAG, "UI initialization complete");
 }
@@ -26,4 +29,9 @@ void ui_init(void)
 lv_obj_t *ui_screen_start_get(void)
 {
     return ui_screen_start;
+}
+
+lv_obj_t *ui_screen_main_get(void)
+{
+    return ui_screen_main;
 }

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "waveshare_rgb_lcd_port.h"
 #include "ui/ui.h"
 
@@ -16,6 +18,9 @@ void app_main()
     waveshare_esp32_s3_rgb_lcd_init(); // Initialize the Waveshare ESP32-S3 RGB LCD 
     waveshare_rgb_lcd_bl_on();  // Turn on the screen backlight 
     
+    // Small delay to allow LVGL task to fully start
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
     ESP_LOGI(APP_TAG, "LVGL 9.3 Template - Creating UI");
     
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -24,7 +29,9 @@ void app_main()
         ui_init();
         
         // Load the initial screen
-        lv_scr_load(ui_screen_start);
+        lv_scr_load(ui_screen_main);
+        
+        //lv_scr_load(ui_screen_start);
         
         // Release the mutex
         lvgl_port_unlock();

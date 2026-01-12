@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lvgl_porting",
-    "project_version":    "82fcfdd-dirty",
+    "project_version":    "9dbb439-dirty",
     "project_path":       "D:/vscode-lvgl/projects/lvgl_esp32_template",
     "idf_path":           "D:/vscode-lvgl/esp/v5.1.6/esp-idf",
     "build_dir":          "D:/vscode-lvgl/projects/lvgl_esp32_template/build",
@@ -835,7 +835,7 @@
             "managed_reqs": [ "lvgl__lvgl" ],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch_gt911" ],
             "file": "D:/vscode-lvgl/projects/lvgl_esp32_template/build/esp-idf/main/libmain.a",
-            "sources": [ "D:/vscode-lvgl/projects/lvgl_esp32_template/main/waveshare_rgb_lcd_port.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/main.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/lvgl_port.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/ui/ui.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c" ],
+            "sources": [ "D:/vscode-lvgl/projects/lvgl_esp32_template/main/waveshare_rgb_lcd_port.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/main.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/lvgl_port.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/ui/ui.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c", "D:/vscode-lvgl/projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

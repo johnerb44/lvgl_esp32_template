@@ -4,6 +4,7 @@ idf_component_register(
          "lvgl_port.c"
          "ui/ui.c"
          "ui/screens/ui_screen_start.c"
+         "ui/screens/ui_screen_main.c"
     INCLUDE_DIRS ".")
 
 idf_component_get_property(lvgl_lib lvgl__lvgl COMPONENT_LIB)

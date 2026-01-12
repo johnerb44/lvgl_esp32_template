@@ -15,13 +15,16 @@ extern "C" {
 
 // Screen objects - exported for external access
 extern lv_obj_t *ui_screen_start;
+extern lv_obj_t *ui_screen_main;
 
 // UI initialization function
 void ui_init(void);
 
 // Screen creation functions
 void ui_screen_start_create(void);
+void ui_screen_main_create(void);
 lv_obj_t *ui_screen_start_get(void);
+lv_obj_t *ui_screen_main_get(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

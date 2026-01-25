@@ -30,8 +30,11 @@ void app_main()
         
         // Load the initial screen
         lv_scr_load(ui_screen_main);
-        
+        //lv_scr_load(ui_screen_biometric);
         //lv_scr_load(ui_screen_start);
+        //lv_scr_load(ui_screen_fpscan);
+        //lv_scr_load(ui_screen_get_pin);
+        //lv_scr_load(ui_screen_home);
         
         // Release the mutex
         lvgl_port_unlock();

@@ -5,6 +5,10 @@ idf_component_register(
          "ui/ui.c"
          "ui/screens/ui_screen_start.c"
          "ui/screens/ui_screen_main.c"
+         "ui/screens/ui_screen_biometric.c"
+         "ui/screens/ui_screen_fpscan.c"
+         "ui/screens/ui_screen_get_pin.c"
+         "ui/screens/ui_screen_home.c"
     INCLUDE_DIRS ".")
 
 idf_component_get_property(lvgl_lib lvgl__lvgl COMPONENT_LIB)

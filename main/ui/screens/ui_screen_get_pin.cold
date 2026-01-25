@@ -1,0 +1,101 @@
+/**
+ * @file ui_screen_get_pin.c
+ * @brief Template source file for LVGL objects
+ */
+
+/*********************
+ *      INCLUDES
+ *********************/
+
+#include "ui_screen_get_pin.h"
+#include "../ui.h"
+#include "esp_log.h"
+
+/*********************
+ *      DEFINES
+ *********************/
+
+/**********************
+ *      TYPEDEFS
+ **********************/
+
+/***********************
+ *  STATIC VARIABLES
+ **********************/
+
+/***********************
+ *  STATIC PROTOTYPES
+ **********************/
+static const char *SCREEN_TAG = "UI_SCREEN_GET_PIN";
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
+
+ // Event handler for fingerprint button
+static void continue_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+        ESP_LOGI(SCREEN_TAG, "Continue button clicked");
+        lv_scr_load_anim(ui_screen_main, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+    }
+}
+
+void ui_screen_get_pin_create(void)
+{
+    LV_TRACE_OBJ_CREATE("begin");
+
+    static bool style_inited = false;
+
+    if (!style_inited) {
+
+        style_inited = true;
+    }
+
+    ui_screen_get_pin = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(ui_screen_get_pin, lv_color_hex(0x041d3a), 0);
+    lv_obj_set_style_text_color(ui_screen_get_pin, lv_color_hex3(0xfff), 0);
+    lv_obj_t * get_pin_title = lv_label_create(ui_screen_get_pin);
+    lv_label_set_text(get_pin_title, "ENTER PIN");
+    lv_obj_set_style_text_font(get_pin_title, &lv_font_montserrat_28, 0);
+    lv_obj_set_align(get_pin_title, LV_ALIGN_TOP_MID);
+    lv_obj_set_y(get_pin_title, 10);
+    
+    lv_obj_t * pin_display = lv_label_create(ui_screen_get_pin);
+    lv_obj_set_align(pin_display, LV_ALIGN_CENTER);
+    lv_obj_set_style_width(pin_display, 200, 0);
+    lv_obj_set_style_height(pin_display, 50, 0);
+    lv_obj_set_y(pin_display, -200);
+    lv_obj_set_style_outline_width(pin_display, 5, 0);
+    lv_obj_set_style_outline_color(pin_display, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_color(pin_display, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_align(pin_display, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_bg_color(pin_display, lv_color_hex(0xfa0000), 0);
+    lv_obj_set_style_bg_opa(pin_display, 255, 0);
+    lv_obj_set_style_pad_top(pin_display, 12, 0);
+    lv_obj_set_style_text_opa(pin_display, 255, 0);
+    lv_obj_set_style_text_font(pin_display, &lv_font_montserrat_26, 0);
+    lv_label_set_text(pin_display, "test");
+    
+    lv_obj_t * lv_keyboard_0 = lv_keyboard_create(ui_screen_get_pin);
+    lv_keyboard_set_mode(lv_keyboard_0, LV_KEYBOARD_MODE_NUMBER);
+    lv_obj_set_y(lv_keyboard_0, -100);
+    
+    lv_obj_t * continue_button = lv_button_create(ui_screen_get_pin);
+    lv_obj_set_align(continue_button, LV_ALIGN_BOTTOM_MID);
+    lv_obj_set_y(continue_button, -20);
+    lv_obj_set_style_bg_color(continue_button, lv_color_hex(0xe19419), 0);
+    
+    lv_obj_t * lv_label_0 = lv_label_create(continue_button);
+    lv_label_set_text(lv_label_0, "SUBMIT");
+    lv_obj_set_style_text_color(lv_label_0, lv_color_hex3(0x000), 0);
+    lv_obj_set_style_text_font(lv_label_0, &lv_font_montserrat_26, 0);
+
+    lv_obj_add_event_cb(continue_button, continue_btn_event_cb, LV_EVENT_CLICKED, NULL);
+    
+    LV_TRACE_OBJ_CREATE("finished");
+}
+
+
+
+

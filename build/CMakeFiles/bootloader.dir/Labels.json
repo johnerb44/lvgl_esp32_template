@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "D:/vscode-lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "G:/vscode/lvgl/projects/lvgl_esp32_template/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		}
 	],
 	"target" : 

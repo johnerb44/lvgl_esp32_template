@@ -39,6 +39,11 @@ static void show_pin_checkbox_event_cb(lv_event_t *event);
 static void screen_loaded_event_cb(lv_event_t *event);
 static const char *SCREEN_TAG = "UI_SCREEN_GET_PIN";
 
+static void toast_timer_cb(lv_timer_t *timer);
+static void navigate_to_home_cb(lv_timer_t *timer);
+
+void create_toast(const char *text, int timeout_ms);
+
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -131,14 +136,15 @@ static void submit_btn_event_cb(lv_event_t *event)
         ESP_LOGI(SCREEN_TAG, "Submit button clicked. Entered PIN: %s", pin_buffer);
         
         // TODO: In future, compare pin_buffer with stored PIN here
-        // For now, just navigate back to home screen
+        // Show toast notification
+        create_toast("Invalid PIN", 2000); // Shows "Invalid PIN" for 2 seconds
         
         // Clear PIN for next entry
         memset(pin_buffer, 0, sizeof(pin_buffer));
         pin_length = 0;
         
-        // Navigate to home screen
-        lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+        // Delay navigation to home screen until after toast is shown (8000ms + 500ms buffer)
+        lv_timer_create(navigate_to_home_cb, 5500, NULL);
     }
 }
 
@@ -179,6 +185,33 @@ static void screen_loaded_event_cb(lv_event_t *event)
         ESP_LOGI(SCREEN_TAG, "Screen loaded - PIN state reset");
     }
 }
+
+void create_toast(const char *text, int timeout_ms) {
+    // 1. Create a container on the top layer (persists across screen changes)
+    lv_obj_t *toast = lv_obj_create(lv_layer_top());
+    lv_obj_set_size(toast, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(toast, LV_ALIGN_TOP_LEFT, 0, 20); // Top center with padding
+    lv_obj_set_style_bg_color(toast, lv_color_hex(0xe19419), LV_PART_MAIN);
+    lv_obj_set_style_text_font(toast, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_radius(toast, 10, LV_PART_MAIN);
+    lv_obj_set_style_border_width(toast, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(toast, 15, LV_PART_MAIN);
+    
+    // Make it non-clickable so it doesn't block user interaction
+    lv_obj_add_flag(toast, LV_OBJ_FLAG_FLOATING);
+    lv_obj_clear_flag(toast, LV_OBJ_FLAG_CLICKABLE);
+
+    // 2. Add text
+    lv_obj_t *label = lv_label_create(toast);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_center(label);
+
+    // 3. Create a one-shot timer to delete the toast
+    lv_timer_t *timer = lv_timer_create(toast_timer_cb, timeout_ms, toast);
+    lv_timer_set_repeat_count(timer, 1);
+}
+
 
 void ui_screen_get_pin_create(void)
 {
@@ -222,6 +255,8 @@ void ui_screen_get_pin_create(void)
     show_pin_checkbox = lv_checkbox_create(ui_screen_get_pin);
     lv_checkbox_set_text(show_pin_checkbox, "Show PIN");
     lv_obj_set_align(show_pin_checkbox, LV_ALIGN_CENTER);
+    lv_obj_set_width(show_pin_checkbox, 120);
+    lv_obj_set_height(show_pin_checkbox, 40);
     lv_obj_set_x(show_pin_checkbox, 180);
     lv_obj_set_y(show_pin_checkbox, -140);
     lv_obj_set_style_text_font(show_pin_checkbox, &lv_font_montserrat_16, 0);
@@ -260,3 +295,16 @@ void ui_screen_get_pin_create(void)
  *   STATIC FUNCTIONS
  **********************/
 
+// Timer callback to delete the toast
+static void toast_timer_cb(lv_timer_t *timer) {
+    lv_obj_t *toast = lv_timer_get_user_data(timer);
+    // Optional: Add a fade-out animation here before deletion
+    lv_obj_del(toast);
+}
+
+// Timer callback to navigate to home screen
+static void navigate_to_home_cb(lv_timer_t *timer) {
+    (void)timer;  // Unused parameter
+    ESP_LOGI(SCREEN_TAG, "Navigating to home screen");
+    lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+}

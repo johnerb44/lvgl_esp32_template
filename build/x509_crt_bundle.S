@@ -1,4 +1,4 @@
-/* * Data converted from G:/vscode/lvgl/projects/lvgl_esp32_template/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from D:/vscode-lvgl/projects/lvgl_esp32_template/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

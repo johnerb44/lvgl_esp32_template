@@ -134,17 +134,32 @@ static void submit_btn_event_cb(lv_event_t *event)
 {
     if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
         ESP_LOGI(SCREEN_TAG, "Submit button clicked. Entered PIN: %s", pin_buffer);
+        char pin_valid[] = "1234"; // Example valid PIN
         
         // TODO: In future, compare pin_buffer with stored PIN here
         // Show toast notification
-        create_toast("Invalid PIN", 2000); // Shows "Invalid PIN" for 2 seconds
+        if (strcmp(pin_buffer, pin_valid) == 0) {
+            create_toast("PIN Accepted", 2000); // Shows "PIN Accepted" for 2 seconds
+            // Delay navigation to home screen until after toast is shown (8000ms + 500ms buffer)
+            // Clear PIN for next entry
+            memset(pin_buffer, 0, sizeof(pin_buffer));
+            pin_length = 0;
+            lv_timer_create(navigate_to_home_cb, 5500, NULL);
+        } 
+        else {
+            create_toast("Invalid PIN", 2000); // Shows "Invalid PIN" for 2 seconds
+            // Clear PIN for next entry
+            memset(pin_buffer, 0, sizeof(pin_buffer));
+            pin_length = 0;
+            update_pin_display();
+
+            //lv_timer_create(navigate_to_home_cb, 5500, NULL);
+        }
         
-        // Clear PIN for next entry
-        memset(pin_buffer, 0, sizeof(pin_buffer));
-        pin_length = 0;
+        
         
         // Delay navigation to home screen until after toast is shown (8000ms + 500ms buffer)
-        lv_timer_create(navigate_to_home_cb, 5500, NULL);
+        //lv_timer_create(navigate_to_home_cb, 5500, NULL);
     }
 }
 
@@ -191,6 +206,7 @@ void create_toast(const char *text, int timeout_ms) {
     lv_obj_t *toast = lv_obj_create(lv_layer_top());
     lv_obj_set_size(toast, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_align(toast, LV_ALIGN_TOP_LEFT, 0, 20); // Top center with padding
+    lv_obj_set_x(toast, 30); 
     lv_obj_set_style_bg_color(toast, lv_color_hex(0xe19419), LV_PART_MAIN);
     lv_obj_set_style_text_font(toast, &lv_font_montserrat_24, 0);
     lv_obj_set_style_radius(toast, 10, LV_PART_MAIN);

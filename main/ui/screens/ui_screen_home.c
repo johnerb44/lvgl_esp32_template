@@ -10,6 +10,7 @@
 #include "ui_screen_home.h"
 #include "../ui.h"
 #include "esp_log.h"
+#include "user_mgmt_ui.h"
 
 /*********************
  *      DEFINES
@@ -27,6 +28,7 @@
  *  STATIC PROTOTYPES
  **********************/
 static const char *SCREEN_TAG = "UI_SCREEN_HOME";
+static void admin_button_event_handler(lv_event_t * e);
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -103,7 +105,7 @@ void ui_screen_home_create(void)
     lv_obj_set_style_text_color(lv_label_3, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_3, &lv_font_montserrat_26, 0);
     
-    //lv_obj_add_screen_create_event(admin_button, LV_EVENT_CLICKED, screen_biometric_select_create, LV_SCREEN_LOAD_ANIM_MOVE_TOP, 500, 0);
+    lv_obj_add_event_cb(admin_button, admin_button_event_handler, LV_EVENT_CLICKED, NULL);
     
     lv_obj_t * signout_button = lv_button_create(ui_screen_home);
     lv_obj_set_align(signout_button, LV_ALIGN_CENTER);
@@ -128,3 +130,12 @@ void ui_screen_home_create(void)
  *   STATIC FUNCTIONS
  **********************/
 
+static void admin_button_event_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if(code == LV_EVENT_CLICKED) {
+        ESP_LOGI(SCREEN_TAG, "Admin button clicked, showing user management UI");
+        user_mgmt_ui_show();
+    }
+}

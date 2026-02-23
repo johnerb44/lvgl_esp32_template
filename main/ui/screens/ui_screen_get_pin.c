@@ -42,7 +42,7 @@ static const char *SCREEN_TAG = "UI_SCREEN_GET_PIN";
 static void toast_timer_cb(lv_timer_t *timer);
 static void navigate_to_home_cb(lv_timer_t *timer);
 
-void create_toast(const char *text, int timeout_ms);
+static void create_toast(const char *text, int timeout_ms);
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -144,7 +144,7 @@ static void submit_btn_event_cb(lv_event_t *event)
             // Clear PIN for next entry
             memset(pin_buffer, 0, sizeof(pin_buffer));
             pin_length = 0;
-            lv_timer_create(navigate_to_home_cb, 5500, NULL);
+            lv_timer_create(navigate_to_home_cb, 2500, NULL);
         } 
         else {
             create_toast("Invalid PIN", 2000); // Shows "Invalid PIN" for 2 seconds
@@ -201,7 +201,7 @@ static void screen_loaded_event_cb(lv_event_t *event)
     }
 }
 
-void create_toast(const char *text, int timeout_ms) {
+static void create_toast(const char *text, int timeout_ms) {
     // 1. Create a container on the top layer (persists across screen changes)
     lv_obj_t *toast = lv_obj_create(lv_layer_top());
     lv_obj_set_size(toast, LV_SIZE_CONTENT, LV_SIZE_CONTENT);

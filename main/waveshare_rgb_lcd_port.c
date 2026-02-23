@@ -5,6 +5,7 @@
  */
 
 #include "waveshare_rgb_lcd_port.h"
+#include "ch422g_driver.h"
 
 static const char *TAG = "waveshare_rgb_lcd";
 
@@ -35,7 +36,14 @@ static esp_err_t i2c_master_init(void)
     i2c_param_config(i2c_master_port, &i2c_conf);
 
     // Install I2C driver
-    return i2c_driver_install(i2c_master_port, i2c_conf.mode, 0, 0, 0);
+    esp_err_t ret = i2c_driver_install(i2c_master_port, i2c_conf.mode, 0, 0, 0);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    // Initialize CH422G GPIO expander driver
+    ret = ch422g_init(i2c_master_port);
+    return ret;
 }
 
 // GPIO initialization
@@ -56,18 +64,8 @@ void gpio_init(void)
 // Reset the touch screen
 void waveshare_esp32_s3_touch_reset()
 {
-    uint8_t write_buf = 0x01;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x24, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-
-    // Reset the touch screen. It is recommended to reset the touch screen before using it.
-    write_buf = 0x2C;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    esp_rom_delay_us(100 * 1000);
-    gpio_set_level(GPIO_INPUT_IO_4, 0);
-    esp_rom_delay_us(100 * 1000);
-    write_buf = 0x2E;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    esp_rom_delay_us(200 * 1000);
+    // Use centralized CH422G driver for touch reset sequence
+    ESP_ERROR_CHECK(ch422g_touch_reset(I2C_MASTER_NUM));
 }
 
 #endif
@@ -185,27 +183,15 @@ esp_err_t waveshare_esp32_s3_rgb_lcd_init()
 /******************************* Turn on the screen backlight **************************************/
 esp_err_t waveshare_rgb_lcd_bl_on()
 {
-    //Configure CH422G to output mode 
-    uint8_t write_buf = 0x01;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x24, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-
-    //Pull the backlight pin high to light the screen backlight 
-    write_buf = 0x1E;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    return ESP_OK;
+    // Use centralized CH422G driver for backlight control
+    return ch422g_backlight_control(I2C_MASTER_NUM, true);
 }
 
 /******************************* Turn off the screen backlight **************************************/
 esp_err_t waveshare_rgb_lcd_bl_off()
 {
-    //Configure CH422G to output mode 
-    uint8_t write_buf = 0x01;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x24, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-
-    //Turn off the screen backlight by pulling the backlight pin low 
-    write_buf = 0x1A;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    return ESP_OK;
+    // Use centralized CH422G driver for backlight control
+    return ch422g_backlight_control(I2C_MASTER_NUM, false);
 }
 
 /******************************* Example code **************************************/

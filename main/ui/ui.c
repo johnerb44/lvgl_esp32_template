@@ -10,7 +10,9 @@
 #include "screens/ui_screen_biometric.h"
 #include "screens/ui_screen_fpscan.h"
 #include "screens/ui_screen_get_pin.h"
+#include "screens/ui_screen_change_pin.h"
 #include "screens/ui_screen_home.h"
+#include "user_mgmt_ui.h"
 #include "esp_log.h"
 
 static const char *UI_TAG = "UI";
@@ -21,7 +23,9 @@ lv_obj_t *ui_screen_main = NULL;
 lv_obj_t *ui_screen_biometric = NULL;
 lv_obj_t *ui_screen_fpscan = NULL;
 lv_obj_t *ui_screen_get_pin = NULL;
+lv_obj_t *ui_screen_change_pin = NULL;
 lv_obj_t *ui_screen_home = NULL;
+lv_obj_t *ui_screen_user_mgmt = NULL;
 
 
 void ui_init(void)
@@ -34,7 +38,9 @@ void ui_init(void)
     ui_screen_biometric_create();
     ui_screen_fpscan_create();
     ui_screen_get_pin_create();
+    ui_screen_change_pin_create();
     ui_screen_home_create();
+    ui_screen_user_mgmt_create();
     ESP_LOGI(UI_TAG, "UI initialization complete");
 }
 
@@ -66,4 +72,22 @@ lv_obj_t *ui_screen_get_pin_get(void)
 lv_obj_t *ui_screen_home_get(void)
 {
     return ui_screen_home;
+}
+
+lv_obj_t *ui_screen_change_pin_get(void)
+{
+    return ui_screen_change_pin;
+}
+
+void ui_screen_user_mgmt_create(void)
+{
+    if (!ui_screen_user_mgmt) {
+        // Default admin user ID is 1
+        ui_screen_user_mgmt = user_mgmt_ui_create(1);
+    }
+}
+
+lv_obj_t *ui_screen_user_mgmt_get(void)
+{
+    return ui_screen_user_mgmt;
 }

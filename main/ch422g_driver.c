@@ -64,10 +64,11 @@ esp_err_t ch422g_init(i2c_port_t i2c_num)
         return ret;
     }
 
-    // CRITICAL: Initialize with USB_SEL (bit 5) HIGH to prevent USB disconnect!
-    // Setting to 0x00 would immediately kill USB connection
-    // Start with: EXIO5 (USB_SEL) = 1, all others = 0
-    ch422g_gpio_state = 0x20;  // 0b00100000 = USB_SEL only
+    // USB_SEL (EXIO5/bit5) = 0 routes ESP32-S3 native USB to the USB-C connector
+    // via FSUSB42UMX switch. USB_SEL=1 routes to CAN header (away from USB-C).
+    // USB_SEL=0 is required for USB Serial/JTAG to enumerate on the USB-C port,
+    // enabling flashing without the GPIO0/LCD DATA6 hardware conflict.
+    ch422g_gpio_state = 0x00;  // 0b00000000 = all pins LOW (USB_SEL=0)
     
     ret = i2c_master_write_to_device(i2c_num, CH422G_ADDR_GPIO, 
                                      &ch422g_gpio_state, 1, I2C_TIMEOUT_TICKS);
@@ -208,13 +209,9 @@ esp_err_t ch422g_backlight_control(i2c_port_t i2c_num, bool enable)
 {
     ESP_LOGI(TAG, "Backlight control: %s", enable ? "ON" : "OFF");
 
-    // CRITICAL: Must preserve USB_SEL (EXIO5/bit5) to keep USB connection alive!
-    // Original patterns had bit5=0, causing USB disconnect after initialization
-    // Backlight ON:  0x1E = 0b00011110 → 0x3E = 0b00111110 (add USB_SEL)
-    // Backlight OFF: 0x1A = 0b00011010 → 0x3A = 0b00111010 (add USB_SEL)
-    // Bit 5 (EXIO5/USB_SEL) MUST be 1 to keep USB active
-    
-    uint8_t pattern = enable ? 0x3E : 0x3A;  // Original + 0x20 (USB_SEL bit)
+    // Backlight ON:  0x1E = EXIO1|EXIO2|EXIO3|EXIO4 (USB_SEL=0, native USB → USB-C)
+    // Backlight OFF: 0x1A = EXIO1|EXIO3|EXIO4 (USB_SEL=0 preserved)
+    uint8_t pattern = enable ? 0x1E : 0x1A;
     ESP_LOGI(TAG, "Writing backlight pattern: 0x%02X (" BYTE_TO_BINARY_PATTERN ")",
              pattern, BYTE_TO_BINARY(pattern));
     
@@ -226,21 +223,16 @@ esp_err_t ch422g_sd_card_enable(i2c_port_t i2c_num, bool enable)
     ESP_LOGI(TAG, "SD card access: %s", enable ? "ENABLED" : "DISABLED");
 
     if (!enable) {
-        // Restore backlight when disabling SD card
+        // Restore backlight when disabling SD card (USB_SEL=0 preserved)
         ESP_LOGI(TAG, "Restoring backlight after SD card access");
-        return ch422g_write_gpio(i2c_num, 0x3E);  // Backlight ON + USB_SEL
+        return ch422g_write_gpio(i2c_num, 0x1E);  // Backlight ON, USB_SEL=0
     }
     
-    // HARDWARE LIMITATION: SD card and backlight cannot be on simultaneously
-    // Original patterns: Backlight=0x1E, SD=0x0A are mutually exclusive
-    // SD card requires: 0x2A = 0x0A + USB_SEL (original 0x0A + bit 5)
-    // This will turn OFF backlight during SD operations
-    // 
-    // Note: Backlight flicker during SD init is unavoidable with current hardware
-    
-    uint8_t pattern = 0x2A;  // SD card pattern with USB_SEL preserved
+    // HARDWARE LIMITATION: SD card and backlight cannot be on simultaneously.
+    // SD card pattern: 0x0A = EXIO1|EXIO3 (USB_SEL=0 preserved)
+    uint8_t pattern = 0x0A;
     ESP_LOGI(TAG, "Writing SD pattern: 0x%02X (" BYTE_TO_BINARY_PATTERN ") - backlight will turn off temporarily",
              pattern, BYTE_TO_BINARY(pattern));
-    
+
     return ch422g_write_gpio(i2c_num, pattern);
 }

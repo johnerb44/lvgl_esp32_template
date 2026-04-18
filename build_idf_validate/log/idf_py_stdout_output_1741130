@@ -1,0 +1,127 @@
+[0;32mI (679) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (688) cpu_start: Pro cpu start user code[0m
+[0;32mI (688) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (688) cpu_start: Application information:[0m
+[0;32mI (691) cpu_start: Project name:     lvgl_porting[0m
+[0;32mI (697) cpu_start: App version:      93331d3e-dirty[0m
+[0;32mI (702) cpu_start: Compile time:     Apr 16 2026 16:50:28[0m
+[0;32mI (708) cpu_start: ELF file SHA256:  de1230f7486e718b...[0m
+[0;32mI (714) cpu_start: ESP-IDF:          v5.1.6-dirty[0m
+[0;32mI (720) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (724) cpu_start: Max chip rev:     v0.99 [0m
+[0;32mI (729) cpu_start: Chip rev:         v0.2[0m
+[0;32mI (734) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (741) heap_init: At 3FCB4E80 len 00034890 (210 KiB): DRAM[0m
+[0;32mI (747) heap_init: At 3FCE9710 len 00005724 (21 KiB): STACK/DRAM[0m
+[0;32mI (754) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (760) heap_init: At 600FE010 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (766) esp_psram: Adding pool of 7872K of PSRAM memory to heap allocator[0m
+[0;32mI (774) spi_flash: detected chip: gd[0m
+[0;32mI (778) spi_flash: flash io: qio[0m
+[0;32mI (782) sleep: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (789) sleep: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (796) app_start: Starting scheduler on CPU0[0m
+[0;32mI (801) app_start: Starting scheduler on CPU1[0m
+[0;32mI (801) main_task: Started on CPU0[0m
+[0;32mI (811) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (819) main_task: Calling app_main()[0m
+[0;32mI (823) waveshare_rgb_lcd: Install RGB LCD panel driver[0m
+[0;32mI (861) waveshare_rgb_lcd: Initialize RGB LCD panel[0m
+[0;32mI (862) waveshare_rgb_lcd: Initialize I2C bus[0m
+[0;32mI (863) ch422g_driver: CH422G driver initialized successfully (initial state: 0x00)[0m
+[0;32mI (869) waveshare_rgb_lcd: Initialize GPIO[0m
+[0;32mI (874) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (883) waveshare_rgb_lcd: Initialize Touch LCD[0m
+[0;32mI (889) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (895) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1005) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1205) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1405) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1405) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1406) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1413) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1422) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1426) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1435) lv_port: Create LVGL task[0m
+[0;32mI (1436) LVGL_TEMPLATE: Turning (2090) ch422g_driver: Restoring backlight after SD card access[0m
+[0;32mI (2095) USER_STORE: Loaded 7 users from file[0m
+[0;32mI (2100) USER_MGMT_UI: Populated dropdown with 7 users[0m
+[0;32mI (2136) USER_MGMT_UI: User management UI shown with 7 users[0m
+[0;32mI (2139) LVGL_TEMPLATE: Screen loaded successfully[0m
+[0;32mI (2140) LVGL_TEMPLATE: UI created successfully[0m
+[0;32mI (2142) LVGL_TEMPLATE: User management available - navigate to ui_screen_user_mgmt[0m
+[0;32mI (2159) main_task: Returned from app_main()[0m
+[0;32mI (12930) USER_MGMT_UI: User management UI closed[0m
+[0;32mI (22439) UI_SCREEN_HOME: Admin button clicked, showing user management UI[0m
+[0;32mI (22439) USER_STORE: Enabling SD card for read[0m
+[0;32mI (22441) ch422g_driver: SD card access: ENABLED[0m
+[0;32mI (22446) ch422g_driver: Writing SD pattern: 0x0A (00001010) - backlight will turn off temporarily[0m
+[0;32mI (22509) USER_STORE: Read 1065 bytes from file[0m
+[0;32mI (22511) ch422g_driver: SD card access: DISABLED[0m
+[0;32mI (22511) ch422g_driver: Restoring backlight after SD card access[0m
+[0;32mI (22516) USER_STORE: Loaded 7 users from file[0m
+[0;32mI (22521) USER_MGMT_UI: Populated dropdown with 7 users[0m
+[0;32mI (22530) USER_MGMT_UI: User management UI shown with 7 users[0m
+[0;32mI (282477) USER_MGMT_UI: Edit overlay shown for: Edit Username[0m
+[0;32mI (309358) LVGL_TEMPLATE: Entering UART download mode — restarting with GPIO0 held LOW...[0m
+[0;32mI (309358) gpio: GPIO[0]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x3 (RTC_SW_SYS_RST),boot:0x8 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40384d52
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3818,len:0x18e4
+load:0x403c9700,len:0x4
+load:0x403c9704,len:0xda4
+load:0x403cc700,len:0x30a0
+entry 0x403c9934
+[0;32mI (31) boot: ESP-IDF v5.1.6-dirty 2nd stage bootloader[0m
+[0;32mI (31) boot: compile time Apr 16 2026 16:50:31[0m
+[0;32mI (31) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v0.2[0m
+[0;32mI (39) qio_mode: Enabling default flash chip QIO[0m
+[0;32mI (44) boot.esp32s3: Boot SPI Speed : 80MHz[0m
+[0;32mI (49) boot.esp32s3: SPI Mode       : QIO[0m
+[0;32mI (53) boot.esp32s3: SPI Flash Size : 8MB[0m
+[0;32mI (58) boot: Enabling RNG early entropy source...[0m
+[0;32mI (64) boot: Partition Table:[0m
+[0;32mI (67) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (74) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (82) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (89) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (97) boot: End of partition table[0m
+[0;32mI (101) esp_image: segment 0: paddr=00010020 vaddr=3c070020 size=4f878h (325752) map[0m
+[0;32mI (159) esp_image: segment 1: paddr=0005f8a0 vaddr=3fca1100 size=00778h (  1912) load[0m
+[0;32mI (160) esp_image: segment 2: paddr=00060020 vaddr=42000020 size=6d8c0h (448704) map[0m
+[0;32mI (233) esp_image: segment 3: paddr=000cd8e8 vaddr=3fca1878 size=029b8h ( 10680) load[0m
+[0;32mI (235) esp_image: segment 4: paddr=000d02a8 vaddr=40374000 size=1d0ech (119020) load[0m
+[0;32mI (273) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (273) boot: Disabling RNG early entropy source...[0m
+[0;32mI (285) cpu_start: Multicore app[0m
+[0;32mI (285) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (286) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (288) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (294) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (299) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (304) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (309) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (315) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (321) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (326) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (333) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (338) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (343) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (348) esp_psram: Speed: 80MHz[0m
+[0;32mI (370) mmu_psram: Read only data copied and mapped to SPIRAM[0m
+[0;32mI (370) cpu_start: Pro cpu up.[0m
+[0;32mI (370) cpu_start: Starting app cpu, entry point is 0x40375844[0m
+[0;32mI (0) cpu_start: App cpu up.[0m
+[0;32mI (684) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (693) cpu_start: Pro cpu start user code[0m
+[0;32mI (693) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (693) cpu_start: Application information:[0m
+[0;32mI (696) cpu_start: Project name:     lvgl_porting[0m
+[0;32mI (701) cpu_start: App version:      93331d3e-dirty[0m
+[0;32mI (707) cpu_start: Compile time:     Apr 16 2026 16:50:28[0m
+[0;32mI (713) cpu_start: ELF file SHA256:  de1230f7

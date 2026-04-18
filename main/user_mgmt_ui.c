@@ -471,11 +471,11 @@ static void load_user_to_form(int index)
         lv_obj_clear_state(s_admin_switch, LV_STATE_CHECKED);
     }
     
-    snprintf(buf, sizeof(buf), "Fingerprint: %s", 
+    snprintf(buf, sizeof(buf), "Finger: %s", 
              user->fingerid >= 0 ? "Enrolled" : "Not enrolled");
     lv_label_set_text(s_fingerid_label, buf);
     
-    snprintf(buf, sizeof(buf), "Face ID: %s", 
+    snprintf(buf, sizeof(buf), "Face: %s", 
              user->faceid >= 0 ? "Enrolled" : "Not enrolled");
     lv_label_set_text(s_faceid_label, buf);
     
@@ -493,8 +493,8 @@ static void clear_form(void)
     lv_textarea_set_text(s_pin_input, "");
     lv_textarea_set_text(s_pin_confirm_input, "");
     lv_obj_clear_state(s_admin_switch, LV_STATE_CHECKED);
-    lv_label_set_text(s_fingerid_label, "Fingerprint: Not enrolled");
-    lv_label_set_text(s_faceid_label, "Face ID: Not enrolled");
+    lv_label_set_text(s_fingerid_label, "Finger: Not enrolled");
+    lv_label_set_text(s_faceid_label, "Face: Not enrolled");
     lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
 }
 
@@ -521,6 +521,8 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     // Create screen
     s_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(s_screen, lv_color_hex(0x1a1a1a), 0);
+    lv_obj_clear_flag(s_screen, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(s_screen, LV_SCROLLBAR_MODE_OFF);
     
     // Header
     lv_obj_t *header = lv_obj_create(s_screen);
@@ -532,6 +534,8 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     
     lv_obj_t *title = lv_label_create(header);
     lv_label_set_text(title, "User Management");
+    //lv_obj_set_style_text_color(title, lv_color_hex3(0x000), 0);
+    lv_obj_set_style_text_color(title, lv_color_hex(0x8719e0), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_26, 0);
     lv_obj_align(title, LV_ALIGN_LEFT_MID, 20, 0);
     
@@ -552,6 +556,8 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_pad_all(main_cont, 0, 0);
     lv_obj_set_style_bg_opa(main_cont, 0, 0);
     lv_obj_set_style_border_width(main_cont, 0, 0);
+    lv_obj_set_scrollbar_mode(main_cont, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_clear_flag(main_cont, LV_OBJ_FLAG_SCROLLABLE);
     
     // Left pane - user list
     lv_obj_t *left_pane = lv_obj_create(main_cont);
@@ -586,22 +592,22 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     s_userid_label = lv_label_create(bio_cont);
     lv_label_set_text(s_userid_label, "ID: (new)");
     lv_obj_set_style_text_color(s_userid_label, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_set_style_text_font(s_userid_label, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_font(s_userid_label, &lv_font_montserrat_24, 0);
     
     s_fingerid_label = lv_label_create(bio_cont);
-    lv_label_set_text(s_fingerid_label, "Fingerprint: Not enrolled");
+    lv_label_set_text(s_fingerid_label, "Finger: Not enrolled");
     lv_obj_set_style_text_color(s_fingerid_label, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_set_style_text_font(s_fingerid_label, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_font(s_fingerid_label, &lv_font_montserrat_24, 0);
     
     s_faceid_label = lv_label_create(bio_cont);
-    lv_label_set_text(s_faceid_label, "Face ID: Not enrolled");
+    lv_label_set_text(s_faceid_label, "Face: Not enrolled");
     lv_obj_set_style_text_color(s_faceid_label, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_set_style_text_font(s_faceid_label, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_font(s_faceid_label, &lv_font_montserrat_24, 0);
     
     s_lastlogon_label = lv_label_create(bio_cont);
     lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
     lv_obj_set_style_text_color(s_lastlogon_label, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_set_style_text_font(s_lastlogon_label, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_font(s_lastlogon_label, &lv_font_montserrat_24, 0);
     
     // Right pane - form
     lv_obj_t *right_pane = lv_obj_create(main_cont);
@@ -612,7 +618,8 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_flex_flow(right_pane, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_all(right_pane, 10, 0);
     lv_obj_set_style_pad_row(right_pane, 10, 0);
-    lv_obj_set_scrollbar_mode(right_pane, LV_SCROLLBAR_MODE_AUTO);
+    lv_obj_set_scrollbar_mode(right_pane, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_clear_flag(right_pane, LV_OBJ_FLAG_SCROLLABLE);
     
     // Form Helper Macro-like logic for rows
     #define CREATE_FORM_ROW(parent, label_text) \
@@ -696,41 +703,52 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_add_event_cb(s_pin_confirm_input, textarea_focus_event_cb, LV_EVENT_CLICKED, NULL);
     }
     
-    // Show PIN Switch Row
+    // Switch controls row
+    lv_obj_t *switch_row_cont = lv_obj_create(right_pane);
+    lv_obj_set_size(switch_row_cont, LV_PCT(100), 50); // Adjust height as needed
+    lv_obj_set_style_bg_opa(switch_row_cont, 0, 0);
+    lv_obj_set_style_border_width(switch_row_cont, 0, 0);
+    lv_obj_set_style_pad_all(switch_row_cont, 0, 0);
+    lv_obj_set_flex_flow(switch_row_cont, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(switch_row_cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    // Show PIN Switch
     {
-        lv_obj_t *sw_row = lv_obj_create(right_pane);
-        lv_obj_set_size(sw_row, LV_PCT(100), 50);
-        lv_obj_set_style_bg_opa(sw_row, 0, 0);
-        lv_obj_set_style_border_width(sw_row, 0, 0);
-        lv_obj_set_style_pad_all(sw_row, 0, 0);
-        
-        lv_obj_t *lbl = lv_label_create(sw_row);
+        lv_obj_t *pin_switch_wrap = lv_obj_create(switch_row_cont);
+        lv_obj_set_size(pin_switch_wrap, LV_SIZE_CONTENT, LV_PCT(100));
+        lv_obj_set_style_bg_opa(pin_switch_wrap, 0, 0);
+        lv_obj_set_style_border_width(pin_switch_wrap, 0, 0);
+        lv_obj_set_style_pad_all(pin_switch_wrap, 0, 0);
+        lv_obj_set_flex_flow(pin_switch_wrap, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(pin_switch_wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_pad_column(pin_switch_wrap, 10, 0);
+
+        lv_obj_t *lbl = lv_label_create(pin_switch_wrap);
         lv_label_set_text(lbl, "Show PIN");
         lv_obj_set_style_text_color(lbl, lv_color_hex(0xaaaaaa), 0);
         lv_obj_set_style_text_font(lbl, &lv_font_montserrat_26, 0);
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 0);
-        
-        lv_obj_t *pin_sw = lv_switch_create(sw_row);
-        lv_obj_align_to(pin_sw, lbl, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
+
+        lv_obj_t *pin_sw = lv_switch_create(pin_switch_wrap);
         lv_obj_add_event_cb(pin_sw, show_pin_switch_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     }
     
     // Administrator Switch
     {
-        lv_obj_t *sw_row = lv_obj_create(right_pane);
-        lv_obj_set_size(sw_row, LV_PCT(100), 50);
-        lv_obj_set_style_bg_opa(sw_row, 0, 0);
-        lv_obj_set_style_border_width(sw_row, 0, 0);
-        lv_obj_set_style_pad_all(sw_row, 0, 0);
-        
-        lv_obj_t *lbl = lv_label_create(sw_row);
-        lv_label_set_text(lbl, "Administrator Permissions");
+        lv_obj_t *admin_switch_wrap = lv_obj_create(switch_row_cont);
+        lv_obj_set_size(admin_switch_wrap, LV_SIZE_CONTENT, LV_PCT(100));
+        lv_obj_set_style_bg_opa(admin_switch_wrap, 0, 0);
+        lv_obj_set_style_border_width(admin_switch_wrap, 0, 0);
+        lv_obj_set_style_pad_all(admin_switch_wrap, 0, 0);
+        lv_obj_set_flex_flow(admin_switch_wrap, LV_FLEX_FLOW_ROW);
+        lv_obj_set_flex_align(admin_switch_wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+        lv_obj_set_style_pad_column(admin_switch_wrap, 10, 0);
+
+        lv_obj_t *lbl = lv_label_create(admin_switch_wrap);
+        lv_label_set_text(lbl, "Admin");
         lv_obj_set_style_text_color(lbl, lv_color_hex(0xaaaaaa), 0);
         lv_obj_set_style_text_font(lbl, &lv_font_montserrat_26, 0);
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 0);
         
-        s_admin_switch = lv_switch_create(sw_row);
-        lv_obj_align(s_admin_switch, LV_ALIGN_RIGHT_MID, 0, 0);
+        s_admin_switch = lv_switch_create(admin_switch_wrap);
     }
     
     // Error label

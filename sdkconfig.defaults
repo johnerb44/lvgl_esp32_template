@@ -16,6 +16,16 @@ CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
 CONFIG_EXAMPLE_LVGL_PORT_TASK_CORE=1
 CONFIG_EXAMPLE_LVGL_PORT_AVOID_TEAR_ENABLE=y
 
+# USB Serial/JTAG disabled: USB_SEL=0 routes native USB away from USB-C,
+# so the USB S/JTAG peripheral would stall waiting for an absent USB host.
+# CH343P (COM3) handles all UART flashing/monitoring instead.
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# esptool uses --before no_reset; the on-screen FLASH button in main.c
+# calls enter_flash_mode() which holds GPIO0=LOW via rtc_gpio_hold_en()
+# through esp_restart(), putting the ROM into UART download mode.
+CONFIG_ESPTOOLPY_BEFORE_NORESET=y
+
 CONFIG_LV_COLOR_SCREEN_TRANSP=y
 CONFIG_LV_MEM_CUSTOM=y
 CONFIG_LV_MEMCPY_MEMSET_STD=y

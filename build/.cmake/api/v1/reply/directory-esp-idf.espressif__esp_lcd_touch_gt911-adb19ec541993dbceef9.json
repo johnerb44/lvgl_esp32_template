@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "esp-idf/espressif__esp_lcd_touch_gt911",
+		"source" : "managed_components/espressif__esp_lcd_touch_gt911"
+	}
+}

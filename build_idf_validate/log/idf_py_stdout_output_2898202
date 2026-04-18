@@ -1,0 +1,72 @@
+[1/5] Performing build step for 'bootloader'
+[1/1] cd /home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/bootloader/esp-idf/esptool_py && /home/erbj/.espressif/python_env/idf5.1_py3.12_env/bin/python /home/erbj/esp/v5.1.6/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 /home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/bootloader/bootloader.bin
+Bootloader binary size 0x5790 bytes. 0x2870 bytes (32%) free.
+[2/5] No install step for 'bootloader'
+[3/5] cd /home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/esp-idf/esptool_py && /home/erbj/.espressif/python_env/idf5.1_py3.12_env/bin/python /home/erbj/esp/v5.1.6/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/partition_table/partition-table.bin /home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/lvgl_porting.bin
+lvgl_porting.bin binary size 0xde850 bytes. Smallest app partition is 0x100000 bytes. 0x217b0 bytes (13%) free.
+[4/5] Completed 'bootloader'
+[4/5] cd /home/erbj/esp/v5.1.6/esp-idf/components/esptool_py && /home/erbj/.espressif/tools/cmake/3.30.2/bin/cmake -D IDF_PATH=/home/erbj/esp/v5.1.6/esp-idf -D "SERIAL_TOOL=/home/erbj/.espressif/python_env/idf5.1_py3.12_env/bin/python;;/home/erbj/esp/v5.1.6/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32s3" -D "SERIAL_TOOL_ARGS=--before=no_reset;--after=hard_reset;write_flash;@flash_args" -D WORKING_DIRECTORY=/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate -P /home/erbj/esp/v5.1.6/esp-idf/components/esptool_py/run_serial_tool.cmake
+esptool.py --chip esp32s3 -p /dev/ttyACM0 -b 460800 --before=no_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0 bootloader/bootloader.bin 0x10000 lvgl_porting.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.10.0
+Serial port /dev/ttyACM0
+WARNING: Pre-connection option "no_reset" was selected. Connection may fail if the chip is not in bootloader or flasher stub mode.
+Connecting.....
+Chip is ESP32-S3 (QFN56) (revision v0.2)
+Features: WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)
+Crystal is 40MHz
+MAC: 48:ca:43:30:9a:38
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00005fff...
+Flash will be erased from 0x00010000 to 0x000eefff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 22416 bytes to 14217...
+Writing at 0x00000000... (100 %)
+Wrote 22416 bytes (14217 compressed) at 0x00000000 in 0.6 seconds (effective 292.1 kbit/s)...
+Hash of data verified.
+Compressed 911440 bytes to 501269...
+Writing at 0x00010000... (3 %)
+Writing at 0x0001c3dd... (6 %)
+Writing at 0x000240d1... (9 %)
+Writing at 0x0002cc3a... (12 %)
+Writing at 0x00037140... (16 %)
+Writing at 0x00040a1b... (19 %)
+Writing at 0x0004b16b... (22 %)
+Writing at 0x00056d00... (25 %)
+Writing at 0x0006250d... (29 %)
+Writing at 0x000684e1... (32 %)
+Writing at 0x0006e686... (35 %)
+Writing at 0x00073ceb... (38 %)
+Writing at 0x00079de4... (41 %)
+Writing at 0x0007f845... (45 %)
+Writing at 0x00084c17... (48 %)
+Writing at 0x0008a59f... (51 %)
+Writing at 0x00090c2f... (54 %)
+Writing at 0x000960f1... (58 %)
+Writing at 0x0009b935... (61 %)
+Writing at 0x000a143c... (64 %)
+Writing at 0x000a6822... (67 %)
+Writing at 0x000ad2bd... (70 %)
+Writing at 0x000b3298... (74 %)
+Writing at 0x000b8aa3... (77 %)
+Writing at 0x000c1b93... (80 %)
+Writing at 0x000c80b2... (83 %)
+Writing at 0x000d1448... (87 %)
+Writing at 0x000d7121... (90 %)
+Writing at 0x000dec6e... (93 %)
+Writing at 0x000e4c1f... (96 %)
+Writing at 0x000eaec8... (100 %)
+Wrote 911440 bytes (501269 compressed) at 0x00010000 in 11.4 seconds (effective 638.7 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 103...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (103 compressed) at 0x00008000 in 0.0 seconds (effective 526.3 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

@@ -1,6 +1,5 @@
 {
-    "idf.portWin": "COM3",
-    "idf.flashType": "UART",
-    "idf.pythonInstallPath": "d:\\vscode-lvgl\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
-    "idf.currentSetup": "d:\\vscode-lvgl\\esp\\v5.1.6\\esp-idf"
+    "idf.currentSetup": "/home/erbj/esp/v5.1.6/esp-idf",
+    "idf.port": "/dev/ttyACM2",
+    "idf.flashType": "UART"
 }

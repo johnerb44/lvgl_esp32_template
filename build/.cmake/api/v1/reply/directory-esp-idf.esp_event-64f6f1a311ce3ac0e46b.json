@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "esp-idf/esp_event",
+		"source" : "/home/erbj/esp/v5.1.6/esp-idf/components/esp_event"
+	}
+}

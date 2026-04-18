@@ -1,3 +1,12 @@
+## Secure Lockbox Integration Baseline (Phase 1)
+
+This repository is the integration target for the Secure Lockbox project.
+
+- **Primary integration codebase:** `lvgl_esp32_template`
+- **Reference/donor codebases:** `i2c_tools_2`, `uart_echo_1`, `hlk_tx510`, `servo_driver`
+- **Transport strategy:** biometric modules integrate through **SC16IS752** (I2C-to-serial path), not direct UART in the final integrated app
+- **Phase 1 scope:** establish module boundaries and build-time feature flags without changing live feature behavior
+
 | Supported Targets | ESP32-S3 |
 | ----------------- | -------- |
 

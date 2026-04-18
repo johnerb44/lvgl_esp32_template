@@ -114,4 +114,46 @@ menu "Example Configuration"
             help
                 Height of LVGL buffer. The width of the buffer is the same as that of the LCD.
     endmenu
+
+    menu "Secure Lockbox Integration"
+        config LOCKBOX_INTEGRATION_ENABLE
+            bool "Enable Secure Lockbox integration architecture"
+            default y
+            help
+                Enables the integration module layout used for Secure Lockbox
+                backend bring-up (comm/devices/services/app).
+
+        config LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+            bool "Use mock device behavior for integration modules"
+            default y
+            depends on LOCKBOX_INTEGRATION_ENABLE
+            help
+                Keeps integration modules in non-hardware mock mode until
+                feature bring-up is complete.
+
+        config LOCKBOX_FEATURE_SC16IS752
+            bool "Enable SC16IS752 transport path"
+            default n
+            depends on LOCKBOX_INTEGRATION_ENABLE
+
+        config LOCKBOX_FEATURE_R503
+            bool "Enable R503 fingerprint feature"
+            default n
+            depends on LOCKBOX_FEATURE_SC16IS752
+
+        config LOCKBOX_FEATURE_HLK_TX510
+            bool "Enable HLK-TX510 face recognition feature"
+            default n
+            depends on LOCKBOX_FEATURE_SC16IS752
+
+        config LOCKBOX_FEATURE_PCA9685
+            bool "Enable PCA9685 lock servo driver"
+            default n
+            depends on LOCKBOX_INTEGRATION_ENABLE
+
+        config LOCKBOX_FEATURE_STATUS_INPUTS
+            bool "Enable lockbox status input signals"
+            default n
+            depends on LOCKBOX_INTEGRATION_ENABLE
+    endmenu
 endmenu

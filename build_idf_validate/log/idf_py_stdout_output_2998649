@@ -1,0 +1,169 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x0 (DOWNLOAD(USB/UART0))
+waiting for download
+[0;32mI (677) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (685) cpu_start: Pro cpu start user code[0m
+[0;32mI (685) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (685) cpu_start: Application information:[0m
+[0;32mI (688) cpu_start: Project name:     lvgl_porting[0m
+[0;32mI (694) cpu_start: App version:      93331d3e-dirty[0m
+[0;32mI (699) cpu_start: Compile time:     Apr 18 2026 16:44:23[0m
+[0;32mI (705) cpu_start: ELF file SHA256:  9c308f2f786e2c1a...[0m
+[0;32mI (711) cpu_start: ESP-IDF:          v5.1.6-dirty[0m
+[0;32mI (717) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (721) cpu_start: Max chip rev:     v0.99 [0m
+[0;32mI (726) cpu_start: Chip rev:         v0.2[0m
+[0;32mI (731) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (738) heap_init: At 3FCB4E90 len 00034880 (210 KiB): DRAM[0m
+[0;32mI (744) heap_init: At 3FCE9710 len 00005724 (21 KiB): STACK/DRAM[0m
+[0;32mI (751) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (757) heap_init: At 600FE010 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (764) esp_psram: Adding pool of 7808K of PSRAM memory to heap allocator[0m
+[0;32mI (772) spi_flash: detected chip: gd[0m
+[0;32mI (775) spi_flash: flash io: qio[0m
+[0;32mI (779) sleep: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (786) sleep: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (793) app_start: Starting scheduler on CPU0[0m
+[0;32mI (798) app_start: Starting scheduler on CPU1[0m
+[0;32mI (798) main_task: Started on CPU0[0m
+[0;32mI (808) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (816) main_task: Calling app_main()[0m
+[0;32mI (820) waveshare_rgb_lcd: Install RGB LCD panel driver[0m
+[0;32mI (858) waveshare_rgb_lcd: Initialize RGB LCD panel[0m
+[0;32mI (859) waveshare_rgb_lcd: Initialize I2C bus[0m
+[0;32mI (860) ch422g_driver: CH422G driver initialized successfully (initial state: 0x00)[0m
+[0;32mI (866) waveshare_rgb_lcd: Initialize GPIO[0m
+[0;32mI (871) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (880) waveshare_rgb_lcd: Initialize Touch LCD[0m
+[0;32mI (886) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (892) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1002) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1202) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1402) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1402) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1403) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1410) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1419) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1423) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1432) lv_port: Create LVGL task[0m
+[0;32mI (1433) LVGL_TEMPLATE: Turning[0;32mI (23496) UI_SCREEN_FPSCAN: Fingerprint button clicked[0m
+[0;32mI (23498) UI_SCREEN_FPSCAN: Scan task: transport_ready=1[0m
+[0;32mI (23499) SC16IS752_TRANSPORT: Probe: SC16IS752 verified at I2C addr 0x4D — SPR readback OK (0x55)[0m
+[0;32mI (23508) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (23521) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (23567) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (23767) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (23772) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (23813) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (24013) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (24018) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (24059) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (24259) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (24264) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (24305) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (24505) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (24510) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (24551) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (24751) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (24756) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (24797) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (24997) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (25003) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (25044) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (25244) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (25249) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (25290) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (25490) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (25496) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (25537) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (25737) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (25743) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (25784) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (25984) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (25989) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (26030) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (26230) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (26236) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (26277) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (26477) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (26483) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (26524) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (26724) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (26730) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (26771) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (26971) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (26977) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (27018) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (27218) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (27223) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (27264) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (27464) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (27469) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (27516) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (27716) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (27721) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (27762) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (27962) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (27968) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (28009) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (28209) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (28215) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (28256) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (28456) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (28461) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (28502) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (28702) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (28707) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (28748) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (28948) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (28953) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (28994) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (29194) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (29199) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (29246) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (29446) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (29452) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (29493) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (29693) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (29698) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (29739) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (29939) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (29945) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (29986) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (30186) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (30191) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (30232) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (30432) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (30437) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (30478) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (30678) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (30683) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (30724) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (30924) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (30930) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (30971) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (31171) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (31177) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (31218) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (31418) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (31423) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (31470) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (31670) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (31676) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (31717) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (31917) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (31922) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (31963) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (32163) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (32168) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (32209) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (32409) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (32415) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (32456) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (32656) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (32662) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (32703) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m
+[0;32mI (32903) SC16IS752_TRANSPORT: TX 12 bytes: EF 01 FF FF FF FF 01 00 03 01 00 05 [0m
+[0;32mI (32909) SC16IS752_TRANSPORT: TX: TEMT reached — all bytes sent[0m
+[0;32mI (32950) SC16IS752_TRANSPORT: RX 12 bytes: EF 01 FF FF FF FF 07 00 03 02 00 0C [0m

@@ -8,6 +8,7 @@
  *********************/
 
 #include "ui_screen_biometric.h"
+#include "ui_screen_facescan.h"
 #include "../ui.h"
 #include "esp_log.h"
 
@@ -42,7 +43,7 @@ static void face_btn_event_cb(lv_event_t *event)
 {
     if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
         ESP_LOGI(SCREEN_TAG, "Face scan button clicked");
-        lv_scr_load_anim(ui_screen_main, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+        lv_scr_load_anim(ui_screen_facescan, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
     }
 }
 

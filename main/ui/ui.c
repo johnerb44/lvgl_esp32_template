@@ -9,6 +9,7 @@
 #include "screens/ui_screen_main.h"
 #include "screens/ui_screen_biometric.h"
 #include "screens/ui_screen_fpscan.h"
+#include "screens/ui_screen_facescan.h"
 #include "screens/ui_screen_get_pin.h"
 #include "screens/ui_screen_change_pin.h"
 #include "screens/ui_screen_home.h"
@@ -22,6 +23,7 @@ lv_obj_t *ui_screen_start = NULL;
 lv_obj_t *ui_screen_main = NULL;
 lv_obj_t *ui_screen_biometric = NULL;
 lv_obj_t *ui_screen_fpscan = NULL;
+lv_obj_t *ui_screen_facescan = NULL;
 lv_obj_t *ui_screen_get_pin = NULL;
 lv_obj_t *ui_screen_change_pin = NULL;
 lv_obj_t *ui_screen_home = NULL;
@@ -37,6 +39,7 @@ void ui_init(void)
     ui_screen_main_create();
     ui_screen_biometric_create();
     ui_screen_fpscan_create();
+    ui_screen_facescan_create();
     ui_screen_get_pin_create();
     ui_screen_change_pin_create();
     ui_screen_home_create();
@@ -62,6 +65,11 @@ lv_obj_t *ui_screen_biometric_get(void)
 lv_obj_t *ui_screen_fpscan_get(void)
 {
     return ui_screen_fpscan;
+}
+
+lv_obj_t *ui_screen_facescan_get(void)
+{
+    return ui_screen_facescan;
 }
 
 lv_obj_t *ui_screen_get_pin_get(void)

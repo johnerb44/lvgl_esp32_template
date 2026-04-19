@@ -14,6 +14,7 @@
 #include "freertos/task.h"
 #include "lvgl_port.h"
 #include "services/face_service.h"
+#include "devices/hlk_tx510_device.h"
 #include <stdio.h>
 
 /*********************
@@ -23,6 +24,7 @@
 static const char *SCREEN_TAG = "UI_SCREEN_FACESCAN";
 static lv_obj_t *s_status_label = NULL;
 static lv_obj_t *s_start_button = NULL;
+static lv_obj_t *s_enroll_button = NULL;
 static bool s_scan_in_progress = false;
 
 /**********************
@@ -128,9 +130,88 @@ static void face_btn_event_cb(lv_event_t *event)
     }
 }
 
-/**********************
- *   GLOBAL FUNCTIONS
- **********************/
+static void face_enroll_task(void *arg)
+{
+    (void)arg;
+
+    esp_err_t init_err = face_service_init();
+    if (init_err != ESP_OK) {
+        ESP_LOGE(SCREEN_TAG, "Face service init failed: %s", esp_err_to_name(init_err));
+    }
+
+    int face_id = -1;
+    // Enroll without tying to a specific user — just tests the module enrollment path
+    esp_err_t err = hlk_tx510_device_enroll(-1, &face_id);
+
+    char msg[128];
+    if (err != ESP_OK) {
+        snprintf(msg, sizeof(msg), "Enroll failed: %s", esp_err_to_name(err));
+        ESP_LOGE(SCREEN_TAG, "%s", msg);
+    } else {
+        snprintf(msg, sizeof(msg), "Enrolled! face_id=%d", face_id);
+        ESP_LOGI(SCREEN_TAG, "%s", msg);
+    }
+
+    if (lvgl_port_lock(1000)) {
+        if (s_status_label && lv_obj_is_valid(s_status_label)) {
+            lv_label_set_text(s_status_label, msg);
+        }
+        if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+            lv_obj_clear_state(s_enroll_button, LV_STATE_DISABLED);
+        }
+        if (s_start_button && lv_obj_is_valid(s_start_button)) {
+            lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
+        }
+        lvgl_port_unlock();
+    }
+
+    s_scan_in_progress = false;
+    vTaskDelete(NULL);
+}
+
+static void face_enroll_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+        ESP_LOGI(SCREEN_TAG, "Enroll button clicked");
+        if (s_scan_in_progress) {
+            ESP_LOGW(SCREEN_TAG, "Operation already in progress");
+            return;
+        }
+        s_scan_in_progress = true;
+
+        if (lvgl_port_lock(1000)) {
+            if (s_status_label && lv_obj_is_valid(s_status_label)) {
+                lv_label_set_text(s_status_label, "Enrolling face...");
+            }
+            if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+                lv_obj_add_state(s_enroll_button, LV_STATE_DISABLED);
+            }
+            if (s_start_button && lv_obj_is_valid(s_start_button)) {
+                lv_obj_add_state(s_start_button, LV_STATE_DISABLED);
+            }
+            lvgl_port_unlock();
+        }
+
+        BaseType_t created = xTaskCreate(face_enroll_task, "face_enroll", 4096,
+                                         NULL, tskIDLE_PRIORITY + 2, NULL);
+        if (created != pdPASS) {
+            ESP_LOGE(SCREEN_TAG, "Failed to start enroll task");
+            s_scan_in_progress = false;
+            if (lvgl_port_lock(1000)) {
+                if (s_status_label && lv_obj_is_valid(s_status_label)) {
+                    lv_label_set_text(s_status_label, "Enroll failed to start");
+                }
+                if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+                    lv_obj_clear_state(s_enroll_button, LV_STATE_DISABLED);
+                }
+                if (s_start_button && lv_obj_is_valid(s_start_button)) {
+                    lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
+                }
+                lvgl_port_unlock();
+            }
+        }
+    }
+}
 
 void ui_screen_facescan_create(void)
 {
@@ -175,12 +256,22 @@ void ui_screen_facescan_create(void)
     s_start_button = lv_button_create(ui_screen_facescan);
     lv_obj_set_align(s_start_button, LV_ALIGN_CENTER);
     lv_obj_set_style_bg_color(s_start_button, lv_color_hex(0x19abe0), 0);
-    lv_obj_set_y(s_start_button, 200);
+    lv_obj_set_pos(s_start_button, -90, 200);
     lv_obj_t *btn_label = lv_label_create(s_start_button);
     lv_label_set_text(btn_label, "Begin Scan");
     lv_obj_set_style_text_color(btn_label, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(btn_label, &lv_font_montserrat_26, 0);
     lv_obj_add_event_cb(s_start_button, face_btn_event_cb, LV_EVENT_CLICKED, NULL);
+
+    s_enroll_button = lv_button_create(ui_screen_facescan);
+    lv_obj_set_align(s_enroll_button, LV_ALIGN_CENTER);
+    lv_obj_set_style_bg_color(s_enroll_button, lv_color_hex(0xe07019), 0);
+    lv_obj_set_pos(s_enroll_button, 90, 200);
+    lv_obj_t *enroll_label = lv_label_create(s_enroll_button);
+    lv_label_set_text(enroll_label, "Enroll Face");
+    lv_obj_set_style_text_color(enroll_label, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(enroll_label, &lv_font_montserrat_26, 0);
+    lv_obj_add_event_cb(s_enroll_button, face_enroll_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     s_status_label = lv_label_create(ui_screen_facescan);
     lv_label_set_text(s_status_label, "Ready to scan");

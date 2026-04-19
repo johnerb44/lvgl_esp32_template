@@ -33,6 +33,12 @@ static void face_scan_task(void *arg)
 {
     (void)arg;
 
+    // Initialize (idempotent) so transport is ready even if not previously called
+    esp_err_t init_err = face_service_init();
+    if (init_err != ESP_OK) {
+        ESP_LOGE(SCREEN_TAG, "Face service init failed: %s", esp_err_to_name(init_err));
+    }
+
     face_match_result_t result = {0};
     esp_err_t err = face_service_match(&result);
 

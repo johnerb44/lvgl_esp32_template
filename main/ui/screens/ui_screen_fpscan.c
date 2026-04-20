@@ -167,7 +167,7 @@ static void fingerprint_btn_event_cb(lv_event_t *event)
     s_start_button = lv_button_create(ui_screen_fpscan);
     lv_obj_set_align(s_start_button, LV_ALIGN_CENTER);
     lv_obj_set_style_bg_color(s_start_button, lv_color_hex(0xe19419), 0);
-    lv_obj_set_y(s_start_button, 200);
+    lv_obj_set_y(s_start_button, 150);
     lv_obj_t * button_label = lv_label_create(s_start_button);
     lv_label_set_text(button_label, "Begin Scan");
     lv_obj_set_style_text_color(button_label, lv_color_hex3(0x000), 0);
@@ -178,7 +178,7 @@ static void fingerprint_btn_event_cb(lv_event_t *event)
     lv_label_set_text(s_status_label, "Ready to scan");
     lv_obj_set_style_text_font(s_status_label, &lv_font_montserrat_24, 0);
     lv_obj_set_align(s_status_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(s_status_label, 280);
+    lv_obj_set_y(s_status_label, 230);
     
     ESP_LOGI(SCREEN_TAG, "Fingerprint scan screen created");
 

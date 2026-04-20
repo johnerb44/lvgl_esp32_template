@@ -32,6 +32,7 @@ extern "C" {
 extern lv_obj_t *ui_screen_get_pin;
 
 void ui_screen_get_pin_create(void);
+void ui_screen_get_pin_set_auth_context(int userid);
 
 /**********************
  *      MACROS

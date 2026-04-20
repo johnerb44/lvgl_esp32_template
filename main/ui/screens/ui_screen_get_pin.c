@@ -10,7 +10,13 @@
 #include "ui_screen_get_pin.h"
 #include "../ui.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "lvgl_port.h"
+#include "services/auth_service.h"
+#include "services/lock_service.h"
 #include <string.h>
+#include <stdio.h>
 
 /*********************
  *      DEFINES
@@ -24,11 +30,13 @@
 /***********************
  *  STATIC VARIABLES
  **********************/
-static char pin_buffer[PIN_MAX_LENGTH + 1] = {0};  // +1 for null terminator
+static char pin_buffer[PIN_MAX_LENGTH + 1] = {0};
 static uint8_t pin_length = 0;
 static lv_obj_t *pin_display_label = NULL;
 static lv_obj_t *show_pin_checkbox = NULL;
-static bool show_pin = false;  // Track whether to show actual PIN or asterisks
+static lv_obj_t *s_submit_button = NULL;
+static bool show_pin = false;
+static int s_auth_userid = -1;  // set by biometric scan before loading this screen
 /***********************
  *  STATIC PROTOTYPES
  **********************/
@@ -41,8 +49,15 @@ static const char *SCREEN_TAG = "UI_SCREEN_GET_PIN";
 
 static void toast_timer_cb(lv_timer_t *timer);
 static void navigate_to_home_cb(lv_timer_t *timer);
+static void lockout_reset_cb(lv_timer_t *timer);
 
 static void create_toast(const char *text, int timeout_ms);
+static void pin_verify_task(void *arg);
+
+typedef struct {
+    int userid;
+    char pin[PIN_MAX_LENGTH + 1];
+} pin_verify_args_t;
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -132,34 +147,46 @@ static void button_matrix_event_cb(lv_event_t *event)
  */
 static void submit_btn_event_cb(lv_event_t *event)
 {
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
-        ESP_LOGI(SCREEN_TAG, "Submit button clicked. Entered PIN: %s", pin_buffer);
-        char pin_valid[] = "1234"; // Example valid PIN
-        
-        // TODO: In future, compare pin_buffer with stored PIN here
-        // Show toast notification
-        if (strcmp(pin_buffer, pin_valid) == 0) {
-            create_toast("PIN Accepted", 2000); // Shows "PIN Accepted" for 2 seconds
-            // Delay navigation to home screen until after toast is shown (8000ms + 500ms buffer)
-            // Clear PIN for next entry
-            memset(pin_buffer, 0, sizeof(pin_buffer));
-            pin_length = 0;
-            lv_timer_create(navigate_to_home_cb, 2500, NULL);
-        } 
-        else {
-            create_toast("Invalid PIN", 2000); // Shows "Invalid PIN" for 2 seconds
-            // Clear PIN for next entry
-            memset(pin_buffer, 0, sizeof(pin_buffer));
-            pin_length = 0;
-            update_pin_display();
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
 
-            //lv_timer_create(navigate_to_home_cb, 5500, NULL);
+    if (auth_service_is_locked_out()) {
+        create_toast("Too many failed attempts! Wait 60 seconds.", 3000);
+        return;
+    }
+
+    if (pin_length < PIN_MAX_LENGTH) {
+        create_toast("Please enter a 4-digit PIN", 2000);
+        return;
+    }
+
+    ESP_LOGI(SCREEN_TAG, "Submit: verifying PIN for userid=%d", s_auth_userid);
+
+    pin_verify_args_t *args = malloc(sizeof(pin_verify_args_t));
+    if (!args) {
+        create_toast("Out of memory", 2000);
+        return;
+    }
+    args->userid = s_auth_userid;
+    memcpy(args->pin, pin_buffer, sizeof(args->pin));
+
+    // Clear entered digits immediately
+    memset(pin_buffer, 0, sizeof(pin_buffer));
+    pin_length = 0;
+    update_pin_display();
+
+    // Disable submit while verifying
+    if (s_submit_button && lv_obj_is_valid(s_submit_button)) {
+        lv_obj_add_state(s_submit_button, LV_STATE_DISABLED);
+    }
+
+    BaseType_t created = xTaskCreate(pin_verify_task, "pin_verify", 4096,
+                                     args, tskIDLE_PRIORITY + 2, NULL);
+    if (created != pdPASS) {
+        free(args);
+        if (s_submit_button && lv_obj_is_valid(s_submit_button)) {
+            lv_obj_clear_state(s_submit_button, LV_STATE_DISABLED);
         }
-        
-        
-        
-        // Delay navigation to home screen until after toast is shown (8000ms + 500ms buffer)
-        //lv_timer_create(navigate_to_home_cb, 5500, NULL);
+        create_toast("Verify failed to start", 2000);
     }
 }
 
@@ -201,6 +228,60 @@ static void screen_loaded_event_cb(lv_event_t *event)
     }
 }
 
+void ui_screen_get_pin_set_auth_context(int userid)
+{
+    s_auth_userid = userid;
+    ESP_LOGI(SCREEN_TAG, "Auth context set: userid=%d", userid);
+}
+
+// ── Background task: verify PIN off the LVGL thread ──────────────────────────
+
+static void pin_verify_task(void *arg)
+{
+    pin_verify_args_t *args = (pin_verify_args_t *)arg;
+
+    bool match = false;
+    esp_err_t err = auth_service_verify_pin(args->userid, args->pin, &match);
+    free(args);
+
+    if (lvgl_port_lock(2000)) {
+        if (s_submit_button && lv_obj_is_valid(s_submit_button)) {
+            lv_obj_clear_state(s_submit_button, LV_STATE_DISABLED);
+        }
+
+        if (err != ESP_OK) {
+            ESP_LOGE(SCREEN_TAG, "PIN verify error: %s", esp_err_to_name(err));
+            create_toast("PIN verify error", 2000);
+        } else if (match) {
+            auth_service_record_success();
+            lock_service_unlock(NULL);
+            ESP_LOGI(SCREEN_TAG, "PIN accepted — box unlocked");
+            create_toast("PIN Accepted — Unlocked!", 2000);
+            lv_timer_create(navigate_to_home_cb, 2500, NULL);
+        } else {
+            auth_service_record_failure();
+            if (auth_service_is_locked_out()) {
+                ESP_LOGW(SCREEN_TAG, "Lockout activated");
+                create_toast("Too many failed attempts! Wait 60 seconds.", 4000);
+                if (s_submit_button && lv_obj_is_valid(s_submit_button)) {
+                    lv_obj_add_state(s_submit_button, LV_STATE_DISABLED);
+                }
+                lv_timer_t *t = lv_timer_create(lockout_reset_cb,
+                                                 LOCKBOX_LOCKOUT_SECONDS * 1000, NULL);
+                lv_timer_set_repeat_count(t, 1);
+            } else {
+                int remaining = auth_service_attempts_remaining();
+                char msg[64];
+                snprintf(msg, sizeof(msg), "Invalid PIN (%d attempts left)", remaining);
+                create_toast(msg, 2500);
+            }
+        }
+        lvgl_port_unlock();
+    }
+
+    vTaskDelete(NULL);
+}
+
 static void create_toast(const char *text, int timeout_ms) {
     // 1. Create a container on the top layer (persists across screen changes)
     lv_obj_t *toast = lv_obj_create(lv_layer_top());
@@ -236,7 +317,8 @@ void ui_screen_get_pin_create(void)
     // Reset PIN state when creating screen
     memset(pin_buffer, 0, sizeof(pin_buffer));
     pin_length = 0;
-    show_pin = false;  // Default to hiding PIN
+    show_pin = false;
+    s_submit_button = NULL;
     
     ui_screen_get_pin = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(ui_screen_get_pin, lv_color_hex(0x041d3a), 0);
@@ -293,6 +375,7 @@ void ui_screen_get_pin_create(void)
     lv_obj_add_event_cb(button_matrix_pin, button_matrix_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     
     lv_obj_t * submit_button = lv_button_create(ui_screen_get_pin);
+    s_submit_button = submit_button;
     lv_obj_set_align(submit_button, LV_ALIGN_BOTTOM_MID);
     lv_obj_set_y(submit_button, -30);
     lv_obj_set_style_bg_color(submit_button, lv_color_hex(0xe19419), 0);
@@ -314,8 +397,19 @@ void ui_screen_get_pin_create(void)
 // Timer callback to delete the toast
 static void toast_timer_cb(lv_timer_t *timer) {
     lv_obj_t *toast = lv_timer_get_user_data(timer);
-    // Optional: Add a fade-out animation here before deletion
     lv_obj_del(toast);
+}
+
+// Timer callback fired after lockout period — re-enables submit button
+static void lockout_reset_cb(lv_timer_t *timer)
+{
+    (void)timer;
+    auth_service_reset_lockout();
+    if (s_submit_button && lv_obj_is_valid(s_submit_button)) {
+        lv_obj_clear_state(s_submit_button, LV_STATE_DISABLED);
+    }
+    create_toast("You can try again now.", 2500);
+    ESP_LOGI(SCREEN_TAG, "Lockout period ended — submit re-enabled");
 }
 
 // Timer callback to navigate to home screen

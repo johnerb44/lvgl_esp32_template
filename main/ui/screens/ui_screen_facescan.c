@@ -8,6 +8,7 @@
  *********************/
 
 #include "ui_screen_facescan.h"
+#include "ui_screen_get_pin.h"
 #include "../ui.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -15,6 +16,7 @@
 #include "lvgl_port.h"
 #include "services/face_service.h"
 #include "devices/hlk_tx510_device.h"
+#include "sdkconfig.h"
 #include <stdio.h>
 
 /*********************
@@ -26,6 +28,15 @@ static lv_obj_t *s_status_label = NULL;
 static lv_obj_t *s_start_button = NULL;
 static lv_obj_t *s_enroll_button = NULL;
 static bool s_scan_in_progress = false;
+
+#if CONFIG_LOCKBOX_FEATURE_R503 && CONFIG_LOCKBOX_FEATURE_HLK_TX510
+static void back_btn_event_cb_face(lv_event_t *event)
+{
+    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+        lv_scr_load_anim(ui_screen_biometric, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);
+    }
+}
+#endif
 
 /**********************
  *  STATIC FUNCTIONS
@@ -79,6 +90,7 @@ static void face_scan_task(void *arg)
             lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
         }
         if (result.matched && ui_screen_get_pin) {
+            ui_screen_get_pin_set_auth_context(result.userid);
             lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
         }
         lvgl_port_unlock();
@@ -225,6 +237,20 @@ void ui_screen_facescan_create(void)
     ui_screen_facescan = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(ui_screen_facescan, lv_color_hex(0x041d3a), 0);
     lv_obj_set_style_text_color(ui_screen_facescan, lv_color_hex3(0xfff), 0);
+
+#if CONFIG_LOCKBOX_FEATURE_R503 && CONFIG_LOCKBOX_FEATURE_HLK_TX510
+    lv_obj_t *back_btn = lv_button_create(ui_screen_facescan);
+    lv_obj_set_size(back_btn, 90, 40);
+    lv_obj_set_align(back_btn, LV_ALIGN_TOP_LEFT);
+    lv_obj_set_pos(back_btn, 10, 10);
+    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x444444), 0);
+    lv_obj_t *back_label = lv_label_create(back_btn);
+    lv_label_set_text(back_label, "< Back");
+    lv_obj_set_style_text_color(back_label, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(back_label, &lv_font_montserrat_16, 0);
+    lv_obj_center(back_label);
+    lv_obj_add_event_cb(back_btn, back_btn_event_cb_face, LV_EVENT_CLICKED, NULL);
+#endif
 
     lv_obj_t *title = lv_label_create(ui_screen_facescan);
     lv_label_set_text(title, "Face Scan");

@@ -103,9 +103,10 @@ esp_err_t face_service_match(face_match_result_t *out_result)
             out_result->userid = uid;
             ESP_LOGI(TAG, "Face match: face_id=%d → userid=%d", raw.matched_face_id, uid);
         } else {
-            // Face recognized by module but not in our user store — treat as unregistered
-            out_result->userid = raw.matched_face_id;
-            ESP_LOGW(TAG, "Face match: face_id=%d not found in user store", raw.matched_face_id);
+            // Face recognized by module but not linked to any user — deny access
+            out_result->matched = false;
+            out_result->status = HLK_TX510_STATUS_NO_MATCH;
+            ESP_LOGW(TAG, "Face match: face_id=%d not linked to any user (enroll via admin)", raw.matched_face_id);
         }
     }
     return ESP_OK;

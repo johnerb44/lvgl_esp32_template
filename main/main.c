@@ -94,15 +94,16 @@ void app_main()
     waveshare_rgb_lcd_bl_on();  // Turn on the screen backlight 
     vTaskDelay(pdMS_TO_TICKS(100)); // Small delay to let backlight stabilize
     
-    printf("Initializing SD card...\n");
-   
-    waveshare_sd_card_init();
-    printf("SD card initialized successfully!\n");
-    printf("Reading SD card information...\n");
-    waveshare_sd_card_info();
-    printf("SD card information read successfully!\n");
-    waveshare_sd_card_list_files();
-    
+    ESP_LOGI(APP_TAG, "Initializing SD card");
+    esp_err_t sd_err = waveshare_sd_card_init();
+    if (sd_err != ESP_OK) {
+        ESP_LOGE(APP_TAG, "SD card init FAILED (%s) - file operations will not work", esp_err_to_name(sd_err));
+    } else {
+        ESP_LOGI(APP_TAG, "SD card mounted successfully");
+        waveshare_sd_card_info();
+        waveshare_sd_card_list_files();
+    }
+
     // Initialize user store
     ESP_LOGI(APP_TAG, "Initializing user store");
     user_store_init(NULL); // Use default path
@@ -112,11 +113,10 @@ void app_main()
     if (lockbox_err != ESP_OK) {
         ESP_LOGW(APP_TAG, "lockbox_app_init returned %s", esp_err_to_name(lockbox_err));
     }
-    
+
     // End SD session - restore backlight (SD operations complete)
-    printf("Ending SD session...\n");
+    ESP_LOGI(APP_TAG, "SD init complete, restoring backlight");
     ch422g_sd_card_enable(I2C_MASTER_NUM, false);
-    printf("Backlight restored!\n");
     
     // Small delay to allow LVGL task to fully start
     vTaskDelay(pdMS_TO_TICKS(100));

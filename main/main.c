@@ -130,22 +130,8 @@ void app_main()
         
         ESP_LOGI(APP_TAG, "Screen pointer before load: %p", (void*)ui_screen_change_pin);
         
-        // Load the initial screen
-        //lv_scr_load(ui_screen_main);
-        //lv_scr_load(ui_screen_biometric);
-        //lv_scr_load(ui_screen_start);
-        //lv_scr_load(ui_screen_get_pin);
-        //lv_scr_load(ui_screen_change_pin);
-#if CONFIG_LOCKBOX_FEATURE_R503 && CONFIG_LOCKBOX_FEATURE_HLK_TX510
-        lv_scr_load(ui_screen_biometric);
-#elif CONFIG_LOCKBOX_FEATURE_R503
-        lv_scr_load(ui_screen_fpscan);
-#elif CONFIG_LOCKBOX_FEATURE_HLK_TX510
-        lv_scr_load(ui_screen_facescan);
-#else
-        lv_scr_load(ui_screen_user_mgmt);
-        user_mgmt_ui_show();  // Load user data and populate UI
-#endif
+        // Load the initial screen — always start at the main landing screen
+        lv_scr_load(ui_screen_main);
 
         // Developer flash button: tap to restart into UART download mode.
         // Workflow: tap this button, then click Flash in VS Code.
@@ -164,5 +150,5 @@ void app_main()
     }
     
     ESP_LOGI(APP_TAG, "UI created successfully");
-    ESP_LOGI(APP_TAG, "User management available - navigate to ui_screen_user_mgmt");
+    ESP_LOGI(APP_TAG, "UI ready - showing main screen");
 }

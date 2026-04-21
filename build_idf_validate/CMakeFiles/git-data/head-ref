@@ -1,6 +1,1 @@
-e29074d1c43f2fea5892423fc2a8d66d74a84341 2871172533fabc74b0c21338e6a908c153ef5185 John <erb.john@gmail.com> 1769383784 -0600	commit: 1-25-26 Version
-2871172533fabc74b0c21338e6a908c153ef5185 10bc729d881cd206ab3dc938a89fbdf53f7317cc John <erb.john@gmail.com> 1769489964 -0600	commit: Added toast` notification for "Invalid PIN" messages with improved styling and positioning.`
-10bc729d881cd206ab3dc938a89fbdf53f7317cc 3e3b63eb5255730d18d0fc18e52516a49fe10c35 John <erb.john@gmail.com> 1769571009 -0600	commit: 1-27-2026
-3e3b63eb5255730d18d0fc18e52516a49fe10c35 bc8d30e81af50130bdc9c15d0876b608cefbe464 John <erb.john@gmail.com> 1769912015 -0600	commit: 1-28-26 update
-bc8d30e81af50130bdc9c15d0876b608cefbe464 93331d3eef02f4f6db5d9915f4f67a241748afa6 John <erb.john@gmail.com> 1771826233 -0600	commit: Enhance User Management UI: Added Edit Overlay, Show PIN toggle, and Montserrat 26 font styling.
-93331d3eef02f4f6db5d9915f4f67a241748afa6 9f4591c043fe8659e6216a23c57589b4a1909b97 John <erb.john@gmail.com> 1776551479 -0500	commit: Phase 3 complete: R503 fingerprint via SC16IS752 working
+b3113995269b462322e505a82b2fa7dc1f3f05c3

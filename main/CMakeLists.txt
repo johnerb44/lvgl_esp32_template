@@ -11,6 +11,7 @@ idf_component_register(
          "services/fingerprint_service.c"
          "services/face_service.c"
          "services/lock_service.c"
+         "services/session_service.c"
          "services/status_service.c"
          "app/lockbox_app.c"
          "ui/ui.c"
@@ -22,6 +23,7 @@ idf_component_register(
          "ui/screens/ui_screen_get_pin.c"
          "ui/screens/ui_screen_change_pin.c"
          "ui/screens/ui_screen_home.c"
+         "ui/screens/ui_screen_enroll.c"
          "sd/sd_card.c" 
          "cJSON/cJSON.c"
 

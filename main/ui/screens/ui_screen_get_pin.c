@@ -15,6 +15,9 @@
 #include "lvgl_port.h"
 #include "services/auth_service.h"
 #include "services/lock_service.h"
+#include "services/session_service.h"
+#include "ui/screens/ui_screen_enroll.h"
+#include "user_store.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -37,6 +40,7 @@ static lv_obj_t *show_pin_checkbox = NULL;
 static lv_obj_t *s_submit_button = NULL;
 static bool show_pin = false;
 static int s_auth_userid = -1;  // set by biometric scan before loading this screen
+static bool s_enroll_mode = false;
 /***********************
  *  STATIC PROTOTYPES
  **********************/
@@ -49,6 +53,7 @@ static const char *SCREEN_TAG = "UI_SCREEN_GET_PIN";
 
 static void toast_timer_cb(lv_timer_t *timer);
 static void navigate_to_home_cb(lv_timer_t *timer);
+static void navigate_to_enroll_cb(lv_timer_t *timer);
 static void lockout_reset_cb(lv_timer_t *timer);
 
 static void create_toast(const char *text, int timeout_ms);
@@ -231,7 +236,14 @@ static void screen_loaded_event_cb(lv_event_t *event)
 void ui_screen_get_pin_set_auth_context(int userid)
 {
     s_auth_userid = userid;
+    s_enroll_mode = false;  // always clear enroll mode when setting a new auth context
     ESP_LOGI(SCREEN_TAG, "Auth context set: userid=%d", userid);
+}
+
+void ui_screen_get_pin_set_enroll_mode(bool enroll)
+{
+    s_enroll_mode = enroll;
+    ESP_LOGI(SCREEN_TAG, "Enroll mode: %s", enroll ? "ON" : "OFF");
 }
 
 // ── Background task: verify PIN off the LVGL thread ──────────────────────────
@@ -241,7 +253,40 @@ static void pin_verify_task(void *arg)
     pin_verify_args_t *args = (pin_verify_args_t *)arg;
 
     bool match = false;
-    esp_err_t err = auth_service_verify_pin(args->userid, args->pin, &match);
+    esp_err_t err;
+    int resolved_userid = args->userid;
+    bool enroll_mode = s_enroll_mode;  // capture before anything else
+    s_enroll_mode = false;             // reset after consuming
+
+    if (enroll_mode) {
+        err = auth_service_find_user_by_pin(args->pin, &resolved_userid);
+        match = (err == ESP_OK);
+    } else {
+        err = auth_service_verify_pin(args->userid, args->pin, &match);
+    }
+
+    // Load user for session if PIN is correct (SD access outside LVGL lock)
+    user_t matched_user = {0};
+    bool user_loaded = false;
+    if (err == ESP_OK && match) {
+        user_list_t ulist = {0};
+        if (user_store_load(&ulist) == ESP_OK) {
+            for (size_t i = 0; i < ulist.count; i++) {
+                if (ulist.items[i].userid == resolved_userid) {
+                    matched_user = ulist.items[i];
+                    user_loaded = true;
+                    break;
+                }
+            }
+            user_store_free(&ulist);
+        }
+        if (user_loaded) {
+            session_service_set_user(&matched_user);
+        }
+        if (!enroll_mode) {
+            lock_service_unlock(NULL);
+        }
+    }
     free(args);
 
     if (lvgl_port_lock(2000)) {
@@ -249,15 +294,19 @@ static void pin_verify_task(void *arg)
             lv_obj_clear_state(s_submit_button, LV_STATE_DISABLED);
         }
 
-        if (err != ESP_OK) {
-            ESP_LOGE(SCREEN_TAG, "PIN verify error: %s", esp_err_to_name(err));
-            create_toast("PIN verify error", 2000);
-        } else if (match) {
+        if (err == ESP_OK && match && !enroll_mode) {
             auth_service_record_success();
-            lock_service_unlock(NULL);
             ESP_LOGI(SCREEN_TAG, "PIN accepted — box unlocked");
             create_toast("PIN Accepted — Unlocked!", 2000);
             lv_timer_create(navigate_to_home_cb, 2500, NULL);
+        } else if (err == ESP_OK && match && enroll_mode) {
+            auth_service_record_success();
+            ESP_LOGI(SCREEN_TAG, "PIN accepted in enroll mode for userid=%d", resolved_userid);
+            create_toast("PIN accepted. Setting up enrollment...", 2000);
+            ui_screen_enroll_set_context(resolved_userid, true);
+            lv_timer_create(navigate_to_enroll_cb, 2500, NULL);
+        } else if (enroll_mode && err == ESP_ERR_INVALID_STATE) {
+            create_toast("Multiple users with that PIN. Contact admin.", 3000);
         } else {
             auth_service_record_failure();
             if (auth_service_is_locked_out()) {
@@ -417,4 +466,11 @@ static void navigate_to_home_cb(lv_timer_t *timer) {
     (void)timer;  // Unused parameter
     ESP_LOGI(SCREEN_TAG, "Navigating to home screen");
     lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+}
+
+// Timer callback to navigate to enroll screen (first-time setup)
+static void navigate_to_enroll_cb(lv_timer_t *timer)
+{
+    (void)timer;
+    lv_scr_load_anim(ui_screen_enroll, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
 }

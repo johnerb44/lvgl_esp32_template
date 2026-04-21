@@ -142,3 +142,37 @@ esp_err_t auth_service_verify_pin(int userid, const char *pin, bool *out_match)
     return ESP_OK;
 }
 
+esp_err_t auth_service_find_user_by_pin(const char *pin, int *out_userid)
+{
+    if (pin == NULL || out_userid == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    user_list_t list = {0};
+    esp_err_t err = user_store_load(&list);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "find_user_by_pin: user_store_load failed: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    int match_count = 0;
+    int found_userid = -1;
+    for (size_t i = 0; i < list.count; i++) {
+        if (strcmp(list.items[i].pin, pin) == 0) {
+            match_count++;
+            found_userid = list.items[i].userid;
+        }
+    }
+    user_store_free(&list);
+
+    if (match_count == 1) {
+        *out_userid = found_userid;
+        return ESP_OK;
+    } else if (match_count == 0) {
+        return ESP_ERR_NOT_FOUND;
+    } else {
+        ESP_LOGW(TAG, "find_user_by_pin: ambiguous – %d users share the same PIN", match_count);
+        return ESP_ERR_INVALID_STATE;
+    }
+}
+

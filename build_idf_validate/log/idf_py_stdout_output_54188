@@ -1,0 +1,639 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x0 (DOWNLOAD(USB/UART0))
+waiting for download
+[0;32mI (677) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (686) cpu_start: Pro cpu start user code[0m
+[0;32mI (686) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (686) cpu_start: Application information:[0m
+[0;32mI (689) cpu_start: Project name:     lvgl_porting[0m
+[0;32mI (694) cpu_start: App version:      de92d4b2-dirty[0m
+[0;32mI (700) cpu_start: Compile time:     Apr 19 2026 17:10:51[0m
+[0;32mI (706) cpu_start: ELF file SHA256:  7ffb4f710cd05b4e...[0m
+[0;32mI (712) cpu_start: ESP-IDF:          v5.1.6-dirty[0m
+[0;32mI (717) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (722) cpu_start: Max chip rev:     v0.99 [0m
+[0;32mI (727) cpu_start: Chip rev:         v0.2[0m
+[0;32mI (732) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (739) heap_init: At 3FCB4EA0 len 00034870 (210 KiB): DRAM[0m
+[0;32mI (745) heap_init: At 3FCE9710 len 00005724 (21 KiB): STACK/DRAM[0m
+[0;32mI (752) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (758) heap_init: At 600FE010 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (764) esp_psram: Adding pool of 7808K of PSRAM memory to heap allocator[0m
+[0;32mI (772) spi_flash: detected chip: gd[0m
+[0;32mI (776) spi_flash: flash io: qio[0m
+[0;32mI (780) sleep: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (787) sleep: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (794) app_start: Starting scheduler on CPU0[0m
+[0;32mI (799) app_start: Starting scheduler on CPU1[0m
+[0;32mI (799) main_task: Started on CPU0[0m
+[0;32mI (809) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (817) main_task: Calling app_main()[0m
+[0;32mI (821) waveshare_rgb_lcd: Install RGB LCD panel driver[0m
+[0;32mI (859) waveshare_rgb_lcd: Initialize RGB LCD panel[0m
+[0;32mI (860) waveshare_rgb_lcd: Initialize I2C bus[0m
+[0;32mI (861) ch422g_driver: CH422G driver initialized successfully (initial state: 0x00)[0m
+[0;32mI (867) waveshare_rgb_lcd: Initialize GPIO[0m
+[0;32mI (872) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (881) waveshare_rgb_lcd: Initialize Touch LCD[0m
+[0;32mI (887) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (893) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1003) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1203) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1403) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1403) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1404) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1411) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1420) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1424) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1433) lv_port: Create LVGL task[0m
+[0;32mI (1434) LVGL_TEMPLATE: Turning[0;32mI (5156) UI_SCREEN_BIOMETRIC: Face scan button clicked[0m
+[0;32mI (10555) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (10557) i2c: i2c driver install error[0m
+[0;32mI (10558) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (10566) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (10571) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (11421) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (24238) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (24240) i2c: i2c driver install error[0m
+[0;32mI (24241) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (24249) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (24254) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (25498) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (45770) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (45772) i2c: i2c driver install error[0m
+[0;32mI (45772) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (45781) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (45786) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (47018) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (88525) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (88527) i2c: i2c driver install error[0m
+[0;32mI (88528) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (88536) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (88541) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (89472) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (379035) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (379037) i2c: i2c driver install error[0m
+[0;32mI (379038) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (379047) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (379051) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (379907) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (384022) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (384025) i2c: i2c driver install error[0m
+[0;32mI (384025) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (384033) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (384039) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (385278) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (390233) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (390235) i2c: i2c driver install error[0m
+[0;32mI (390236) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (390245) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (390249) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (391413) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (406941) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (406943) i2c: i2c driver install error[0m
+[0;32mI (406944) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (406953) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (406958) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (408215) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (412365) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (412367) i2c: i2c driver install error[0m
+[0;32mI (412368) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (412378) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (412382) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (413705) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (429217) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (429219) i2c: i2c driver install error[0m
+[0;32mI (429220) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (429229) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (429233) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (430113) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (432272) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (432274) i2c: i2c driver install error[0m
+[0;32mI (432275) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (432284) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (432289) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (433024) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (438083) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (438085) i2c: i2c driver install error[0m
+[0;32mI (438086) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (438095) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (438100) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (439077) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (483021) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (483023) i2c: i2c driver install error[0m
+[0;32mI (483024) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (483032) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (483037) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (484307) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (486658) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (486660) i2c: i2c driver install error[0m
+[0;32mI (486661) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (486670) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (486675) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (487572) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (522568) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (522570) i2c: i2c driver install error[0m
+[0;32mI (522570) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (522580) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (522585) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (523618) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (527523) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (527525) i2c: i2c driver install error[0m
+[0;32mI (527526) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (527535) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (527540) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (528637) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (533511) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (533513) i2c: i2c driver install error[0m
+[0;32mI (533514) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (533523) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (533528) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (534843) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (583395) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (583397) i2c: i2c driver install error[0m
+[0;32mI (583398) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (583407) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (583412) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (583756) HLK_TX510: Face matched: face_id=0[0m
+[0;32mI (583756) USER_STORE: Enabling SD card for read[0m
+[0;32mI (583756) ch422g_driver: SD card access: ENABLED[0m
+[0;32mI (583761) ch422g_driver: Writing SD pattern: 0x0A (00001010) - backlight will turn off temporarily[0m
+[0;32mI (583824) USER_STORE: Read 1065 bytes from file[0m
+[0;32mI (583826) ch422g_driver: SD card access: DISABLED[0m
+[0;32mI (583826) ch422g_driver: Restoring backlight after SD card access[0m
+[0;32mI (583831) USER_STORE: Loaded 7 users from file[0m
+[0;33mW (583836) FACE_SVC: Face match: face_id=0 not found in user store[0m
+[0;32mI (584392) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+[0;32mI (584393) UI_SCREEN_GET_PIN: Screen loaded - PIN state reset[0m
+[0;32mI (597888) UI_SCREEN_GET_PIN: Button pressed: 1[0m
+[0;32mI (597888) UI_SCREEN_GET_PIN: PIN display updated: *--- (length: 1)[0m
+[0;32mI (597889) UI_SCREEN_GET_PIN: Digit added. Current PIN: 1[0m
+[0;32mI (598519) UI_SCREEN_GET_PIN: Button pressed: 2[0m
+[0;32mI (598519) UI_SCREEN_GET_PIN: PIN display updated: **-- (length: 2)[0m
+[0;32mI (598520) UI_SCREEN_GET_PIN: Digit added. Current PIN: 12[0m
+[0;32mI (599116) UI_SCREEN_GET_PIN: Button pressed: 3[0m
+[0;32mI (599116) UI_SCREEN_GET_PIN: PIN display updated: ***- (length: 3)[0m
+[0;32mI (599117) UI_SCREEN_GET_PIN: Digit added. Current PIN: 123[0m
+[0;32mI (599689) UI_SCREEN_GET_PIN: Button pressed: 4[0m
+[0;32mI (599689) UI_SCREEN_GET_PIN: PIN display updated: **** (length: 4)[0m
+[0;32mI (599690) UI_SCREEN_GET_PIN: Digit added. Current PIN: 1234[0m
+[0;32mI (600811) UI_SCREEN_GET_PIN: Submit button clicked. Entered PIN: 1234[0m
+[0;32mI (603316) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (605850) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (608350) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+�allocator[0m
+[0;32mI (772) spi_flash: detected chip: gd[0m
+[0;32mI (776) spi_flash: flash io: qio[0m
+[0;32mI (780) sleep: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (787) sleep: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (794) app_start: Starting scheduler on CPU0[0m
+[0;32mI (799) app_start: Starting scheduler on CPU1[0m
+[0;32mI (799) main_task: Started on CPU0[0m
+[0;32mI (809) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (817) main_task: Calling app_main()[0m
+[0;32mI (821) waveshare_rgb_lcd: Install RGB LCD panel driver[0m
+[0;32mI (859) waveshare_rgb_lcd: Initialize RGB LCD panel[0m
+[0;32mI (860) waveshare_rgb_lcd: Initialize I2C bus[0m
+[0;32mI (861) ch422g_driver: CH422G driver initialized successfully (initial state: 0x00)[0m
+[0;32mI (867) waveshare_rgb_lcd: Initialize GPIO[0m
+[0;32mI (872) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (881) waveshare_rgb_lcd: Initialize Touch LCD[0m
+[0;32mI (887) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (893) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1003) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1203) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1403) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1403) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1404) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1411) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1420) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1424) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1433) lv_port: Create LVGL task[0m
+[0;32mI (1434) LVGL_TEMPLATE: Turning[0;32mI (4483) UI_SCREEN_BIOMETRIC: Face scan button clicked[0m
+[0;32mI (8027) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (8029) i2c: i2c driver install error[0m
+[0;32mI (8030) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (8038) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (8043) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (9152) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (18559) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (18561) i2c: i2c driver install error[0m
+[0;32mI (18562) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (18570) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (18575) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (19409) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (21549) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (21551) i2c: i2c driver install error[0m
+[0;32mI (21551) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (21560) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (21565) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (22273) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (23575) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (23576) i2c: i2c driver install error[0m
+[0;32mI (23576) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (23586) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (23590) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (24226) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (25938) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (25941) i2c: i2c driver install error[0m
+[0;32mI (25941) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (25949) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (25954) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (26820) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (29894) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (29896) i2c: i2c driver install error[0m
+[0;32mI (29897) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (29905) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (29910) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (31189) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (39231) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (39233) i2c: i2c driver install error[0m
+[0;32mI (39234) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (39242) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (39247) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (40509) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (43700) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (43702) i2c: i2c driver install error[0m
+[0;32mI (43702) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (43712) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (43716) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (44458) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (51753) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (51755) i2c: i2c driver install error[0m
+[0;32mI (51756) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (51764) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (51769) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (52628) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (53863) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (53865) i2c: i2c driver install error[0m
+[0;32mI (53866) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (53875) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (53880) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (54545) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (55792) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (55795) i2c: i2c driver install error[0m
+[0;32mI (55795) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (55803) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (55808) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (56518) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (72047) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (72049) i2c: i2c driver install error[0m
+[0;32mI (72050) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (72058) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (72063) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (73328) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (79659) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (79661) i2c: i2c driver install error[0m
+[0;32mI (79662) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (79670) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (79675) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (80910) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (82896) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (82898) i2c: i2c driver install error[0m
+[0;32mI (82898) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (82908) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (82912) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (84172) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (92112) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (92114) i2c: i2c driver install error[0m
+[0;32mI (92114) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (92124) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (92128) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (92962) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (95495) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (95497) i2c: i2c driver install error[0m
+[0;32mI (95498) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (95507) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (95511) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (96230) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (97741) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (97743) i2c: i2c driver install error[0m
+[0;32mI (97744) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (97753) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (97757) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (98395) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (102849) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (102851) i2c: i2c driver install error[0m
+[0;32mI (102852) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (102860) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (102865) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (103605) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (107682) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (107685) i2c: i2c driver install error[0m
+[0;32mI (107685) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (107693) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (107699) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (108860) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (136590) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (136591) i2c: i2c driver install error[0m
+[0;32mI (136591) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (136601) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (136606) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (137643) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (141731) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (141733) i2c: i2c driver install error[0m
+[0;32mI (141734) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (141743) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (141749) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (142624) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (144664) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (144666) i2c: i2c driver install error[0m
+[0;32mI (144667) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (144676) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (144681) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (145350) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (146369) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (146371) i2c: i2c driver install error[0m
+[0;32mI (146371) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (146381) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (146387) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (147113) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (155322) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (155323) i2c: i2c driver install error[0m
+[0;32mI (155324) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (155333) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (155338) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (155975) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (159771) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (159772) i2c: i2c driver install error[0m
+[0;32mI (159773) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (159782) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (159787) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (160656) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (162180) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (162181) i2c: i2c driver install error[0m
+[0;32mI (162182) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (162191) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (162196) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (162917) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (170159) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (170160) i2c: i2c driver install error[0m
+[0;32mI (170161) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (170170) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (170175) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (171080) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (172328) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (172329) i2c: i2c driver install error[0m
+[0;32mI (172330) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (172339) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (172346) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (173069) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (174342) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (174344) i2c: i2c driver install error[0m
+[0;32mI (174345) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (174353) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (174358) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (175052) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (178965) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (178966) i2c: i2c driver install error[0m
+[0;32mI (178966) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (178976) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (178983) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (179618) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (184729) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (184731) i2c: i2c driver install error[0m
+[0;32mI (184731) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (184741) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (184746) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (185381) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (187692) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (187694) i2c: i2c driver install error[0m
+[0;32mI (187694) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (187704) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (187708) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (188346) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (192707) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (192709) i2c: i2c driver install error[0m
+[0;32mI (192710) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (192719) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (192724) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (193441) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (204246) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (204248) i2c: i2c driver install error[0m
+[0;32mI (204249) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (204258) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (204262) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (204902) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (210314) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (210316) i2c: i2c driver install error[0m
+[0;32mI (210316) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (210326) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (210331) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (211198) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (221791) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (221794) i2c: i2c driver install error[0m
+[0;32mI (221794) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (221803) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (221808) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (223147) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (224644) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (224646) i2c: i2c driver install error[0m
+[0;32mI (224647) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (224655) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (224660) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (225532) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (226608) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (226610) i2c: i2c driver install error[0m
+[0;32mI (226610) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (226620) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (226625) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (227296) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (228379) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (228380) i2c: i2c driver install error[0m
+[0;32mI (228381) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (228390) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (228395) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (229068) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1635745) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1635747) i2c: i2c driver install error[0m
+[0;32mI (1635748) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1635758) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1635762) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1636621) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1643851) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1643853) i2c: i2c driver install error[0m
+[0;32mI (1643854) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1643864) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1643868) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1644571) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1649429) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1649431) i2c: i2c driver install error[0m
+[0;32mI (1649432) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1649441) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1649447) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1650375) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1652146) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1652147) i2c: i2c driver install error[0m
+[0;32mI (1652148) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1652157) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1652164) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1653472) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1654673) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1654675) i2c: i2c driver install error[0m
+[0;32mI (1654676) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1654685) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1654690) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1655931) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1657313) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1657315) i2c: i2c driver install error[0m
+[0;32mI (1657316) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1657326) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1657330) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1658161) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1663967) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1663969) i2c: i2c driver install error[0m
+[0;32mI (1663969) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1663979) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1663984) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1665107) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1670964) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1670965) i2c: i2c driver install error[0m
+[0;32mI (1670966) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1670976) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1670980) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;33mW (1672994) HLK_TX510: Response too short: 0 bytes[0m
+[0;32mI (1679179) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1679181) i2c: i2c driver install error[0m
+[0;32mI (1679181) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1679191) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1679196) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1680157) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1683406) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1683408) i2c: i2c driver install error[0m
+[0;32mI (1683409) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1683418) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1683423) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1684542) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (1687754) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (1687756) i2c: i2c driver install error[0m
+[0;32mI (1687757) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (1687766) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (1687771) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (1688997) HLK_TX510: Face matched: face_id=0[0m
+[0;32mI (1688997) USER_STORE: Enabling SD card for read[0m
+[0;32mI (1688997) ch422g_driver: SD card access: ENABLED[0m
+[0;32mI (1689002) ch422g_driver: Writing SD pattern: 0x0A (00001010) - backlight will turn off temporarily[0m
+[0;32mI (1689065) USER_STORE: Read 1065 bytes from file[0m
+[0;32mI (1689067) ch422g_driver: SD card access: DISABLED[0m
+[0;32mI (1689067) ch422g_driver: Restoring backlight after SD card access[0m
+[0;32mI (1689072) USER_STORE: Loaded 7 users from file[0m
+[0;33mW (1689077) FACE_SVC: Face match: face_id=0 not found in user store[0m
+[0;32mI (1689650) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+[0;32mI (1689650) UI_SCREEN_GET_PIN: Screen loaded - PIN state reset[0m
+[0;32mI (1698832) UI_SCREEN_GET_PIN: Submit button clicked. Entered PIN: [0m
+[0;32mI (1698835) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+[0;32mI (1700500) UI_SCREEN_GET_PIN: Button pressed: 1[0m
+[0;32mI (1700500) UI_SCREEN_GET_PIN: PIN display updated: *--- (length: 1)[0m
+[0;32mI (1700501) UI_SCREEN_GET_PIN: Digit added. Current PIN: 1[0m
+[0;32mI (1701071) UI_SCREEN_GET_PIN: Button pressed: 2[0m
+[0;32mI (1701071) UI_SCREEN_GET_PIN: PIN display updated: **-- (length: 2)[0m
+[0;32mI (1701072) UI_SCREEN_GET_PIN: Digit added. Current PIN: 12[0m
+[0;32mI (1701709) UI_SCREEN_GET_PIN: Button pressed: 3[0m
+[0;32mI (1701709) UI_SCREEN_GET_PIN: PIN display updated: ***- (length: 3)[0m
+[0;32mI (1701710) UI_SCREEN_GET_PIN: Digit added. Current PIN: 123[0m
+[0;32mI (1702610) UI_SCREEN_GET_PIN: Button pressed: 4[0m
+[0;32mI (1702610) UI_SCREEN_GET_PIN: PIN display updated: **** (length: 4)[0m
+[0;32mI (1702611) UI_SCREEN_GET_PIN: Digit added. Current PIN: 1234[0m
+[0;32mI (1705881) UI_SCREEN_GET_PIN: Submit button clicked. Entered PIN: 1234[0m
+[0;32mI (1708385) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (1710884) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (1713384) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (1715884) UI_SCREEN_GET_PIN: Navigating to home screen[0m
+[0;32mI (677) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (686) cpu_start: Pro cpu start user code[0m
+[0;32mI (686) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (686) cpu_start: Application information:[0m
+[0;32mI (689) cpu_start: Project name:     lvgl_porting[0m
+[0;32mI (694) cpu_start: App version:      de92d4b2-dirty[0m
+[0;32mI (700) cpu_start: Compile time:     Apr 19 2026 17:10:51[0m
+[0;32mI (706) cpu_start: ELF file SHA256:  7ffb4f710cd05b4e...[0m
+[0;32mI (712) cpu_start: ESP-IDF:          v5.1.6-dirty[0m
+[0;32mI (717) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (722) cpu_start: Max chip rev:     v0.99 [0m
+[0;32mI (727) cpu_start: Chip rev:         v0.2[0m
+[0;32mI (732) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (739) heap_init: At 3FCB4EA0 len 00034870 (210 KiB): DRAM[0m
+[0;32mI (745) heap_init: At 3FCE9710 len 00005724 (21 KiB): STACK/DRAM[0m
+[0;32mI (752) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (758) heap_init: At 600FE010 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (764) esp_psram: Adding pool of 7808K of PSRAM memory to heap allocator[0m
+[0;32mI (772) spi_flash: detected chip: gd[0m
+[0;32mI (776) spi_flash: flash io: qio[0m
+[0;32mI (780) sleep: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (787) sleep: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (794) app_start: Starting scheduler on CPU0[0m
+[0;32mI (799) app_start: Starting scheduler on CPU1[0m
+[0;32mI (799) main_task: Started on CPU0[0m
+[0;32mI (809) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (817) main_task: Calling app_main()[0m
+[0;32mI (821) waveshare_rgb_lcd: Install RGB LCD panel driver[0m
+[0;32mI (859) waveshare_rgb_lcd: Initialize RGB LCD panel[0m
+[0;32mI (860) waveshare_rgb_lcd: Initialize I2C bus[0m
+[0;32mI (861) ch422g_driver: CH422G driver initialized successfully (initial state: 0x00)[0m
+[0;32mI (867) waveshare_rgb_lcd: Initialize GPIO[0m
+[0;32mI (872) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (881) waveshare_rgb_lcd: Initialize Touch LCD[0m
+[0;32mI (887) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (893) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1003) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1203) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1403) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1403) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1404) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1411) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1420) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1424) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1433) lv_port: Create LVGL task[0m
+[0;32mI (1434) LVGL_TEMPLATE: Turning[0;32mI (4987) UI_SCREEN_BIOMETRIC: Face scan button clicked[0m
+[0;32mI (10035) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (10037) i2c: i2c driver install error[0m
+[0;32mI (10038) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (10046) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (10051) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (11216) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (15448) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (15451) i2c: i2c driver install error[0m
+[0;32mI (15451) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (15459) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (15464) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (16112) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (18423) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (18425) i2c: i2c driver install error[0m
+[0;32mI (18425) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (18434) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (18439) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (19481) HLK_TX510: Face not matched: status=0x06 (liveness_2d)[0m
+[0;32mI (22402) UI_SCREEN_FACESCAN: Face scan button clicked[0m
+[0;31mE (22404) i2c: i2c driver install error[0m
+[0;32mI (22404) SC16IS752_TRANSPORT: I2C port 0 already installed, reusing existing bus[0m
+[0;32mI (22413) SC16IS752_TRANSPORT: SC16IS752 transport initialized (A=57600, B=115200)[0m
+[0;32mI (22418) HLK_TX510: HLK-TX510 device ready on SC16IS752 CH_B at 115200 baud[0m
+[0;32mI (22739) HLK_TX510: Face matched: face_id=0[0m
+[0;32mI (22739) USER_STORE: Enabling SD card for read[0m
+[0;32mI (22739) ch422g_driver: SD card access: ENABLED[0m
+[0;32mI (22743) ch422g_driver: Writing SD pattern: 0x0A (00001010) - backlight will turn off temporarily[0m
+[0;32mI (22806) USER_STORE: Read 1065 bytes from file[0m
+[0;32mI (22808) ch422g_driver: SD card access: DISABLED[0m
+[0;32mI (22808) ch422g_driver: Restoring backlight after SD card access[0m
+[0;32mI (22813) USER_STORE: Loaded 7 users from file[0m
+[0;33mW (22818) FACE_SVC: Face match: face_id=0 not found in user store[0m
+[0;32mI (23358) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+[0;32mI (23359) UI_SCREEN_GET_PIN: Screen loaded - PIN state reset[0m
+[0;32mI (27972) UI_SCREEN_GET_PIN: Submit button clicked. Entered PIN: [0m
+[0;32mI (27975) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+[0;32mI (49949) UI_SCREEN_GET_PIN: Submit button clicked. Entered PIN: [0m
+[0;32mI (49952) UI_SCREEN_GET_PIN: PIN display updated: ---- (length: 0)[0m
+bm[0m
+[0;32mI (887) ch422g_driver: Performing touch controller reset sequence[0m
+[0;32mI (893) gpio: GPIO[4]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1003) ch422g_driver: set_pin: mask=0x02 LOW, 0x00 -> 0x00 (00000000 -> 00000000)[0m
+[0;32mI (1203) ch422g_driver: set_pin: mask=0x02 HIGH, 0x00 -> 0x02 (00000000 -> 00000010)[0m
+[0;32mI (1403) ch422g_driver: Touch controller reset sequence completed[0m
+[0;32mI (1403) waveshare_rgb_lcd: Initialize I2C panel IO[0m
+[0;32mI (1404) waveshare_rgb_lcd: Initialize touch controller GT911[0m
+[0;32mI (1411) GT911: I2C address initialization procedure skipped - using default GT9xx setup[0m
+[0;32mI (1420) GT911: TouchPad_ID:0x39,0x31,0x31[0m
+[0;32mI (1424) GT911: TouchPad_Config_Version:67[0m
+[0;32mI (1433) lv_port: Create LVGL task[0m
+[0;32mI (1434) LVGL_TEMPLATE: Turning

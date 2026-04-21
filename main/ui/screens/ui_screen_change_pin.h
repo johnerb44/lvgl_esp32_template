@@ -32,6 +32,7 @@ extern "C" {
 extern lv_obj_t *ui_screen_change_pin;
 
 void ui_screen_change_pin_create(void);
+void ui_screen_change_pin_set_context(int userid, bool forced);
 
 /**********************
  *      MACROS

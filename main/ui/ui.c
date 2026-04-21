@@ -13,6 +13,7 @@
 #include "screens/ui_screen_get_pin.h"
 #include "screens/ui_screen_change_pin.h"
 #include "screens/ui_screen_home.h"
+#include "screens/ui_screen_enroll.h"
 #include "user_mgmt_ui.h"
 #include "esp_log.h"
 
@@ -28,6 +29,7 @@ lv_obj_t *ui_screen_get_pin = NULL;
 lv_obj_t *ui_screen_change_pin = NULL;
 lv_obj_t *ui_screen_home = NULL;
 lv_obj_t *ui_screen_user_mgmt = NULL;
+lv_obj_t *ui_screen_enroll = NULL;
 
 
 void ui_init(void)
@@ -44,6 +46,7 @@ void ui_init(void)
     ui_screen_change_pin_create();
     ui_screen_home_create();
     ui_screen_user_mgmt_create();
+    ui_screen_enroll_create();
     ESP_LOGI(UI_TAG, "UI initialization complete");
 }
 

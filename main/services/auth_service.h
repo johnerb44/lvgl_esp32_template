@@ -29,6 +29,7 @@ esp_err_t auth_service_init(void);
 esp_err_t auth_service_authenticate_with_fingerprint(auth_result_t *out_result);
 esp_err_t auth_service_authenticate_with_face(auth_result_t *out_result);
 esp_err_t auth_service_verify_pin(int userid, const char *pin, bool *out_match);
+esp_err_t auth_service_find_user_by_pin(const char *pin, int *out_userid);
 
 // Attempt-tracking helpers (called by UI layer)
 void auth_service_record_success(void);

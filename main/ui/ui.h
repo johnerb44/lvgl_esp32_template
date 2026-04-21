@@ -23,6 +23,7 @@ extern lv_obj_t *ui_screen_get_pin;
 extern lv_obj_t *ui_screen_change_pin;
 extern lv_obj_t *ui_screen_home;
 extern lv_obj_t *ui_screen_user_mgmt;
+extern lv_obj_t *ui_screen_enroll;
 
 
 // UI initialization function
@@ -38,6 +39,7 @@ void ui_screen_get_pin_create(void);
 void ui_screen_change_pin_create(void);
 void ui_screen_home_create(void);
 void ui_screen_user_mgmt_create(void);
+void ui_screen_enroll_create(void);
 lv_obj_t *ui_screen_start_get(void);
 lv_obj_t *ui_screen_main_get(void);
 lv_obj_t *ui_screen_biometric_get(void);

@@ -10,6 +10,7 @@
 #include "ui_screen_main.h"
 #include "../ui.h"
 #include "esp_log.h"
+#include "ui/screens/ui_screen_get_pin.h"
 
 
 /*********************
@@ -28,6 +29,7 @@ static const char *SCREEN_TAG = "UI_SCREEN_MAIN";
  *  STATIC PROTOTYPES
  **********************/
 static void test_btn_event_cb(lv_event_t *event);
+static void first_time_setup_btn_event_cb(lv_event_t *event);
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -78,6 +80,18 @@ void ui_screen_main_create(void)
     
     lv_obj_add_event_cb(start_button, test_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
+    // First-Time Setup button
+    lv_obj_t *setup_button = lv_button_create(ui_screen_main);
+    lv_obj_align(setup_button, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_style_bg_color(setup_button, lv_color_hex(0x6c757d), 0);
+
+    lv_obj_t *lv_label_1 = lv_label_create(setup_button);
+    lv_label_set_text(lv_label_1, "First-Time Setup");
+    lv_obj_set_style_text_color(lv_label_1, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(lv_label_1, &lv_font_montserrat_22, 0);
+
+    lv_obj_add_event_cb(setup_button, first_time_setup_btn_event_cb, LV_EVENT_CLICKED, NULL);
+
     LV_TRACE_OBJ_CREATE("finished");
 }
 
@@ -91,11 +105,19 @@ void ui_screen_main_create(void)
 //     }
 // }
 
-// Event handler for fingerprint button
 static void test_btn_event_cb(lv_event_t *event)
 {
     if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
         ESP_LOGI(SCREEN_TAG, "Begin Authentication clicked");
         lv_scr_load_anim(ui_screen_biometric, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
     }
+}
+
+static void first_time_setup_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
+    ESP_LOGI(SCREEN_TAG, "First-Time Setup clicked");
+    ui_screen_get_pin_set_auth_context(-1);
+    ui_screen_get_pin_set_enroll_mode(true);
+    lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
 }

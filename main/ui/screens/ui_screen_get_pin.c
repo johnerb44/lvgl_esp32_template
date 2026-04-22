@@ -284,7 +284,10 @@ static void pin_verify_task(void *arg)
             session_service_set_user(&matched_user);
         }
         if (!enroll_mode) {
-            lock_service_unlock(NULL);
+            esp_err_t lock_err = lock_service_unlock(NULL);
+            if (lock_err != ESP_OK) {
+                ESP_LOGE(SCREEN_TAG, "lock_service_unlock failed: %s", esp_err_to_name(lock_err));
+            }
         }
     }
     free(args);

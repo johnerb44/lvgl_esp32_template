@@ -117,7 +117,13 @@ esp_err_t fingerprint_service_match(fingerprint_match_result_t *out_result)
 
     if (raw.matched && raw.matched_template_id >= 0) {
         int resolved_userid = resolve_userid_by_template(raw.matched_template_id);
-        out_result->userid = (resolved_userid >= 0) ? resolved_userid : raw.matched_template_id;
+        if (resolved_userid >= 0) {
+            out_result->userid = resolved_userid;
+        } else {
+            ESP_LOGW(TAG, "FP match: template_id=%d not linked to any user — treating as no match",
+                     raw.matched_template_id);
+            out_result->matched = false;
+        }
     }
     return ESP_OK;
 }

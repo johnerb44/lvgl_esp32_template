@@ -29,6 +29,15 @@ static lv_obj_t *s_start_button = NULL;
 static lv_obj_t *s_enroll_button = NULL;
 static bool s_scan_in_progress = false;
 
+// Timer callback: navigate to PIN screen 4 seconds after a successful face match
+static void navigate_to_pin_cb(lv_timer_t *timer)
+{
+    int userid = (int)(intptr_t)lv_timer_get_user_data(timer);
+    ui_screen_get_pin_set_auth_context(userid);
+    lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+    lv_timer_delete(timer);
+}
+
 #if CONFIG_LOCKBOX_FEATURE_R503 && CONFIG_LOCKBOX_FEATURE_HLK_TX510
 static void back_btn_event_cb_face(lv_event_t *event)
 {
@@ -53,11 +62,11 @@ static void face_scan_task(void *arg)
     if (err != ESP_OK) {
         snprintf(msg, sizeof(msg), "Scan error: %s", esp_err_to_name(err));
     } else if (result.matched) {
-        snprintf(msg, sizeof(msg), "Face matched! (user %d)", result.userid);
+        snprintf(msg, sizeof(msg), "Face found - User found");
     } else {
         switch (result.status) {
             case HLK_TX510_STATUS_NO_FACE:
-                snprintf(msg, sizeof(msg), "No face detected. Please look at camera.");
+                snprintf(msg, sizeof(msg), "Face not detected - position face on scanner");
                 break;
             case HLK_TX510_STATUS_POSE_ERROR:
                 snprintf(msg, sizeof(msg), "Face angle too large. Face forward.");
@@ -67,7 +76,7 @@ static void face_scan_task(void *arg)
                 snprintf(msg, sizeof(msg), "Liveness check failed. Please try again.");
                 break;
             case HLK_TX510_STATUS_NO_MATCH:
-                snprintf(msg, sizeof(msg), "Face not recognized.");
+                snprintf(msg, sizeof(msg), "Face not found - try again");
                 break;
             default:
                 snprintf(msg, sizeof(msg), "No match (%s)",
@@ -84,8 +93,10 @@ static void face_scan_task(void *arg)
             lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
         }
         if (result.matched && ui_screen_get_pin) {
-            ui_screen_get_pin_set_auth_context(result.userid);
-            lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+            // Stay on screen 4 seconds so user can read the message, then navigate
+            lv_timer_t *t = lv_timer_create(navigate_to_pin_cb, 4000,
+                                             (void *)(intptr_t)result.userid);
+            lv_timer_set_repeat_count(t, 1);
         }
         lvgl_port_unlock();
     }

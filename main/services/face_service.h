@@ -18,6 +18,7 @@ typedef struct {
 } face_match_result_t;
 
 esp_err_t face_service_init(void);
+esp_err_t face_service_is_available(void);  // ESP_OK if HLK-TX510 is powered and responding
 esp_err_t face_service_match(face_match_result_t *out_result);
 esp_err_t face_service_enroll_user(int userid, int *out_face_id);
 esp_err_t face_service_delete_face(int face_id);

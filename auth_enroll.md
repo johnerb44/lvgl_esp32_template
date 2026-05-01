@@ -47,9 +47,11 @@ The system has two roles: **Admin** and **User**.
 4. New user accesses the **"First-Time Setup"** button on the **main screen** (not the home screen — the main screen is accessible before any login).
 5. System prompts for PIN authentication (PIN-only — no biometrics enrolled yet).
 6. Once PIN is accepted, the Enrollment screen opens for that user.
-7. User scans their **fingerprint** (one finger per user — single `fingerid` field in user record). **Required.**
-8. User registers their **face** (one face per user — single `faceid` field in user record). **Optional.**
-9. System saves `fingerid` and/or `faceid` to the user record.
+7. If user's FINGERID field is NOT Null then fingerprint enrollment is not allowed 
+8. User scans their **fingerprint** (one finger per user — single `fingerid` field in user record). **Required.**
+9. If user's FACEID field is NOT Null then face enrollment is not allowed 
+10. User registers their **face** (one face per user — single `faceid` field in user record). **Optional.**
+11. System saves `fingerid` and/or `faceid` to the user record.
 
 ### New user sets personal PIN
 10. After biometric enrollment, the system prompts the user to change their PIN from the temporary one.
@@ -66,7 +68,9 @@ The system has two roles: **Admin** and **User**.
 - **"First-Time Setup"** button on the main screen (PIN-gated; for users with no biometrics enrolled yet).
 - **Enrollment screen** accessible from both "First-Time Setup" and the home screen "Register Biometrics" button.
 - Fingerprint enrollment (one per user, **required**) via UI.
+- If user's FINGERID field is NOT Null then fingerprint enrollment is not allowed 
 - Face enrollment (one per user, **optional**) via UI.
+- If user's FACEID field is NOT Null then face enrollment is not allowed 
 - PIN change screen (required after first enrollment; available from home screen).
 - **Session service**: tracks Current User (userid, name, admin) from login through logoff.
 - Home screen shows Current User name and lock status (LOCKED / UNLOCKED).

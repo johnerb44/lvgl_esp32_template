@@ -125,6 +125,45 @@ esp_err_t hlk_tx510_device_init(void)
 #endif
 }
 
+esp_err_t hlk_tx510_device_ping(void)
+{
+#if !CONFIG_LOCKBOX_INTEGRATION_ENABLE || !CONFIG_LOCKBOX_FEATURE_HLK_TX510
+    return ESP_ERR_NOT_SUPPORTED;
+#else
+    if (!s_hlk_ready) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // Send IDENTIFY command; any valid response frame means the device is powered on.
+    // A timeout / no bytes returned means the device is stowed (powered off).
+    uint8_t cmd[8];
+    size_t cmd_len = 0;
+    build_cmd(HLK_CMD_IDENTIFY, NULL, 0, cmd, &cmd_len);
+
+    uint8_t rx[HLK_RX_BUF_MAX];
+    size_t rx_len = 0;
+    esp_err_t err = sc16is752_transport_exchange(LOCKBOX_COMM_CHANNEL_FACE,
+                                                 cmd, cmd_len,
+                                                 rx, sizeof(rx), &rx_len);
+    if (err != ESP_OK) {
+        // Timeout / no response — device is stowed
+        ESP_LOGD(TAG, "Ping: no response (%s) — device appears stowed", esp_err_to_name(err));
+        return err;
+    }
+
+    // Any valid packet (even "no face") means the device is awake
+    uint8_t resp_result = 0;
+    err = parse_response(rx, rx_len, HLK_CMD_IDENTIFY, &resp_result, NULL, NULL);
+    if (err != ESP_OK) {
+        ESP_LOGD(TAG, "Ping: malformed response — device may still be starting up");
+        return err;
+    }
+
+    ESP_LOGD(TAG, "Ping: device alive (status=0x%02X)", resp_result);
+    return ESP_OK;
+#endif
+}
+
 esp_err_t hlk_tx510_device_match(hlk_tx510_match_result_t *result)
 {
     if (result == NULL) {

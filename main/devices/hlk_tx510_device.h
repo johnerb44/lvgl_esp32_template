@@ -31,6 +31,7 @@ typedef struct {
 const char *hlk_tx510_status_to_string(hlk_tx510_status_t status);
 
 esp_err_t hlk_tx510_device_init(void);
+esp_err_t hlk_tx510_device_ping(void);   // Returns ESP_OK if device responds, error if stowed/off
 esp_err_t hlk_tx510_device_match(hlk_tx510_match_result_t *result);
 esp_err_t hlk_tx510_device_enroll(int userid, int *out_face_id);
 esp_err_t hlk_tx510_device_delete_face(int face_id);

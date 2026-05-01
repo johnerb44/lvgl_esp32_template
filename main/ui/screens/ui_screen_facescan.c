@@ -28,6 +28,8 @@ static lv_obj_t *s_status_label = NULL;
 static lv_obj_t *s_start_button = NULL;
 static lv_obj_t *s_enroll_button = NULL;
 static bool s_scan_in_progress = false;
+static lv_timer_t *s_poll_timer = NULL;
+static bool s_ping_in_progress = false;
 
 // Timer callback: navigate to PIN screen 4 seconds after a successful face match
 static void navigate_to_pin_cb(lv_timer_t *timer)
@@ -50,6 +52,99 @@ static void back_btn_event_cb_face(lv_event_t *event)
 /**********************
  *  STATIC FUNCTIONS
  **********************/
+
+// ---- Stow-detection polling ------------------------------------------------
+
+static void stop_poll_timer(void)
+{
+    if (s_poll_timer) {
+        lv_timer_delete(s_poll_timer);
+        s_poll_timer = NULL;
+    }
+}
+
+static void face_ping_task(void *arg)
+{
+    (void)arg;
+    esp_err_t err = face_service_is_available();
+
+    if (lvgl_port_lock(1000)) {
+        if (err == ESP_OK) {
+            // Device is awake — enable the buttons and stop polling
+            ESP_LOGI(SCREEN_TAG, "Face scanner ready");
+            if (s_status_label && lv_obj_is_valid(s_status_label)) {
+                lv_label_set_text(s_status_label, "Face Scanner Ready");
+            }
+            if (s_start_button && lv_obj_is_valid(s_start_button)) {
+                lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
+            }
+            if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+                lv_obj_clear_state(s_enroll_button, LV_STATE_DISABLED);
+            }
+            stop_poll_timer();
+        } else {
+            ESP_LOGD(SCREEN_TAG, "Face scanner not responding (%s)", esp_err_to_name(err));
+            if (s_status_label && lv_obj_is_valid(s_status_label)) {
+                lv_label_set_text(s_status_label, "Raise Face Scanner first");
+            }
+            if (s_start_button && lv_obj_is_valid(s_start_button)) {
+                lv_obj_add_state(s_start_button, LV_STATE_DISABLED);
+            }
+            if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+                lv_obj_add_state(s_enroll_button, LV_STATE_DISABLED);
+            }
+        }
+        lvgl_port_unlock();
+    }
+
+    s_ping_in_progress = false;
+    vTaskDelete(NULL);
+}
+
+static void poll_timer_cb(lv_timer_t *timer)
+{
+    (void)timer;
+    if (s_ping_in_progress) return;
+    s_ping_in_progress = true;
+    BaseType_t ok = xTaskCreate(face_ping_task, "face_ping", 3072,
+                                NULL, tskIDLE_PRIORITY + 1, NULL);
+    if (ok != pdPASS) {
+        s_ping_in_progress = false;
+    }
+}
+
+static void screen_event_cb(lv_event_t *event)
+{
+    lv_event_code_t code = lv_event_get_code(event);
+    if (code == LV_EVENT_SCREEN_LOADED) {
+        ESP_LOGI(SCREEN_TAG, "Screen loaded - checking face scanner availability");
+        // Reset buttons to disabled until ping confirms device is awake
+        if (s_start_button && lv_obj_is_valid(s_start_button)) {
+            lv_obj_add_state(s_start_button, LV_STATE_DISABLED);
+        }
+        if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+            lv_obj_add_state(s_enroll_button, LV_STATE_DISABLED);
+        }
+        if (s_status_label && lv_obj_is_valid(s_status_label)) {
+            lv_label_set_text(s_status_label, "Raise Face Scanner first");
+        }
+        // Kick off immediate ping, then poll every 2 seconds
+        if (!s_ping_in_progress) {
+            s_ping_in_progress = true;
+            BaseType_t ok = xTaskCreate(face_ping_task, "face_ping", 3072,
+                                        NULL, tskIDLE_PRIORITY + 1, NULL);
+            if (ok != pdPASS) s_ping_in_progress = false;
+        }
+        if (s_poll_timer == NULL) {
+            s_poll_timer = lv_timer_create(poll_timer_cb, 2000, NULL);
+        }
+    } else if (code == LV_EVENT_SCREEN_UNLOADED) {
+        ESP_LOGD(SCREEN_TAG, "Screen unloaded - stopping poll timer");
+        stop_poll_timer();
+    }
+}
+
+// ---------------------------------------------------------------------------
 
 static void face_scan_task(void *arg)
 {
@@ -97,6 +192,9 @@ static void face_scan_task(void *arg)
             lv_timer_t *t = lv_timer_create(navigate_to_pin_cb, 4000,
                                              (void *)(intptr_t)result.userid);
             lv_timer_set_repeat_count(t, 1);
+        } else if (!result.matched && s_poll_timer == NULL && !s_scan_in_progress) {
+            // Scan finished with no match — re-start stow polling
+            s_poll_timer = lv_timer_create(poll_timer_cb, 2000, NULL);
         }
         lvgl_port_unlock();
     }
@@ -114,6 +212,7 @@ static void face_btn_event_cb(lv_event_t *event)
             return;
         }
         s_scan_in_progress = true;
+        stop_poll_timer();  // No need to poll while a full scan is running
 
         if (lvgl_port_lock(1000)) {
             if (s_status_label && lv_obj_is_valid(s_status_label)) {
@@ -305,10 +404,14 @@ void ui_screen_facescan_create(void)
     lv_obj_add_event_cb(s_enroll_button, face_enroll_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     s_status_label = lv_label_create(ui_screen_facescan);
-    lv_label_set_text(s_status_label, "Ready to scan");
+    lv_label_set_text(s_status_label, "Raise Face Scanner first");
     lv_obj_set_style_text_font(s_status_label, &lv_font_montserrat_24, 0);
     lv_obj_set_align(s_status_label, LV_ALIGN_CENTER);
     lv_obj_set_y(s_status_label, 230);
+
+    // Register screen load/unload handler for stow detection
+    lv_obj_add_event_cb(ui_screen_facescan, screen_event_cb, LV_EVENT_SCREEN_LOADED, NULL);
+    lv_obj_add_event_cb(ui_screen_facescan, screen_event_cb, LV_EVENT_SCREEN_UNLOADED, NULL);
 
     ESP_LOGI(SCREEN_TAG, "Face scan screen created");
 

@@ -1,0 +1,9 @@
+Compiler supported targets: xtensa-esp32s3-elf
+
+CMake Error at run_serial_tool.cmake:66 (message):
+  
+  /home/erbj/.espressif/python_env/idf5.1_py3.12_env/bin/python;;/home/erbj/esp/v5.1.6/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32s3
+  failed.
+
+
+

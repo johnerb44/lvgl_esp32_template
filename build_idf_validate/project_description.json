@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lvgl_porting",
-    "project_version":    "b3113995-dirty",
+    "project_version":    "9af9b4de-dirty",
     "project_path":       "/home/erbj/lvgl-projects/lvgl_esp32_template",
     "idf_path":           "/home/erbj/esp/v5.1.6/esp-idf",
     "build_dir":          "/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate",

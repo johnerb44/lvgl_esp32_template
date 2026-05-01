@@ -75,6 +75,11 @@ esp_err_t face_service_init(void)
     return hlk_tx510_device_init();
 }
 
+esp_err_t face_service_is_available(void)
+{
+    return hlk_tx510_device_ping();
+}
+
 esp_err_t face_service_match(face_match_result_t *out_result)
 {
     if (out_result == NULL) {

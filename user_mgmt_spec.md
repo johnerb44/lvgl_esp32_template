@@ -180,14 +180,17 @@ Requirements:
   - PIN (with confirmation; may allow leaving PIN blank to keep unchanged).
   - ADMIN flag.
 - Non-editable fields must be visible but read-only:
-  - USERID.
-  - FINGERID.
-  - FACEID.
+  - USERID. (System Assigned)
+  - FINGERID. (Admin must have ability to reset FINGERID to NULL)
+  - FACEID.   (Admin must have ability to reset FACEID to NULL)
   - LASTLOGON.
 - Validation:
   - If USERNAME changed: enforce uniqueness and rules as in Add User.
   - If PIN changed: numeric, 4–8 digits, and confirmation match.
   - Admin cannot uncheck their own ADMIN flag.
+  - Admin cannot delete Account with username "ADMIN"
+  - There cannot be duplicate instances of "USERNAME"
+  - There cannot be duplicate instances of "USERID"
 - On save:
   - Update the in-memory object.
   - Persist to JSON file via atomic write.

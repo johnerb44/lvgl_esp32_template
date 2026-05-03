@@ -164,11 +164,9 @@ static void face_scan_task(void *arg)
                 snprintf(msg, sizeof(msg), "Face not detected - position face on scanner");
                 break;
             case HLK_TX510_STATUS_POSE_ERROR:
-                snprintf(msg, sizeof(msg), "Face angle too large. Face forward.");
-                break;
             case HLK_TX510_STATUS_2D_LIVENESS:
             case HLK_TX510_STATUS_3D_LIVENESS:
-                snprintf(msg, sizeof(msg), "Liveness check failed. Please try again.");
+                snprintf(msg, sizeof(msg), "Face scan failed - try again");
                 break;
             case HLK_TX510_STATUS_NO_MATCH:
                 snprintf(msg, sizeof(msg), "Face not found - try again");

@@ -43,6 +43,17 @@ static bool s_scan_in_progress = false;
  *   GLOBAL FUNCTIONS
  **********************/
 
+static int s_matched_userid = -1;
+
+static void navigate_to_pin_fp_cb(lv_timer_t *timer)
+{
+    lv_timer_del(timer);
+    if (ui_screen_get_pin) {
+        ui_screen_get_pin_set_auth_context(s_matched_userid);
+        lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+    }
+}
+
 static void fingerprint_scan_task(void *arg)
 {
     (void)arg;
@@ -52,25 +63,37 @@ static void fingerprint_scan_task(void *arg)
     fingerprint_match_result_t result = {0};
     esp_err_t err = fingerprint_service_match(&result);
 
-    char msg[96];
+    const char *msg;
+    bool matched_with_user = false;
     if (err != ESP_OK) {
-        snprintf(msg, sizeof(msg), "Scan error: %s", esp_err_to_name(err));
+        msg = "Scan error";
     } else if (result.matched) {
-        snprintf(msg, sizeof(msg), "Match: user %d (conf %u)", result.userid, result.confidence);
+        msg = "Fingerprint found - User match found";
+        matched_with_user = true;
+        s_matched_userid = result.userid;
+        ESP_LOGI(SCREEN_TAG, "FP match: userid=%d confidence=%u", result.userid, result.confidence);
+    } else if (result.status == R503_STATUS_OK) {
+        // Device found a template but it's not linked to any user
+        msg = "Fingerprint found - User match not found";
+        ESP_LOGW(SCREEN_TAG, "FP match: template found but no linked user");
+    } else if (result.status == R503_STATUS_NO_MATCH || result.status == R503_STATUS_SENSOR_ERROR) {
+        msg = "Fingerprint not found - try another finger";
     } else {
-        snprintf(msg, sizeof(msg), "No match (%s)", fingerprint_service_status_to_string(result.status));
+        // NO_FINGER, TIMEOUT, COMM_ERROR
+        msg = "Finger not detected - place finger on scanner";
     }
 
     if (lvgl_port_lock(1000)) {
         if (s_status_label && lv_obj_is_valid(s_status_label)) {
             lv_label_set_text(s_status_label, msg);
         }
-        if (s_start_button && lv_obj_is_valid(s_start_button)) {
+        if (!matched_with_user && s_start_button && lv_obj_is_valid(s_start_button)) {
             lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
         }
-        if (result.matched && ui_screen_get_pin) {
-            ui_screen_get_pin_set_auth_context(result.userid);
-            lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+        if (matched_with_user && ui_screen_get_pin) {
+            // 5-second delay before navigating to PIN screen
+            lv_timer_t *t = lv_timer_create(navigate_to_pin_fp_cb, 5000, NULL);
+            lv_timer_set_repeat_count(t, 1);
         }
         lvgl_port_unlock();
     }
@@ -171,7 +194,7 @@ static void fingerprint_btn_event_cb(lv_event_t *event)
 
         
     lv_obj_t * fp_instr_1 = lv_label_create(ui_screen_fpscan);
-    lv_label_set_text(fp_instr_1, "1.   Fingerprint Scanner Ring is BLUE");
+    lv_label_set_text(fp_instr_1, "1.   Fingerprint Scanner Ring is WHITE");
     lv_obj_set_style_text_font(fp_instr_1, &lv_font_montserrat_26, 0);
     lv_obj_set_align(fp_instr_1, LV_ALIGN_TOP_LEFT);
     lv_obj_set_x(fp_instr_1, 50);

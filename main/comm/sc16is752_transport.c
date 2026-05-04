@@ -311,27 +311,13 @@ esp_err_t sc16is752_transport_write(lockbox_comm_channel_t channel, const uint8_
 #endif
 }
 
-esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data, size_t max_len, size_t *out_len)
+static esp_err_t sc16is752_transport_read_timed(lockbox_comm_channel_t channel,
+                                                uint8_t *data, size_t max_len, size_t *out_len,
+                                                int first_byte_timeout_ms)
 {
-    if (out_len) {
-        *out_len = 0;
-    }
-    if (!s_transport_ready || !s_channels_configured) {
-        return ESP_ERR_INVALID_STATE;
-    }
-    if (data == NULL || max_len == 0) {
-        return ESP_ERR_INVALID_ARG;
-    }
-#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
-    (void)channel;
-    return ESP_ERR_NOT_FOUND;
-#else
     uint8_t sc16_channel = channel_to_sc16_channel(channel);
     size_t count = 0;
-    // R503 can take 100-250ms to process a command (e.g. GenImg) before responding.
-    // Use a generous 2000ms first-byte timeout to cover worst-case R503 latency,
-    // LVGL/GT911 I2C bus contention, and any transport overhead.
-    int64_t first_deadline = esp_timer_get_time() + (2000 * 1000);
+    int64_t first_deadline = esp_timer_get_time() + ((int64_t)first_byte_timeout_ms * 1000);
     while (count < max_len && esp_timer_get_time() < first_deadline) {
         uint8_t lsr = 0;
         esp_err_t err = sc16_read_reg(sc16_channel, SC16IS752_LSR_REG, &lsr);
@@ -353,10 +339,7 @@ esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data
         return ESP_ERR_NOT_FOUND;
     }
 
-    // Read remaining bytes. The R503 sends the full response as a burst so all
-    // bytes should arrive within a few ms of the first. Use a short retry window
-    // per missing byte (1ms × 5 attempts) to handle the case where we check LSR
-    // just before the next UART byte finishes arriving (~174µs at 57600 baud).
+    // Read remaining bytes in burst — all should arrive within a few ms of the first.
     int64_t more_deadline = esp_timer_get_time() + (50 * 1000);
     int no_data_streak = 0;
     while (count < max_len && esp_timer_get_time() < more_deadline) {
@@ -367,7 +350,7 @@ esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data
         }
         if (!(lsr & SC16IS752_LSR_DR)) {
             if (++no_data_streak >= 5) {
-                break;  // No more bytes after 5 consecutive misses
+                break;
             }
             vTaskDelay(pdMS_TO_TICKS(1));
             continue;
@@ -384,6 +367,26 @@ esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data
         *out_len = count;
     }
     return ESP_OK;
+}
+
+esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data, size_t max_len, size_t *out_len)
+{
+    if (out_len) {
+        *out_len = 0;
+    }
+    if (!s_transport_ready || !s_channels_configured) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (data == NULL || max_len == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+    (void)channel;
+    return ESP_ERR_NOT_FOUND;
+#else
+    // R503 can take 100-250ms to process a command before responding.
+    // 2000ms covers worst-case latency including I2C bus contention.
+    return sc16is752_transport_read_timed(channel, data, max_len, out_len, 2000);
 #endif
 }
 
@@ -430,6 +433,57 @@ esp_err_t sc16is752_transport_exchange(lockbox_comm_channel_t channel,
 
     if (rx_data && rx_max_len > 0) {
         err = sc16is752_transport_read(channel, rx_data, rx_max_len, out_rx_len);
+        if (err == ESP_ERR_NOT_FOUND) {
+            return ESP_OK;
+        }
+        return err;
+    }
+    return ESP_OK;
+#endif
+}
+
+esp_err_t sc16is752_transport_exchange_timed(lockbox_comm_channel_t channel,
+                                             const uint8_t *tx_data, size_t tx_len,
+                                             uint8_t *rx_data, size_t rx_max_len, size_t *out_rx_len,
+                                             int first_byte_timeout_ms)
+{
+    if (out_rx_len) {
+        *out_rx_len = 0;
+    }
+    if (!s_transport_ready) {
+        return ESP_ERR_INVALID_STATE;
+    }
+#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+    (void)channel;
+    (void)tx_data;
+    (void)tx_len;
+    (void)rx_data;
+    (void)rx_max_len;
+    (void)first_byte_timeout_ms;
+    return ESP_OK;
+#else
+    if (tx_data == NULL || tx_len == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Non-blocking drain of stale RX bytes before sending the command.
+    {
+        uint8_t sc16_ch = channel_to_sc16_channel(channel);
+        uint8_t lsr = 0;
+        uint8_t discard = 0;
+        while (sc16_read_reg(sc16_ch, SC16IS752_LSR_REG, &lsr) == ESP_OK
+               && (lsr & SC16IS752_LSR_DR)) {
+            sc16_read_reg(sc16_ch, SC16IS752_RHR_REG, &discard);
+        }
+    }
+
+    esp_err_t err = sc16is752_transport_write(channel, tx_data, tx_len);
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    if (rx_data && rx_max_len > 0) {
+        err = sc16is752_transport_read_timed(channel, rx_data, rx_max_len, out_rx_len, first_byte_timeout_ms);
         if (err == ESP_ERR_NOT_FOUND) {
             return ESP_OK;
         }

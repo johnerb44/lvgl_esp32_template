@@ -23,6 +23,7 @@ static const char *TAG = "R503";
 #define R503_CMD_STORE              0x06
 #define R503_CMD_DELETE             0x0C
 #define R503_CMD_LED_CONTROL        0x35
+#define R503_CMD_AUTO_IDENTIFY      0x32
 
 #define R503_LED_BREATHING          0x01
 #define R503_LED_FLASHING           0x02
@@ -32,6 +33,12 @@ static const char *TAG = "R503";
 #define R503_LED_BLUE               0x02
 #define R503_LED_PURPLE             0x03
 #define R503_LED_GREEN              0x04
+#define R503_LED_YELLOW             0x06
+#define R503_LED_WHITE              0x07
+
+// AutoIdentify (0x32) timeout: sensor waits internally for finger placement.
+// Allow up to 8 seconds for the sensor to wait, capture, and process.
+#define R503_AUTO_IDENTIFY_TIMEOUT_MS 8000
 
 #define R503_RESP_OK                0x00
 #define R503_RESP_PACKET_ERR        0x01
@@ -127,6 +134,56 @@ static esp_err_t send_r503_command(const uint8_t *cmd_payload, size_t cmd_len,
     if (rx_len < R503_PACKET_MIN_LEN) {
         ESP_LOGW(TAG, "No/short response: got %u bytes (need %d) — R503 not replying",
                  (unsigned)rx_len, R503_PACKET_MIN_LEN);
+        return ESP_ERR_TIMEOUT;
+    }
+    if (rx_buf[0] != 0xEF || rx_buf[1] != 0x01 || rx_buf[6] != R503_PACKET_ACK) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    uint16_t pkt_len = (uint16_t)(((uint16_t)rx_buf[7] << 8) | rx_buf[8]);
+    if (pkt_len < 3 || (size_t)(pkt_len + R503_PACKET_HEADER_LEN) > rx_len) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    size_t payload_len = pkt_len - 2;
+    if (ack_payload && ack_payload_max > 0) {
+        if (payload_len > ack_payload_max) {
+            payload_len = ack_payload_max;
+        }
+        for (size_t i = 0; i < payload_len; i++) {
+            ack_payload[i] = rx_buf[R503_PACKET_HEADER_LEN + i];
+        }
+        if (out_ack_payload_len) {
+            *out_ack_payload_len = payload_len;
+        }
+    } else if (out_ack_payload_len) {
+        *out_ack_payload_len = payload_len;
+    }
+
+    return ESP_OK;
+}
+
+static esp_err_t send_r503_command_timed(const uint8_t *cmd_payload, size_t cmd_len,
+                                         uint8_t *ack_payload, size_t ack_payload_max, size_t *out_ack_payload_len,
+                                         int first_byte_timeout_ms)
+{
+    uint8_t tx_buf[R503_PACKET_BUF_MAX];
+    uint8_t rx_buf[R503_PACKET_BUF_MAX];
+    size_t rx_len = 0;
+    size_t tx_len = build_command_packet(cmd_payload, cmd_len, tx_buf, sizeof(tx_buf));
+    if (tx_len == 0) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    esp_err_t err = sc16is752_transport_exchange_timed(LOCKBOX_COMM_CHANNEL_FINGERPRINT,
+                                                       tx_buf, tx_len, rx_buf, sizeof(rx_buf), &rx_len,
+                                                       first_byte_timeout_ms);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "transport_exchange_timed failed: %s", esp_err_to_name(err));
+        return (err == ESP_ERR_TIMEOUT) ? ESP_ERR_TIMEOUT : ESP_ERR_INVALID_RESPONSE;
+    }
+    if (rx_len < R503_PACKET_MIN_LEN) {
+        ESP_LOGW(TAG, "No/short response: got %u bytes (need %d)", (unsigned)rx_len, R503_PACKET_MIN_LEN);
         return ESP_ERR_TIMEOUT;
     }
     if (rx_buf[0] != 0xEF || rx_buf[1] != 0x01 || rx_buf[6] != R503_PACKET_ACK) {
@@ -262,42 +319,50 @@ esp_err_t r503_device_match(r503_match_result_t *result)
     result->matched_template_id = -1;
     result->confidence = 0;
 
-    // Blue breathing LED: signals "place your finger now"
-    r503_led(R503_LED_BREATHING, 128, R503_LED_BLUE, 0);
+    // Breathing WHITE: signals "place finger now"
+    r503_led(R503_LED_BREATHING, 128, R503_LED_WHITE, 0);
 
-    r503_status_t status = capture_image_with_retry(3000);
-    if (status != R503_STATUS_OK) {
-        r503_led(R503_LED_FLASHING, 200, R503_LED_RED, 3);
-        result->status = status;
-        return ESP_OK;
-    }
-
-    status = image_to_template(1);
-    if (status != R503_STATUS_OK) {
-        r503_led(R503_LED_FLASHING, 200, R503_LED_RED, 3);
-        result->status = status;
-        return ESP_OK;
-    }
-
-    const uint8_t cmd[] = {R503_CMD_SEARCH, 0x01, 0x00, 0x00, 0x03, 0xE8};
-    uint8_t ack[16];
+    // AutoIdentify: sensor waits for finger, captures image, generates template, searches library.
+    // Params: BufferID=1, score_level=5, start_page=0, page_count=1000
+    const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x01, 0x05, 0x00, 0x00, 0x03, 0xE8};
+    uint8_t ack[8];
     size_t ack_len = 0;
-    esp_err_t err = send_r503_command(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len);
+    esp_err_t err = send_r503_command_timed(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len,
+                                            R503_AUTO_IDENTIFY_TIMEOUT_MS);
     if (err != ESP_OK || ack_len == 0) {
-        r503_led(R503_LED_OFF_MODE, 0, 0, 0);
+        r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
         result->status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
+        ESP_LOGW(TAG, "AutoIdentify transport error: %s", esp_err_to_name(err));
         return ESP_OK;
     }
 
-    status = map_response_code(ack[0]);
-    result->status = status;
-    if (status == R503_STATUS_OK && ack_len >= 5) {
+    uint8_t resp_code = ack[0];
+    ESP_LOGI(TAG, "AutoIdentify response: 0x%02X (ack_len=%u)", resp_code, (unsigned)ack_len);
+
+    if (resp_code == R503_RESP_OK && ack_len >= 5) {
         result->matched = true;
         result->matched_template_id = (int)(((uint16_t)ack[1] << 8) | ack[2]);
         result->confidence = (uint16_t)(((uint16_t)ack[3] << 8) | ack[4]);
+        result->status = R503_STATUS_OK;
         r503_led(R503_LED_FLASHING, 150, R503_LED_GREEN, 3);
-    } else {
+        ESP_LOGI(TAG, "AutoIdentify match: template_id=%d confidence=%u",
+                 result->matched_template_id, result->confidence);
+    } else if (resp_code == R503_RESP_NO_FINGER) {
+        result->status = R503_STATUS_NO_FINGER;
+        // Blue 3x then Yellow 3x for "no finger placed"
+        r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
+        vTaskDelay(pdMS_TO_TICKS(1000)); // wait for blue sequence to finish
+        r503_led(R503_LED_FLASHING, 150, R503_LED_YELLOW, 3);
+    } else if (resp_code == R503_RESP_NO_MATCH || resp_code == R503_RESP_NOT_FOUND) {
+        result->status = R503_STATUS_NO_MATCH;
+        // Blue 3x then Red 3x for "finger found but no match in library"
+        r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
+        vTaskDelay(pdMS_TO_TICKS(1000)); // wait for blue sequence to finish
         r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
+    } else {
+        result->status = R503_STATUS_SENSOR_ERROR;
+        r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
+        ESP_LOGW(TAG, "AutoIdentify error code: 0x%02X", resp_code);
     }
     return ESP_OK;
 }

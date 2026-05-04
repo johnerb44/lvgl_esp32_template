@@ -25,6 +25,10 @@ esp_err_t sc16is752_transport_read(lockbox_comm_channel_t channel, uint8_t *data
 esp_err_t sc16is752_transport_exchange(lockbox_comm_channel_t channel,
                                        const uint8_t *tx_data, size_t tx_len,
                                        uint8_t *rx_data, size_t rx_max_len, size_t *out_rx_len);
+esp_err_t sc16is752_transport_exchange_timed(lockbox_comm_channel_t channel,
+                                             const uint8_t *tx_data, size_t tx_len,
+                                             uint8_t *rx_data, size_t rx_max_len, size_t *out_rx_len,
+                                             int first_byte_timeout_ms);
 esp_err_t sc16is752_transport_gpio_init(uint8_t direction_mask, uint8_t initial_state);
 esp_err_t sc16is752_transport_gpio_read(uint8_t *out_state);
 esp_err_t sc16is752_transport_gpio_write(uint8_t state);

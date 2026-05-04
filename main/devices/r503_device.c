@@ -459,7 +459,11 @@ esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *ou
     //   0x00 = no per-step ACKs (LED handles UX; one final ACK only)
     //   0x01 = finger lift required between each of the 6 image collections
     //
-    // Final ACK format: [confirm][id_H][id_L]
+    // Final ACK format (14 bytes total, payload = 3 bytes):
+    //   ack[0] = confirm code (0x00=OK, see codes below)
+    //   ack[1] = step number  (0x0F=15 = final step for AutoEnroll)
+    //   ack[2] = ModelID      (1 byte, 0x00–0xFF, auto-assigned slot)
+    // Example success ACK: EF 01 FF FF FF FF 07 00 05 00 0F 00 00 1B (ModelID=0)
     // Confirm codes: 0x00=OK, 0x01=fail, 0x07=generate fail, 0x0A=merge fail,
     //                0x0B=ID out of range, 0x1F=library full, 0x22=template empty,
     //                0x26=timeout, 0x27=duplicate
@@ -489,8 +493,9 @@ esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *ou
         return ESP_OK;
     }
 
-    int model_id = (int)(((uint16_t)ack[1] << 8) | ack[2]);
-    ESP_LOGI(TAG, "AutoEnroll success: ModelID=%d", model_id);
+    // ACK: [confirm=0x00][step=0x0F][model_id (1 byte)]
+    int model_id = (int)ack[2];
+    ESP_LOGI(TAG, "AutoEnroll success: step=0x%02X ModelID=%d", ack[1], model_id);
     if (out_template_id) *out_template_id = model_id;
     if (out_status)      *out_status = R503_STATUS_OK;
     return ESP_OK;

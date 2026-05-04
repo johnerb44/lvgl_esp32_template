@@ -360,19 +360,22 @@ esp_err_t r503_device_match(r503_match_result_t *result)
     // Breathing WHITE: signals "place your finger now"
     r503_led(R503_LED_BREATHING, 128, R503_LED_WHITE, 0);
 
-    // AutoIdentify (0x32): sensor waits for finger, captures image, searches library.
-    // Params (5 bytes after instruction): BufferID=1, Fpage=0x0000, PageNum=0x03E8 (1000).
-    // NOTE: must be 6 bytes total (instruction + 5 params). Our earlier attempt used 7 bytes
-    // (with an extra "score level" byte) which caused PACKET_ERROR (0x01).
-    const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x01, 0x00, 0x00, 0x03, 0xE8};
+    // AutoIdentify (0x32) executes 3 steps internally and sends one ACK packet per step:
+    //   Packet 1 — Collect Image:    confirm=0x00 if image captured, 0x02 if no finger
+    //   Packet 2 — Generate Feature: confirm=0x00 if template generated, else error code
+    //   Packet 3 — Search Library:   confirm=0x00 + non-zero ModelID/score if matched,
+    //                                 or 0x08/0x09 if no match found
+    // Command params (5 bytes): from R503-M22 manual example (checksums verified correct).
+    const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x03, 0x00, 0xC8, 0x01, 0x01};
     uint8_t ack[16];
     size_t ack_len = 0;
     esp_err_t err = send_r503_command_timed(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len,
                                             R503_AUTO_IDENTIFY_TIMEOUT_MS);
 
-    // AutoIdentify can return multiple response packets — one per internal capture attempt.
-    // Each intermediate response has confirm=0x00 but zero fingerprint ID and score.
-    // Read up to 5 responses, stopping at the first definitive result.
+    // Loop reads one ACK packet per step (3 steps total).
+    // Steps 1 and 2 return confirm=0x00 with all-zero data (no match info yet).
+    // Step 3 returns the final result: confirm=0x00 with ModelID+score if matched,
+    // or a non-zero confirm code if no match / no finger / error.
     for (int read_count = 0; read_count < 5; read_count++) {
         if (err != ESP_OK || ack_len < 1) {
             r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
@@ -408,15 +411,14 @@ esp_err_t r503_device_match(r503_match_result_t *result)
             return ESP_OK;
         }
 
-        // confirm=0x00: could be a match result or an intermediate "still searching" response.
-        // The manual example shows the sensor sends intermediate packets with all-zero match data
-        // while searching, and the final packet contains the actual fingerprint ID and score.
-        // The response payload layout for AutoIdentify (6 bytes):
-        //   [0]=confirm, [1]=attempt_num or fp_id_H, [2]=fp_id_H or fp_id_L, etc.
-        // We detect a definitive match when ack_len >= 5 and ANY non-confirm byte is non-zero.
+        // confirm=0x00: this step succeeded with no match data yet (steps 1 or 2).
+        // Confirmed 6-byte response format from R503-M22 manual:
+        //   [0]=confirm, [1]=step_number (1,2,3), [2]=id_H, [3]=id_L, [4]=score_H, [5]=score_L
+        // Steps 1 and 2 have id+score all zero. Step 3 match has non-zero id or score.
+        // Check bytes[2..5] only — byte[1] is the step counter (always 1, 2, or 3, never zero).
         bool has_match_data = false;
-        if (ack_len >= 5) {
-            for (int i = 1; i < (int)ack_len; i++) {
+        if (ack_len >= 6) {
+            for (int i = 2; i < (int)ack_len; i++) {
                 if (ack[i] != 0) {
                     has_match_data = true;
                     break;
@@ -425,20 +427,9 @@ esp_err_t r503_device_match(r503_match_result_t *result)
         }
 
         if (has_match_data) {
-            // Non-zero data: extract match result.
-            // Try both 5-byte format (standard) and 6-byte format (with attempt counter):
-            //   5-byte: [confirm][id_H][id_L][score_H][score_L]
-            //   6-byte: [confirm][attempt][id_H][id_L][score_H][score_L]
-            int fp_id, score;
-            if (ack_len >= 6 && ack[1] <= 10 && (ack[2] != 0 || ack[3] != 0)) {
-                // 6-byte format: byte[1] looks like an attempt counter (small value)
-                fp_id  = (int)(((uint16_t)ack[2] << 8) | ack[3]);
-                score  = (int)(((uint16_t)ack[4] << 8) | ack[5]);
-            } else {
-                // 5-byte standard format
-                fp_id  = (int)(((uint16_t)ack[1] << 8) | ack[2]);
-                score  = (int)(((uint16_t)ack[3] << 8) | ack[4]);
-            }
+            // Always 6-byte AutoIdentify format: [confirm][attempt][id_H][id_L][score_H][score_L]
+            int fp_id = (int)(((uint16_t)ack[2] << 8) | ack[3]);
+            int score = (int)(((uint16_t)ack[4] << 8) | ack[5]);
             result->matched = true;
             result->matched_template_id = fp_id;
             result->confidence = (uint16_t)score;
@@ -448,8 +439,8 @@ esp_err_t r503_device_match(r503_match_result_t *result)
             return ESP_OK;
         }
 
-        // Intermediate response (all zeros): read next response packet
-        ESP_LOGI(TAG, "AutoIdentify: intermediate response, reading next...");
+        // Steps 1 or 2 passed — read next step response
+        ESP_LOGI(TAG, "AutoIdentify: step %d passed, waiting for next...", read_count + 1);
         ack_len = 0;
         err = read_r503_ack(ack, sizeof(ack), &ack_len);
     }

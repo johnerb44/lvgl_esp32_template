@@ -365,7 +365,13 @@ esp_err_t r503_device_match(r503_match_result_t *result)
     //   Packet 2 — Generate Feature: confirm=0x00 if template generated, else error code
     //   Packet 3 — Search Library:   confirm=0x00 + non-zero ModelID/score if matched,
     //                                 or 0x08/0x09 if no match found
-    // Command params (5 bytes): from R503-M22 manual example (checksums verified correct).
+    //
+    // Command params (R503-M22 manual, byte-by-byte):
+    //   0x03 = security level (1–5; 3 = medium)
+    //   0x00 = start search location (page 0)
+    //   0xC8 = end search location  (page 200 = full R503-M22 library)
+    //   0x01 = response mode (1 = send one ACK packet per key step → 3 packets total)
+    //   0x01 = attempts (number of times to run all 3 steps; increase for difficult fingers)
     const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x03, 0x00, 0xC8, 0x01, 0x01};
     uint8_t ack[16];
     size_t ack_len = 0;

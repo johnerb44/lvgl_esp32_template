@@ -19,6 +19,8 @@ typedef enum {
     R503_STATUS_SENSOR_ERROR,
     R503_STATUS_TIMEOUT,
     R503_STATUS_COMM_ERROR,
+    R503_STATUS_DUPLICATE,      // AutoEnroll: fingerprint already exists in library
+    R503_STATUS_LIBRARY_FULL,   // AutoEnroll: no free template slots remain
 } r503_status_t;
 
 typedef struct {

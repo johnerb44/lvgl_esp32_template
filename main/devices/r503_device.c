@@ -24,6 +24,7 @@ static const char *TAG = "R503";
 #define R503_CMD_DELETE             0x0C
 #define R503_CMD_LED_CONTROL        0x35
 #define R503_CMD_AUTO_IDENTIFY      0x32
+#define R503_CMD_AUTO_ENROLL        0x31
 
 #define R503_LED_BREATHING          0x01
 #define R503_LED_FLASHING           0x02
@@ -38,16 +39,25 @@ static const char *TAG = "R503";
 
 // AutoIdentify (0x32) timeout: sensor waits internally for finger placement.
 // Allow up to 8 seconds for the sensor to wait, capture, and process.
-#define R503_AUTO_IDENTIFY_TIMEOUT_MS 8000
+#define R503_AUTO_IDENTIFY_TIMEOUT_MS   8000
+
+// AutoEnroll (0x31) timeout: 6 image collections with finger lift between each.
+// ~5-8s per scan cycle × 6 = up to 50s, plus processing. Allow 60s.
+#define R503_AUTO_ENROLL_TIMEOUT_MS     60000
 
 #define R503_RESP_OK                0x00
-#define R503_RESP_PACKET_ERR        0x01
+#define R503_RESP_PACKET_ERR        0x01  // general failure / malformed packet
 #define R503_RESP_NO_FINGER         0x02
 #define R503_RESP_NO_MATCH          0x08
 #define R503_RESP_NOT_FOUND         0x09
-#define R503_RESP_ENROLL_MISMATCH   0x0A
+#define R503_RESP_MERGE_FAIL        0x0A  // AutoEnroll: failed to merge templates
 #define R503_RESP_BAD_LOCATION      0x0B
 #define R503_RESP_DELETE_FAIL       0x10
+#define R503_RESP_GENERATE_FAIL     0x07  // AutoEnroll: failed to generate feature
+#define R503_RESP_LIBRARY_FULL      0x1F  // AutoEnroll: fingerprint library is full
+#define R503_RESP_TEMPLATE_EMPTY    0x22  // AutoEnroll: template slot is empty
+#define R503_RESP_ENROLL_TIMEOUT    0x26  // AutoEnroll: sensor internal timeout
+#define R503_RESP_DUPLICATE         0x27  // AutoEnroll: fingerprint already exists
 
 static bool s_r503_ready = false;
 
@@ -95,22 +105,20 @@ static size_t build_command_packet(const uint8_t *payload, size_t payload_len, u
 static r503_status_t map_response_code(uint8_t code)
 {
     switch (code) {
-        case R503_RESP_OK:
-            return R503_STATUS_OK;
-        case R503_RESP_NO_FINGER:
-            return R503_STATUS_NO_FINGER;
+        case R503_RESP_OK:              return R503_STATUS_OK;
+        case R503_RESP_NO_FINGER:       return R503_STATUS_NO_FINGER;
         case R503_RESP_NO_MATCH:
-        case R503_RESP_NOT_FOUND:
-            return R503_STATUS_NO_MATCH;
-        case R503_RESP_BAD_LOCATION:
-            return R503_STATUS_BAD_LOCATION;
-        case R503_RESP_ENROLL_MISMATCH:
-            return R503_STATUS_ENROLL_MISMATCH;
-        case R503_RESP_DELETE_FAIL:
-            return R503_STATUS_DELETE_FAILED;
+        case R503_RESP_NOT_FOUND:       return R503_STATUS_NO_MATCH;
+        case R503_RESP_BAD_LOCATION:    return R503_STATUS_BAD_LOCATION;
+        case R503_RESP_MERGE_FAIL:      return R503_STATUS_ENROLL_MISMATCH;
+        case R503_RESP_DELETE_FAIL:     return R503_STATUS_DELETE_FAILED;
+        case R503_RESP_DUPLICATE:       return R503_STATUS_DUPLICATE;
+        case R503_RESP_LIBRARY_FULL:    return R503_STATUS_LIBRARY_FULL;
+        case R503_RESP_GENERATE_FAIL:
+        case R503_RESP_TEMPLATE_EMPTY:
         case R503_RESP_PACKET_ERR:
-        default:
-            return R503_STATUS_SENSOR_ERROR;
+        default:                        return R503_STATUS_SENSOR_ERROR;
+        case R503_RESP_ENROLL_TIMEOUT:  return R503_STATUS_TIMEOUT;
     }
 }
 
@@ -260,44 +268,6 @@ static void r503_led(uint8_t control, uint8_t speed, uint8_t color, uint8_t time
     send_r503_command(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len);
 }
 
-static r503_status_t capture_image_with_retry(int timeout_ms)
-{
-    const int64_t deadline = esp_timer_get_time() + ((int64_t)timeout_ms * 1000);
-    const uint8_t cmd[] = {R503_CMD_GET_IMAGE};
-
-    while (esp_timer_get_time() < deadline) {
-        uint8_t ack[8];
-        size_t ack_len = 0;
-        esp_err_t err = send_r503_command(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len);
-        if (err != ESP_OK) {
-            return (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
-        }
-        if (ack_len == 0) {
-            return R503_STATUS_SENSOR_ERROR;
-        }
-
-        r503_status_t status = map_response_code(ack[0]);
-        if (status == R503_STATUS_NO_FINGER) {
-            vTaskDelay(pdMS_TO_TICKS(200));
-            continue;
-        }
-        return status;
-    }
-    return R503_STATUS_TIMEOUT;
-}
-
-static r503_status_t image_to_template(uint8_t slot)
-{
-    const uint8_t cmd[] = {R503_CMD_IMAGE2TZ, slot};
-    uint8_t ack[8];
-    size_t ack_len = 0;
-    esp_err_t err = send_r503_command(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len);
-    if (err != ESP_OK || ack_len == 0) {
-        return (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
-    }
-    return map_response_code(ack[0]);
-}
-
 const char *r503_status_to_string(r503_status_t status)
 {
     switch (status) {
@@ -310,6 +280,8 @@ const char *r503_status_to_string(r503_status_t status)
         case R503_STATUS_SENSOR_ERROR: return "sensor_error";
         case R503_STATUS_TIMEOUT: return "timeout";
         case R503_STATUS_COMM_ERROR: return "comm_error";
+        case R503_STATUS_DUPLICATE: return "duplicate";
+        case R503_STATUS_LIBRARY_FULL: return "library_full";
         default: return "unknown";
     }
 }
@@ -470,82 +442,57 @@ esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *ou
         }
     }
 
-    if (out_template_id) {
-        *out_template_id = -1;
-    }
-    if (out_status) {
-        *out_status = R503_STATUS_SENSOR_ERROR;
-    }
+    if (out_template_id) *out_template_id = -1;
+    if (out_status)      *out_status = R503_STATUS_SENSOR_ERROR;
 
-    r503_status_t status = capture_image_with_retry(10000);
-    if (status != R503_STATUS_OK) {
-        if (out_status) *out_status = status;
-        return ESP_OK;
-    }
-
-    status = image_to_template(1);
-    if (status != R503_STATUS_OK) {
-        if (out_status) *out_status = status;
-        return ESP_OK;
-    }
-
-    int64_t remove_deadline = esp_timer_get_time() + (8000LL * 1000);
-    while (esp_timer_get_time() < remove_deadline) {
-        const uint8_t get_img_cmd[] = {R503_CMD_GET_IMAGE};
-        uint8_t ack[8];
-        size_t ack_len = 0;
-        esp_err_t err = send_r503_command(get_img_cmd, sizeof(get_img_cmd), ack, sizeof(ack), &ack_len);
-        if (err != ESP_OK || ack_len == 0) {
-            if (out_status) *out_status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
-            return ESP_OK;
-        }
-        if (map_response_code(ack[0]) == R503_STATUS_NO_FINGER) {
-            break;
-        }
-        vTaskDelay(pdMS_TO_TICKS(200));
-    }
-
-    status = capture_image_with_retry(10000);
-    if (status != R503_STATUS_OK) {
-        if (out_status) *out_status = status;
-        return ESP_OK;
-    }
-
-    status = image_to_template(2);
-    if (status != R503_STATUS_OK) {
-        if (out_status) *out_status = status;
-        return ESP_OK;
-    }
-
-    const uint8_t reg_model_cmd[] = {R503_CMD_REG_MODEL};
+    // AutoEnroll (0x31): the sensor handles all 6 image collections, feature generation,
+    // duplicate check, template merging, and storage entirely internally.
+    //
+    // LED sequence (driven by R503 hardware — no explicit LED commands needed):
+    //   For each of 6 scans: BLUE blink (collecting) → YELLOW (scan OK) → WHITE blink (lift finger)
+    //   Final: GREEN blink (success) or RED blink (failure)
+    //
+    // Command params:
+    //   0xC8 = auto-assign ModelID (sensor picks next free slot, returns it in final ACK)
+    //   0x00 = no overwrite of existing template at same ID
+    //   0x01 = allow duplicate fingerprints (same finger → multiple users permitted)
+    //   0x00 = no per-step ACKs (LED handles UX; one final ACK only)
+    //   0x01 = finger lift required between each of the 6 image collections
+    //
+    // Final ACK format: [confirm][id_H][id_L]
+    // Confirm codes: 0x00=OK, 0x01=fail, 0x07=generate fail, 0x0A=merge fail,
+    //                0x0B=ID out of range, 0x1F=library full, 0x22=template empty,
+    //                0x26=timeout, 0x27=duplicate
+    const uint8_t cmd[] = {R503_CMD_AUTO_ENROLL, 0xC8, 0x00, 0x01, 0x00, 0x01};
     uint8_t ack[8];
     size_t ack_len = 0;
-    esp_err_t err = send_r503_command(reg_model_cmd, sizeof(reg_model_cmd), ack, sizeof(ack), &ack_len);
-    if (err != ESP_OK || ack_len == 0) {
+    esp_err_t err = send_r503_command_timed(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len,
+                                            R503_AUTO_ENROLL_TIMEOUT_MS);
+    if (err != ESP_OK || ack_len < 1) {
         if (out_status) *out_status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
-        return ESP_OK;
-    }
-    status = map_response_code(ack[0]);
-    if (status != R503_STATUS_OK) {
-        if (out_status) *out_status = status;
         return ESP_OK;
     }
 
-    uint16_t template_id = (uint16_t)userid;
-    const uint8_t store_cmd[] = {R503_CMD_STORE, 0x01,
-                                 (uint8_t)((template_id >> 8) & 0xFF),
-                                 (uint8_t)(template_id & 0xFF)};
-    ack_len = 0;
-    err = send_r503_command(store_cmd, sizeof(store_cmd), ack, sizeof(ack), &ack_len);
-    if (err != ESP_OK || ack_len == 0) {
-        if (out_status) *out_status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
+    uint8_t confirm = ack[0];
+    ESP_LOGI(TAG, "AutoEnroll confirm=0x%02X ack_len=%u", confirm, (unsigned)ack_len);
+
+    if (confirm != R503_RESP_OK) {
+        r503_status_t mapped = map_response_code(confirm);
+        ESP_LOGW(TAG, "AutoEnroll failed: confirm=0x%02X (%s)", confirm, r503_status_to_string(mapped));
+        if (out_status) *out_status = mapped;
         return ESP_OK;
     }
-    status = map_response_code(ack[0]);
-    if (out_status) *out_status = status;
-    if (status == R503_STATUS_OK && out_template_id) {
-        *out_template_id = (int)template_id;
+
+    if (ack_len < 3) {
+        ESP_LOGW(TAG, "AutoEnroll: short ACK (len=%u), cannot read ModelID", (unsigned)ack_len);
+        if (out_status) *out_status = R503_STATUS_COMM_ERROR;
+        return ESP_OK;
     }
+
+    int model_id = (int)(((uint16_t)ack[1] << 8) | ack[2]);
+    ESP_LOGI(TAG, "AutoEnroll success: ModelID=%d", model_id);
+    if (out_template_id) *out_template_id = model_id;
+    if (out_status)      *out_status = R503_STATUS_OK;
     return ESP_OK;
 }
 

@@ -144,7 +144,7 @@ esp_err_t fingerprint_service_enroll_user(int userid, int *out_template_id, r503
         return err;
     }
     if (status != R503_STATUS_OK || template_id < 0) {
-        return ESP_OK;
+        return ESP_FAIL;
     }
 
     err = update_user_fingerprint_id(userid, template_id);

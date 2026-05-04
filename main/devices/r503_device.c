@@ -163,6 +163,44 @@ static esp_err_t send_r503_command(const uint8_t *cmd_payload, size_t cmd_len,
     return ESP_OK;
 }
 
+// Read one ACK packet from the sensor without sending a command.
+// Used to read additional responses from AutoIdentify (which sends multiple packets).
+static esp_err_t read_r503_ack(uint8_t *ack_payload, size_t ack_payload_max, size_t *out_ack_payload_len)
+{
+    if (out_ack_payload_len) {
+        *out_ack_payload_len = 0;
+    }
+    uint8_t rx_buf[R503_PACKET_BUF_MAX];
+    size_t rx_len = 0;
+    esp_err_t err = sc16is752_transport_read(LOCKBOX_COMM_CHANNEL_FINGERPRINT,
+                                             rx_buf, sizeof(rx_buf), &rx_len);
+    if (err != ESP_OK || rx_len < R503_PACKET_MIN_LEN) {
+        return ESP_ERR_TIMEOUT;
+    }
+    if (rx_buf[0] != 0xEF || rx_buf[1] != 0x01 || rx_buf[6] != R503_PACKET_ACK) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+    uint16_t pkt_len = (uint16_t)(((uint16_t)rx_buf[7] << 8) | rx_buf[8]);
+    if (pkt_len < 3 || (size_t)(pkt_len + R503_PACKET_HEADER_LEN) > rx_len) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+    size_t payload_len = pkt_len - 2;
+    if (ack_payload && ack_payload_max > 0) {
+        if (payload_len > ack_payload_max) {
+            payload_len = ack_payload_max;
+        }
+        for (size_t i = 0; i < payload_len; i++) {
+            ack_payload[i] = rx_buf[R503_PACKET_HEADER_LEN + i];
+        }
+        if (out_ack_payload_len) {
+            *out_ack_payload_len = payload_len;
+        }
+    } else if (out_ack_payload_len) {
+        *out_ack_payload_len = payload_len;
+    }
+    return ESP_OK;
+}
+
 static esp_err_t send_r503_command_timed(const uint8_t *cmd_payload, size_t cmd_len,
                                          uint8_t *ack_payload, size_t ack_payload_max, size_t *out_ack_payload_len,
                                          int first_byte_timeout_ms)
@@ -319,51 +357,106 @@ esp_err_t r503_device_match(r503_match_result_t *result)
     result->matched_template_id = -1;
     result->confidence = 0;
 
-    // Breathing WHITE: signals "place finger now"
+    // Breathing WHITE: signals "place your finger now"
     r503_led(R503_LED_BREATHING, 128, R503_LED_WHITE, 0);
 
-    // AutoIdentify: sensor waits for finger, captures image, generates template, searches library.
-    // Params: BufferID=1, score_level=5, start_page=0, page_count=1000
-    const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x01, 0x05, 0x00, 0x00, 0x03, 0xE8};
-    uint8_t ack[8];
+    // AutoIdentify (0x32): sensor waits for finger, captures image, searches library.
+    // Params (5 bytes after instruction): BufferID=1, Fpage=0x0000, PageNum=0x03E8 (1000).
+    // NOTE: must be 6 bytes total (instruction + 5 params). Our earlier attempt used 7 bytes
+    // (with an extra "score level" byte) which caused PACKET_ERROR (0x01).
+    const uint8_t cmd[] = {R503_CMD_AUTO_IDENTIFY, 0x01, 0x00, 0x00, 0x03, 0xE8};
+    uint8_t ack[16];
     size_t ack_len = 0;
     esp_err_t err = send_r503_command_timed(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len,
                                             R503_AUTO_IDENTIFY_TIMEOUT_MS);
-    if (err != ESP_OK || ack_len == 0) {
-        r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
-        result->status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
-        ESP_LOGW(TAG, "AutoIdentify transport error: %s", esp_err_to_name(err));
-        return ESP_OK;
+
+    // AutoIdentify can return multiple response packets — one per internal capture attempt.
+    // Each intermediate response has confirm=0x00 but zero fingerprint ID and score.
+    // Read up to 5 responses, stopping at the first definitive result.
+    for (int read_count = 0; read_count < 5; read_count++) {
+        if (err != ESP_OK || ack_len < 1) {
+            r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
+            result->status = R503_STATUS_COMM_ERROR;
+            ESP_LOGW(TAG, "AutoIdentify: no response (attempt %d)", read_count);
+            return ESP_OK;
+        }
+
+        uint8_t resp_code = ack[0];
+        ESP_LOGI(TAG, "AutoIdentify response[%d]: 0x%02X (ack_len=%u, bytes: %02X %02X %02X %02X %02X)",
+                 read_count, resp_code, (unsigned)ack_len,
+                 ack_len > 1 ? ack[1] : 0, ack_len > 2 ? ack[2] : 0,
+                 ack_len > 3 ? ack[3] : 0, ack_len > 4 ? ack[4] : 0,
+                 ack_len > 5 ? ack[5] : 0);
+
+        if (resp_code != R503_RESP_OK) {
+            // Definitive error: no finger, no match, or other error
+            if (resp_code == R503_RESP_NO_FINGER) {
+                result->status = R503_STATUS_NO_FINGER;
+                r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                r503_led(R503_LED_FLASHING, 150, R503_LED_YELLOW, 3);
+            } else if (resp_code == R503_RESP_NO_MATCH || resp_code == R503_RESP_NOT_FOUND) {
+                result->status = R503_STATUS_NO_MATCH;
+                r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
+            } else {
+                result->status = R503_STATUS_SENSOR_ERROR;
+                r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
+                ESP_LOGW(TAG, "AutoIdentify error code: 0x%02X", resp_code);
+            }
+            return ESP_OK;
+        }
+
+        // confirm=0x00: could be a match result or an intermediate "still searching" response.
+        // The manual example shows the sensor sends intermediate packets with all-zero match data
+        // while searching, and the final packet contains the actual fingerprint ID and score.
+        // The response payload layout for AutoIdentify (6 bytes):
+        //   [0]=confirm, [1]=attempt_num or fp_id_H, [2]=fp_id_H or fp_id_L, etc.
+        // We detect a definitive match when ack_len >= 5 and ANY non-confirm byte is non-zero.
+        bool has_match_data = false;
+        if (ack_len >= 5) {
+            for (int i = 1; i < (int)ack_len; i++) {
+                if (ack[i] != 0) {
+                    has_match_data = true;
+                    break;
+                }
+            }
+        }
+
+        if (has_match_data) {
+            // Non-zero data: extract match result.
+            // Try both 5-byte format (standard) and 6-byte format (with attempt counter):
+            //   5-byte: [confirm][id_H][id_L][score_H][score_L]
+            //   6-byte: [confirm][attempt][id_H][id_L][score_H][score_L]
+            int fp_id, score;
+            if (ack_len >= 6 && ack[1] <= 10 && (ack[2] != 0 || ack[3] != 0)) {
+                // 6-byte format: byte[1] looks like an attempt counter (small value)
+                fp_id  = (int)(((uint16_t)ack[2] << 8) | ack[3]);
+                score  = (int)(((uint16_t)ack[4] << 8) | ack[5]);
+            } else {
+                // 5-byte standard format
+                fp_id  = (int)(((uint16_t)ack[1] << 8) | ack[2]);
+                score  = (int)(((uint16_t)ack[3] << 8) | ack[4]);
+            }
+            result->matched = true;
+            result->matched_template_id = fp_id;
+            result->confidence = (uint16_t)score;
+            result->status = R503_STATUS_OK;
+            r503_led(R503_LED_FLASHING, 150, R503_LED_GREEN, 3);
+            ESP_LOGI(TAG, "AutoIdentify match: template_id=%d confidence=%d", fp_id, score);
+            return ESP_OK;
+        }
+
+        // Intermediate response (all zeros): read next response packet
+        ESP_LOGI(TAG, "AutoIdentify: intermediate response, reading next...");
+        ack_len = 0;
+        err = read_r503_ack(ack, sizeof(ack), &ack_len);
     }
 
-    uint8_t resp_code = ack[0];
-    ESP_LOGI(TAG, "AutoIdentify response: 0x%02X (ack_len=%u)", resp_code, (unsigned)ack_len);
-
-    if (resp_code == R503_RESP_OK && ack_len >= 5) {
-        result->matched = true;
-        result->matched_template_id = (int)(((uint16_t)ack[1] << 8) | ack[2]);
-        result->confidence = (uint16_t)(((uint16_t)ack[3] << 8) | ack[4]);
-        result->status = R503_STATUS_OK;
-        r503_led(R503_LED_FLASHING, 150, R503_LED_GREEN, 3);
-        ESP_LOGI(TAG, "AutoIdentify match: template_id=%d confidence=%u",
-                 result->matched_template_id, result->confidence);
-    } else if (resp_code == R503_RESP_NO_FINGER) {
-        result->status = R503_STATUS_NO_FINGER;
-        // Blue 3x then Yellow 3x for "no finger placed"
-        r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
-        vTaskDelay(pdMS_TO_TICKS(1000)); // wait for blue sequence to finish
-        r503_led(R503_LED_FLASHING, 150, R503_LED_YELLOW, 3);
-    } else if (resp_code == R503_RESP_NO_MATCH || resp_code == R503_RESP_NOT_FOUND) {
-        result->status = R503_STATUS_NO_MATCH;
-        // Blue 3x then Red 3x for "finger found but no match in library"
-        r503_led(R503_LED_FLASHING, 150, R503_LED_BLUE, 3);
-        vTaskDelay(pdMS_TO_TICKS(1000)); // wait for blue sequence to finish
-        r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
-    } else {
-        result->status = R503_STATUS_SENSOR_ERROR;
-        r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
-        ESP_LOGW(TAG, "AutoIdentify error code: 0x%02X", resp_code);
-    }
+    // Exhausted retry limit — treat as no match
+    result->status = R503_STATUS_NO_MATCH;
+    r503_led(R503_LED_FLASHING, 150, R503_LED_RED, 3);
     return ESP_OK;
 }
 

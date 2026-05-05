@@ -431,9 +431,7 @@ esp_err_t r503_device_match(r503_match_result_t *result)
 
 esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *out_status)
 {
-    if (userid < 0) {
-        return ESP_ERR_INVALID_ARG;
-    }
+    (void)userid; // AutoEnroll uses sensor auto-assign (0xC8); userid is only for caller bookkeeping
     if (!s_r503_ready) {
         esp_err_t init_err = r503_device_init();
         if (init_err != ESP_OK) {

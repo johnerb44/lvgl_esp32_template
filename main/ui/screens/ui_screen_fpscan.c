@@ -129,6 +129,9 @@ static void fp_enroll_task(void *arg)
     if (err != ESP_OK) {
         snprintf(msg, sizeof(msg), "Enroll failed: %s", r503_status_to_string(status));
         ESP_LOGE(SCREEN_TAG, "%s", msg);
+    } else if (status == R503_STATUS_DUPLICATE) {
+        snprintf(msg, sizeof(msg), "Finger already enrolled");
+        ESP_LOGW(SCREEN_TAG, "AutoEnroll rejected duplicate fingerprint");
     } else {
         snprintf(msg, sizeof(msg), "Enrolled! template_id=%d", template_id);
         ESP_LOGI(SCREEN_TAG, "%s", msg);

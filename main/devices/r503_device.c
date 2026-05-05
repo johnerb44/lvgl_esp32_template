@@ -453,7 +453,7 @@ esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *ou
     // Command params:
     //   0xC8 = auto-assign ModelID (sensor picks next free slot, returns it in final ACK)
     //   0x00 = no overwrite of existing template at same ID
-    //   0x01 = allow duplicate fingerprints (same finger → multiple users permitted)
+    //   0x00 = reject duplicate fingerprints (same finger already enrolled → confirm 0x27)
     //   0x00 = no per-step ACKs (LED handles UX; one final ACK only)
     //   0x01 = finger lift required between each of the 6 image collections
     //
@@ -465,7 +465,7 @@ esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *ou
     // Confirm codes: 0x00=OK, 0x01=fail, 0x07=generate fail, 0x0A=merge fail,
     //                0x0B=ID out of range, 0x1F=library full, 0x22=template empty,
     //                0x26=timeout, 0x27=duplicate
-    const uint8_t cmd[] = {R503_CMD_AUTO_ENROLL, 0xC8, 0x00, 0x01, 0x00, 0x01};
+    const uint8_t cmd[] = {R503_CMD_AUTO_ENROLL, 0xC8, 0x00, 0x00, 0x00, 0x01};
     uint8_t ack[8];
     size_t ack_len = 0;
     esp_err_t err = send_r503_command_timed(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len,

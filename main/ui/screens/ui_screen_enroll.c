@@ -290,10 +290,10 @@ void ui_screen_enroll_create(void)
     lv_obj_set_align(s_fp_status_label, LV_ALIGN_CENTER);
     lv_obj_set_y(s_fp_status_label, -100);
 
-    // Fingerprint enroll button (left side)
+    // Fingerprint enroll button (centered)
     s_fp_enroll_btn = lv_button_create(ui_screen_enroll);
     lv_obj_set_align(s_fp_enroll_btn, LV_ALIGN_CENTER);
-    lv_obj_set_x(s_fp_enroll_btn, -120);
+    lv_obj_set_x(s_fp_enroll_btn, 0);
     lv_obj_set_y(s_fp_enroll_btn, -40);
     lv_obj_set_width(s_fp_enroll_btn, 220);
     lv_obj_set_style_bg_color(s_fp_enroll_btn, lv_color_hex(0x21a019), 0);
@@ -310,10 +310,10 @@ void ui_screen_enroll_create(void)
     lv_obj_set_align(s_face_status_label, LV_ALIGN_CENTER);
     lv_obj_set_y(s_face_status_label, 30);
 
-    // Face enroll button (right side)
+    // Face enroll button (centered)
     s_face_enroll_btn = lv_button_create(ui_screen_enroll);
     lv_obj_set_align(s_face_enroll_btn, LV_ALIGN_CENTER);
-    lv_obj_set_x(s_face_enroll_btn, 120);
+    lv_obj_set_x(s_face_enroll_btn, 0);
     lv_obj_set_y(s_face_enroll_btn, 90);
     lv_obj_set_width(s_face_enroll_btn, 220);
     lv_obj_set_style_bg_color(s_face_enroll_btn, lv_color_hex(0x1975e0), 0);

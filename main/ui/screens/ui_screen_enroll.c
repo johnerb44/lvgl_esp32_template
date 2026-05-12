@@ -84,13 +84,13 @@ static void enroll_screen_refresh_task(void *arg)
         }
         if (s_fp_status_label && lv_obj_is_valid(s_fp_status_label)) {
             lv_label_set_text(s_fp_status_label,
-                fp_enrolled ? "Fingerprint: Enrolled " LV_SYMBOL_OK
-                            : "Fingerprint: Not Enrolled (required)");
+                fp_enrolled ? "Enrolled " LV_SYMBOL_OK
+                            : "Not Enrolled");
         }
         if (s_face_status_label && lv_obj_is_valid(s_face_status_label)) {
             lv_label_set_text(s_face_status_label,
-                face_enrolled ? "Face: Enrolled " LV_SYMBOL_OK
-                              : "Face: Not Enrolled (optional)");
+                face_enrolled ? "Enrolled " LV_SYMBOL_OK
+                              : "Not Enrolled");
         }
         if (s_done_btn && lv_obj_is_valid(s_done_btn)) {
             if (fp_enrolled) {
@@ -127,8 +127,7 @@ static void fp_enroll_task(void *arg)
         if (err == ESP_OK) {
             s_fp_enrolled = true;
             if (s_fp_status_label && lv_obj_is_valid(s_fp_status_label)) {
-                lv_label_set_text(s_fp_status_label,
-                                  "Fingerprint: Enrolled " LV_SYMBOL_OK);
+                lv_label_set_text(s_fp_status_label, "Enrolled " LV_SYMBOL_OK);
             }
             if (s_done_btn && lv_obj_is_valid(s_done_btn)) {
                 lv_obj_clear_state(s_done_btn, LV_STATE_DISABLED);
@@ -165,8 +164,7 @@ static void face_enroll_task(void *arg)
         if (err == ESP_OK) {
             s_face_enrolled = true;
             if (s_face_status_label && lv_obj_is_valid(s_face_status_label)) {
-                lv_label_set_text(s_face_status_label,
-                                  "Face: Enrolled " LV_SYMBOL_OK);
+                lv_label_set_text(s_face_status_label, "Enrolled " LV_SYMBOL_OK);
             }
             if (s_status_label && lv_obj_is_valid(s_status_label)) {
                 lv_label_set_text(s_status_label, "Face enrolled successfully!");
@@ -286,7 +284,7 @@ void ui_screen_enroll_create(void)
     // Fingerprint status label — left edge 15px right of Enroll Fingerprint button right edge
     // Button: center x=0, width=220 → right edge at screen_center+110 = px 510; label starts at px 525
     s_fp_status_label = lv_label_create(ui_screen_enroll);
-    lv_label_set_text(s_fp_status_label, "Fingerprint: Not Enrolled (required)");
+    lv_label_set_text(s_fp_status_label, "Not Enrolled");
     lv_obj_set_style_text_color(s_fp_status_label, lv_color_hex(0xffffff), 0);
     lv_obj_set_align(s_fp_status_label, LV_ALIGN_LEFT_MID);
     lv_obj_set_pos(s_fp_status_label, 525, -40);
@@ -307,7 +305,7 @@ void ui_screen_enroll_create(void)
     // Face status label — left edge 15px right of Enroll Face button right edge
     // Button: center x=0, width=220 → right edge at screen_center+110 = px 510; label starts at px 525
     s_face_status_label = lv_label_create(ui_screen_enroll);
-    lv_label_set_text(s_face_status_label, "Face: Not Enrolled (optional)");
+    lv_label_set_text(s_face_status_label, "Not Enrolled");
     lv_obj_set_style_text_color(s_face_status_label, lv_color_hex(0xffffff), 0);
     lv_obj_set_align(s_face_status_label, LV_ALIGN_LEFT_MID);
     lv_obj_set_pos(s_face_status_label, 525, 90);

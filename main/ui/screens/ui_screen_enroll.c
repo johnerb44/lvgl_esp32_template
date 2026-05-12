@@ -283,12 +283,13 @@ void ui_screen_enroll_create(void)
     lv_obj_set_align(s_username_label, LV_ALIGN_CENTER);
     lv_obj_set_y(s_username_label, -170);
 
-    // Fingerprint status label
+    // Fingerprint status label — left edge 15px right of Enroll Fingerprint button right edge
+    // Button: center x=0, width=220 → right edge at screen_center+110 = px 510; label starts at px 525
     s_fp_status_label = lv_label_create(ui_screen_enroll);
     lv_label_set_text(s_fp_status_label, "Fingerprint: Not Enrolled (required)");
     lv_obj_set_style_text_color(s_fp_status_label, lv_color_hex(0xffffff), 0);
-    lv_obj_set_align(s_fp_status_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(s_fp_status_label, -100);
+    lv_obj_set_align(s_fp_status_label, LV_ALIGN_LEFT_MID);
+    lv_obj_set_pos(s_fp_status_label, 525, -40);
 
     // Fingerprint enroll button (centered)
     s_fp_enroll_btn = lv_button_create(ui_screen_enroll);
@@ -303,12 +304,13 @@ void ui_screen_enroll_create(void)
     lv_obj_center(fp_label);
     lv_obj_add_event_cb(s_fp_enroll_btn, fp_enroll_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
-    // Face status label
+    // Face status label — left edge 15px right of Enroll Face button right edge
+    // Button: center x=0, width=220 → right edge at screen_center+110 = px 510; label starts at px 525
     s_face_status_label = lv_label_create(ui_screen_enroll);
     lv_label_set_text(s_face_status_label, "Face: Not Enrolled (optional)");
     lv_obj_set_style_text_color(s_face_status_label, lv_color_hex(0xffffff), 0);
-    lv_obj_set_align(s_face_status_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(s_face_status_label, 30);
+    lv_obj_set_align(s_face_status_label, LV_ALIGN_LEFT_MID);
+    lv_obj_set_pos(s_face_status_label, 525, 90);
 
     // Face enroll button (centered)
     s_face_enroll_btn = lv_button_create(ui_screen_enroll);

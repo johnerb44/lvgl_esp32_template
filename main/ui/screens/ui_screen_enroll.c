@@ -6,6 +6,7 @@
 #include "ui_screen_enroll.h"
 #include "../ui.h"
 #include "ui_screen_change_pin.h"
+#include "ui_screen_fp_manage.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -252,6 +253,12 @@ static void back_btn_event_cb(lv_event_t *event)
     }
 }
 
+static void manage_fp_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
+    lv_scr_load_anim(ui_screen_fp_manage, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, false);
+}
+
 // ── screen create ─────────────────────────────────────────────────────────────
 
 void ui_screen_enroll_create(void)
@@ -355,6 +362,18 @@ void ui_screen_enroll_create(void)
     lv_obj_set_style_text_color(back_label, lv_color_hex(0xffffff), 0);
     lv_obj_center(back_label);
     lv_obj_add_event_cb(back_btn, back_btn_event_cb, LV_EVENT_CLICKED, NULL);
+
+    // Manage FP Templates button (bottom-right)
+    lv_obj_t *manage_fp_btn = lv_button_create(ui_screen_enroll);
+    lv_obj_set_align(manage_fp_btn, LV_ALIGN_BOTTOM_RIGHT);
+    lv_obj_set_pos(manage_fp_btn, -10, -10);
+    lv_obj_set_size(manage_fp_btn, 160, 40);
+    lv_obj_set_style_bg_color(manage_fp_btn, lv_color_hex(0x555555), 0);
+    lv_obj_t *manage_fp_label = lv_label_create(manage_fp_btn);
+    lv_label_set_text(manage_fp_label, "Manage FP Templates");
+    lv_obj_set_style_text_color(manage_fp_label, lv_color_hex(0xffffff), 0);
+    lv_obj_center(manage_fp_label);
+    lv_obj_add_event_cb(manage_fp_btn, manage_fp_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     LV_TRACE_OBJ_CREATE("finished");
     ESP_LOGI(SCREEN_TAG, "Enroll screen created");

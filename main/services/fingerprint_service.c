@@ -177,6 +177,50 @@ esp_err_t fingerprint_service_delete_template(int template_id, r503_status_t *ou
     return ESP_OK;
 }
 
+esp_err_t fingerprint_service_get_unlinked_templates(int *ids_out, int capacity, int *count_out)
+{
+    if (ids_out == NULL || capacity <= 0 || count_out == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    *count_out = 0;
+
+    uint8_t bitmap[32] = {0};
+    r503_status_t st = R503_STATUS_SENSOR_ERROR;
+    esp_err_t err = r503_device_read_index_table(0, bitmap, &st);
+    if (err != ESP_OK || st != R503_STATUS_OK) {
+        ESP_LOGE(TAG, "Failed to read sensor index table: %s", r503_status_to_string(st));
+        return (err != ESP_OK) ? err : ESP_FAIL;
+    }
+
+    user_list_t list = {0};
+    bool store_ok = (user_store_load(&list) == ESP_OK);
+
+    for (int i = 0; i < 256 && *count_out < capacity; i++) {
+        int byte_idx = i / 8;
+        int bit_idx  = i % 8;
+        if (!((bitmap[byte_idx] >> bit_idx) & 1)) {
+            continue; // template slot empty
+        }
+        bool linked = false;
+        if (store_ok) {
+            for (size_t j = 0; j < list.count; j++) {
+                if (list.items[j].fingerid == i) {
+                    linked = true;
+                    break;
+                }
+            }
+        }
+        if (!linked) {
+            ids_out[(*count_out)++] = i;
+        }
+    }
+
+    if (store_ok) {
+        user_store_free(&list);
+    }
+    return ESP_OK;
+}
+
 const char *fingerprint_service_status_to_string(r503_status_t status)
 {
     return r503_status_to_string(status);

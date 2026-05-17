@@ -5,6 +5,7 @@
 #include "esp_timer.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
+#include <string.h>
 
 static const char *TAG = "R503";
 
@@ -25,6 +26,7 @@ static const char *TAG = "R503";
 #define R503_CMD_LED_CONTROL        0x35
 #define R503_CMD_AUTO_IDENTIFY      0x32
 #define R503_CMD_AUTO_ENROLL        0x31
+#define R503_CMD_READ_INDEX_TABLE   0x1F
 
 #define R503_LED_BREATHING          0x01
 #define R503_LED_FLASHING           0x02
@@ -527,5 +529,42 @@ esp_err_t r503_device_delete_template(int template_id, r503_status_t *out_status
     if (out_status) {
         *out_status = map_response_code(ack[0]);
     }
+    return ESP_OK;
+}
+
+esp_err_t r503_device_read_index_table(uint8_t page, uint8_t bitmap_out[32], r503_status_t *out_status)
+{
+    if (bitmap_out == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!s_r503_ready) {
+        esp_err_t init_err = r503_device_init();
+        if (init_err != ESP_OK) {
+            if (out_status) *out_status = R503_STATUS_COMM_ERROR;
+            return init_err;
+        }
+    }
+
+    // Response: confirm (1 byte) + 32-byte bitmap. Need ack buffer >= 33 bytes.
+    const uint8_t cmd[] = {R503_CMD_READ_INDEX_TABLE, page};
+    uint8_t ack[34];
+    size_t ack_len = 0;
+    esp_err_t err = send_r503_command(cmd, sizeof(cmd), ack, sizeof(ack), &ack_len);
+    if (err != ESP_OK || ack_len == 0) {
+        if (out_status) *out_status = (err == ESP_ERR_TIMEOUT) ? R503_STATUS_TIMEOUT : R503_STATUS_COMM_ERROR;
+        return err == ESP_OK ? ESP_FAIL : err;
+    }
+
+    r503_status_t st = map_response_code(ack[0]);
+    if (out_status) *out_status = st;
+    if (st != R503_STATUS_OK) {
+        return ESP_OK;
+    }
+    if (ack_len < 33) {
+        if (out_status) *out_status = R503_STATUS_COMM_ERROR;
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    memcpy(bitmap_out, &ack[1], 32);
     return ESP_OK;
 }

@@ -24,6 +24,7 @@ idf_component_register(
          "ui/screens/ui_screen_change_pin.c"
          "ui/screens/ui_screen_home.c"
          "ui/screens/ui_screen_enroll.c"
+         "ui/screens/ui_screen_fp_manage.c"
          "sd/sd_card.c" 
          "cJSON/cJSON.c"
 

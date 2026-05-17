@@ -1,5 +1,4 @@
 {
-    "idf.currentSetup": "/home/erbj/esp/v5.1.6/esp-idf",
-    "idf.port": "/dev/ttyACM0",
-    "idf.flashType": "UART"
+  "idf.customExtraVars": {},
+  "idf.currentSetup": "/home/erbj/esp/v5.1.6/esp-idf"
 }

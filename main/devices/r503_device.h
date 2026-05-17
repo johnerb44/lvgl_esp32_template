@@ -35,6 +35,15 @@ esp_err_t r503_device_init(void);
 esp_err_t r503_device_match(r503_match_result_t *result);
 esp_err_t r503_device_enroll(int userid, int *out_template_id, r503_status_t *out_status);
 esp_err_t r503_device_delete_template(int template_id, r503_status_t *out_status);
+
+/**
+ * @brief Read the sensor's template index table (page 0 covers IDs 0–255).
+ *
+ * bitmap_out must point to a 32-byte caller-provided buffer.
+ * Bit (i*8 + j) is 1 if template ID (i*8 + j) is stored on the sensor.
+ */
+esp_err_t r503_device_read_index_table(uint8_t page, uint8_t bitmap_out[32], r503_status_t *out_status);
+
 const char *r503_status_to_string(r503_status_t status);
 
 #ifdef __cplusplus

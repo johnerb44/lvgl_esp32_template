@@ -301,13 +301,15 @@ static void pin_verify_task(void *arg)
             auth_service_record_success();
             ESP_LOGI(SCREEN_TAG, "PIN accepted — box unlocked");
             create_toast("PIN Accepted — Unlocked!", 2000);
-            lv_timer_create(navigate_to_home_cb, 2500, NULL);
+            lv_timer_t *t_home = lv_timer_create(navigate_to_home_cb, 2500, NULL);
+            lv_timer_set_repeat_count(t_home, 1);
         } else if (err == ESP_OK && match && enroll_mode) {
             auth_service_record_success();
             ESP_LOGI(SCREEN_TAG, "PIN accepted in enroll mode for userid=%d", resolved_userid);
             create_toast("PIN accepted. Setting up enrollment...", 2000);
             ui_screen_enroll_set_context(resolved_userid, true);
-            lv_timer_create(navigate_to_enroll_cb, 2500, NULL);
+            lv_timer_t *t_enroll = lv_timer_create(navigate_to_enroll_cb, 2500, NULL);
+            lv_timer_set_repeat_count(t_enroll, 1);
         } else if (enroll_mode && err == ESP_ERR_INVALID_STATE) {
             create_toast("Multiple users with that PIN. Contact admin.", 3000);
         } else {

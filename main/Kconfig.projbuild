@@ -29,7 +29,7 @@ menu "Example Configuration"
 
         config EXAMPLE_LVGL_PORT_TASK_STACK_SIZE_KB
             int "LVGL task stack size (KB)"
-            default 6
+            default 8
             help
                 Size(KB) of LVGL task stack.
 

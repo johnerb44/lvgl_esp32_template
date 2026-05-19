@@ -12,6 +12,8 @@
 #include "lvgl_port.h"
 #include "esp_log.h"
 #include "ui/ui.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -48,16 +50,39 @@ static user_list_t s_user_list = {0};
 static int s_current_admin_userid = 1;
 static int s_selected_user_index = -1;
 static bool s_is_add_mode = false;
+static volatile bool s_io_task_running = false;
+
+// Task parameter structs (heap-allocated, task frees them)
+typedef struct {
+    char   username[USER_STORE_MAX_USERNAME_LEN + 1];
+    char   pin[USER_STORE_MAX_PIN_LEN + 1];
+    bool   is_admin;
+    bool   is_add_mode;
+    int    target_userid;   // userid of user to update; -1 for add
+    int    admin_userid;
+} save_task_param_t;
+
+typedef struct {
+    int target_userid;
+    int admin_userid;
+} delete_task_param_t;
 
 // Forward declarations
 static void populate_user_dropdown(void);
 static void load_user_to_form(int index);
 static void clear_form(void);
 static void show_error(const char *msg);
+static void show_status(const char *msg);
 static void clear_error(void);
+static void set_buttons_busy(void);
+static void set_buttons_idle(void);
 static void textarea_focus_event_cb(lv_event_t *e);
 static void show_edit_overlay(lv_obj_t *target_ta, const char *title, bool numeric);
 static void show_pin_switch_event_cb(lv_event_t *e);
+static void user_mgmt_load_task(void *pvParam);
+static void user_mgmt_save_task(void *pvParam);
+static void user_mgmt_delete_task(void *pvParam);
+static void user_mgmt_screen_loaded_cb(lv_event_t *e);
 
 // Edit overlay event handler
 static void edit_overlay_event_cb(lv_event_t *e)
@@ -219,26 +244,38 @@ static void delete_confirm_event_cb(lv_event_t *ev)
     if (lv_event_get_code(ev) != LV_EVENT_CLICKED) {
         return;
     }
-    
-    esp_err_t ret = user_service_delete(&s_user_list, s_selected_user_index, s_current_admin_userid);
-    
-    if (ret == ESP_OK) {
-        ret = user_store_save(&s_user_list);
-        if (ret == ESP_OK) {
-            ESP_LOGI(TAG, "User deleted successfully");
-            populate_user_dropdown();
-            s_selected_user_index = -1;
-            clear_form();
-            show_error("User deleted successfully");
-            lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
-        } else {
-            show_error("Failed to save after delete");
-        }
-    } else {
-        show_error("Cannot delete this user");
-    }
-    
+
     lv_msgbox_close(lv_obj_get_parent(lv_event_get_target(ev)));
+
+    if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) {
+        show_error("No user selected");
+        return;
+    }
+
+    if (s_io_task_running) {
+        show_error("Please wait, operation in progress");
+        return;
+    }
+
+    delete_task_param_t *param = malloc(sizeof(delete_task_param_t));
+    if (!param) {
+        show_error("Out of memory");
+        return;
+    }
+    param->target_userid = s_user_list.items[s_selected_user_index].userid;
+    param->admin_userid  = s_current_admin_userid;
+
+    s_io_task_running = true;
+    set_buttons_busy();
+    show_status("Deleting user...");
+
+    if (xTaskCreate(user_mgmt_delete_task, "umgmt_del", 4096, param,
+                    tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
+        free(param);
+        s_io_task_running = false;
+        set_buttons_idle();
+        show_error("Failed to start delete task");
+    }
 }
 
 // Event handlers
@@ -284,97 +321,71 @@ static void save_button_event_cb(lv_event_t *e)
     if (code != LV_EVENT_CLICKED) {
         return;
     }
-    
+
+    if (s_io_task_running) {
+        show_error("Please wait, operation in progress");
+        return;
+    }
+
     clear_error();
-    
-    // Get form values
-    const char *username = lv_textarea_get_text(s_username_input);
-    const char *pin = lv_textarea_get_text(s_pin_input);
+
+    // Get form values (safe: in-memory LVGL calls, inside lock context)
+    const char *username    = lv_textarea_get_text(s_username_input);
+    const char *pin         = lv_textarea_get_text(s_pin_input);
     const char *pin_confirm = lv_textarea_get_text(s_pin_confirm_input);
     bool is_admin = lv_obj_has_state(s_admin_switch, LV_STATE_CHECKED);
-    
-    // Validate inputs
+
+    // Validate
     if (!username || strlen(username) == 0) {
         show_error("Username cannot be empty");
         return;
     }
-    
     if (!user_service_validate_username(username)) {
         show_error("Invalid username format");
         return;
     }
-    
     if (!pin || strlen(pin) == 0) {
         show_error("PIN cannot be empty");
         return;
     }
-    
     if (!user_service_validate_pin(pin)) {
         show_error("PIN must be 4-8 digits");
         return;
     }
-    
     if (strcmp(pin, pin_confirm) != 0) {
         show_error("PINs do not match");
         return;
     }
-    
-    user_t user;
-    memset(&user, 0, sizeof(user));
-    strncpy(user.username, username, sizeof(user.username) - 1);
-    strncpy(user.pin, pin, sizeof(user.pin) - 1);
-    user.admin = is_admin;
-    
-    esp_err_t ret;
-    
-    if (s_is_add_mode) {
-        // Add new user
-        int new_index;
-        ret = user_service_add(&s_user_list, &user, &new_index);
-        
-        if (ret == ESP_OK) {
-            // Save to file
-            ret = user_store_save(&s_user_list);
-            if (ret == ESP_OK) {
-                ESP_LOGI(TAG, "User added successfully");
-                populate_user_dropdown();
-                lv_dropdown_set_selected(s_user_dropdown, new_index);
-                s_selected_user_index = new_index;
-                s_is_add_mode = false;
-                load_user_to_form(new_index);
-                show_error("User added successfully");
-            } else {
-                show_error("Failed to save to file");
-            }
-        } else if (ret == ESP_ERR_NO_MEM) {
-            show_error("User list is full");
-        } else {
-            show_error("Failed to add user");
-        }
-    } else {
-        // Update existing user
-        if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) {
-            show_error("No user selected");
-            return;
-        }
-        
-        ret = user_service_update(&s_user_list, s_selected_user_index, &user, s_current_admin_userid);
-        
-        if (ret == ESP_OK) {
-            // Save to file
-            ret = user_store_save(&s_user_list);
-            if (ret == ESP_OK) {
-                ESP_LOGI(TAG, "User updated successfully");
-                populate_user_dropdown();
-                lv_dropdown_set_selected(s_user_dropdown, s_selected_user_index);
-                load_user_to_form(s_selected_user_index);
-                show_error("User updated successfully");
-            } else {
-                show_error("Failed to save to file");
-            }
-        } else {
-            show_error("Failed to update user");
-        }
+    if (!s_is_add_mode &&
+        (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count)) {
+        show_error("No user selected");
+        return;
+    }
+
+    save_task_param_t *param = malloc(sizeof(save_task_param_t));
+    if (!param) {
+        show_error("Out of memory");
+        return;
+    }
+    strncpy(param->username, username, sizeof(param->username) - 1);
+    strncpy(param->pin,      pin,      sizeof(param->pin) - 1);
+    param->is_admin    = is_admin;
+    param->is_add_mode = s_is_add_mode;
+    param->admin_userid = s_current_admin_userid;
+    param->target_userid = (!s_is_add_mode && s_selected_user_index >= 0)
+                           ? s_user_list.items[s_selected_user_index].userid
+                           : -1;
+
+    s_io_task_running = true;
+    set_buttons_busy();
+    show_status(s_is_add_mode ? "Adding user..." : "Saving user...");
+
+    if (xTaskCreate(user_mgmt_save_task, "umgmt_save", 4096, param,
+                    tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
+        free(param);
+        s_io_task_running = false;
+        set_buttons_idle();
+        show_error("Failed to start save task");
     }
 }
 
@@ -501,6 +512,7 @@ static void clear_form(void)
 static void show_error(const char *msg)
 {
     if (s_error_label && msg) {
+        lv_obj_set_style_text_color(s_error_label, lv_color_hex(0xFF4444), 0);
         lv_label_set_text(s_error_label, msg);
         lv_obj_clear_flag(s_error_label, LV_OBJ_FLAG_HIDDEN);
     }
@@ -511,6 +523,241 @@ static void clear_error(void)
     if (s_error_label) {
         lv_obj_add_flag(s_error_label, LV_OBJ_FLAG_HIDDEN);
     }
+}
+
+static void show_status(const char *msg)
+{
+    if (s_error_label && msg) {
+        lv_obj_set_style_text_color(s_error_label, lv_color_hex(0xFFFFFF), 0);
+        lv_label_set_text(s_error_label, msg);
+        lv_obj_clear_flag(s_error_label, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static void set_buttons_busy(void)
+{
+    if (s_btn_save)   lv_obj_add_state(s_btn_save,   LV_STATE_DISABLED);
+    if (s_btn_delete) lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
+    if (s_btn_add)    lv_obj_add_state(s_btn_add,    LV_STATE_DISABLED);
+    if (s_btn_close)  lv_obj_add_state(s_btn_close,  LV_STATE_DISABLED);
+}
+
+static void set_buttons_idle(void)
+{
+    if (s_btn_add)    lv_obj_clear_state(s_btn_add,    LV_STATE_DISABLED);
+    if (s_btn_close)  lv_obj_clear_state(s_btn_close,  LV_STATE_DISABLED);
+    if (s_selected_user_index >= 0) {
+        if (s_btn_save)   lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
+        if (s_btn_delete) lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+    }
+}
+
+// ── Background tasks (SD I/O outside LVGL lock) ──────────────────────────────
+
+static void user_mgmt_load_task(void *pvParam)
+{
+    (void)pvParam;
+
+    user_list_t fresh = {0};
+    esp_err_t ret = user_store_load(&fresh);
+
+    if (lvgl_port_lock(2000)) {
+        if (ret == ESP_OK) {
+            user_store_free(&s_user_list);
+            s_user_list = fresh;
+            s_selected_user_index = -1;
+            s_is_add_mode = false;
+            populate_user_dropdown();
+            clear_form();
+            set_buttons_idle();
+            if (s_user_list.count > 0) {
+                lv_dropdown_set_selected(s_user_dropdown, 0);
+                s_selected_user_index = 0;
+                load_user_to_form(0);
+                lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
+                lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+            }
+            clear_error();
+            ESP_LOGI(TAG, "Load task: %zu users loaded", s_user_list.count);
+        } else {
+            user_store_free(&fresh);
+            show_error("Failed to load user data from SD card");
+            ESP_LOGE(TAG, "Load task: user_store_load failed: %s", esp_err_to_name(ret));
+        }
+        s_io_task_running = false;
+        lvgl_port_unlock();
+    } else {
+        user_store_free(&fresh);
+        s_io_task_running = false;
+        ESP_LOGE(TAG, "Load task: failed to acquire LVGL lock");
+    }
+
+    vTaskDelete(NULL);
+}
+
+static void user_mgmt_screen_loaded_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_SCREEN_LOADED) return;
+    if (s_io_task_running) return;
+
+    s_io_task_running = true;
+    show_status("Loading users...");
+    set_buttons_busy();
+
+    if (xTaskCreate(user_mgmt_load_task, "umgmt_load", 4096, NULL,
+                    tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
+        s_io_task_running = false;
+        show_error("Failed to start load task");
+        ESP_LOGE(TAG, "Failed to create load task");
+    }
+}
+
+static void user_mgmt_save_task(void *pvParam)
+{
+    save_task_param_t *p = (save_task_param_t *)pvParam;
+
+    user_list_t list = {0};
+    esp_err_t ret = user_store_load(&list);
+    const char *msg = NULL;
+    int new_selected = -1;
+    bool is_add = p->is_add_mode;
+
+    if (ret != ESP_OK) {
+        msg = "Failed to read SD card";
+        ESP_LOGE(TAG, "Save task: user_store_load failed");
+    } else {
+        user_t u = {0};
+        strncpy(u.username, p->username, sizeof(u.username) - 1);
+        strncpy(u.pin,      p->pin,      sizeof(u.pin) - 1);
+        u.admin = p->is_admin;
+
+        if (is_add) {
+            int idx = -1;
+            ret = user_service_add(&list, &u, &idx);
+            if (ret == ESP_OK) {
+                ret = user_store_save(&list);
+                if (ret == ESP_OK) {
+                    new_selected = idx;
+                    msg = "User added successfully";
+                    ESP_LOGI(TAG, "Save task: user added at index %d", idx);
+                } else {
+                    msg = "Failed to save to SD card";
+                }
+            } else if (ret == ESP_ERR_NO_MEM) {
+                msg = "User list is full";
+            } else {
+                msg = "Failed to add user";
+            }
+        } else {
+            // Find user by userid in fresh list
+            int idx = -1;
+            for (int i = 0; i < (int)list.count; i++) {
+                if (list.items[i].userid == p->target_userid) { idx = i; break; }
+            }
+            if (idx < 0) {
+                msg = "User not found";
+            } else {
+                ret = user_service_update(&list, idx, &u, p->admin_userid);
+                if (ret == ESP_OK) {
+                    ret = user_store_save(&list);
+                    if (ret == ESP_OK) {
+                        new_selected = idx;
+                        msg = "User updated successfully";
+                        ESP_LOGI(TAG, "Save task: user updated at index %d", idx);
+                    } else {
+                        msg = "Failed to save to SD card";
+                    }
+                } else {
+                    msg = "Failed to update user";
+                }
+            }
+        }
+    }
+
+    free(p);
+
+    if (lvgl_port_lock(2000)) {
+        user_store_free(&s_user_list);
+        s_user_list = list;
+        s_selected_user_index = new_selected;
+        s_is_add_mode = false;
+        populate_user_dropdown();
+        if (new_selected >= 0) {
+            lv_dropdown_set_selected(s_user_dropdown, new_selected);
+            load_user_to_form(new_selected);
+            lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
+            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+        } else {
+            clear_form();
+        }
+        if (msg) {
+            if (new_selected >= 0 || is_add) show_error(msg);  // success uses show_error too
+            else show_error(msg);
+        }
+        set_buttons_idle();
+        s_io_task_running = false;
+        lvgl_port_unlock();
+    } else {
+        user_store_free(&list);
+        s_io_task_running = false;
+        ESP_LOGE(TAG, "Save task: failed to acquire LVGL lock");
+    }
+
+    vTaskDelete(NULL);
+}
+
+static void user_mgmt_delete_task(void *pvParam)
+{
+    delete_task_param_t *p = (delete_task_param_t *)pvParam;
+
+    user_list_t list = {0};
+    esp_err_t ret = user_store_load(&list);
+    const char *msg = NULL;
+
+    if (ret != ESP_OK) {
+        msg = "Failed to read SD card";
+        ESP_LOGE(TAG, "Delete task: user_store_load failed");
+    } else {
+        int idx = -1;
+        for (int i = 0; i < (int)list.count; i++) {
+            if (list.items[i].userid == p->target_userid) { idx = i; break; }
+        }
+        if (idx < 0) {
+            msg = "User not found";
+        } else {
+            ret = user_service_delete(&list, idx, p->admin_userid);
+            if (ret == ESP_OK) {
+                ret = user_store_save(&list);
+                msg = (ret == ESP_OK) ? "User deleted" : "Failed to save after delete";
+                if (ret == ESP_OK) ESP_LOGI(TAG, "Delete task: userid=%d deleted", p->target_userid);
+            } else {
+                msg = "Cannot delete this user";
+            }
+        }
+    }
+
+    free(p);
+
+    if (lvgl_port_lock(2000)) {
+        user_store_free(&s_user_list);
+        s_user_list = list;
+        s_selected_user_index = -1;
+        s_is_add_mode = false;
+        populate_user_dropdown();
+        clear_form();
+        lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
+        lv_obj_add_state(s_btn_save,   LV_STATE_DISABLED);
+        if (msg) show_error(msg);
+        set_buttons_idle();
+        s_io_task_running = false;
+        lvgl_port_unlock();
+    } else {
+        user_store_free(&list);
+        s_io_task_running = false;
+        ESP_LOGE(TAG, "Delete task: failed to acquire LVGL lock");
+    }
+
+    vTaskDelete(NULL);
 }
 
 // Public functions
@@ -811,7 +1058,9 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_add_event_cb(s_btn_cancel, cancel_button_event_cb, LV_EVENT_CLICKED, NULL);
     
     ESP_LOGI(TAG, "User management UI created with improved layout");
-    
+
+    lv_obj_add_event_cb(s_screen, user_mgmt_screen_loaded_cb, LV_EVENT_SCREEN_LOADED, NULL);
+
     return s_screen;
 }
 
@@ -821,26 +1070,15 @@ void user_mgmt_ui_show(void)
         ESP_LOGE(TAG, "Screen not created");
         return;
     }
-    
-    // Load user data
-    esp_err_t ret = user_store_load(&s_user_list);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to load user data");
-        return;
-    }
-    
-    // Populate dropdown
-    populate_user_dropdown();
-    
-    // Clear form
-    clear_form();
+
+    // Reset transient UI state — data will load via SCREEN_LOADED background task
     s_selected_user_index = -1;
     s_is_add_mode = false;
-    
-    // Load screen
-    lv_screen_load(s_screen);
-    
-    ESP_LOGI(TAG, "User management UI shown with %zu users", s_user_list.count);
+    s_io_task_running = false;
+
+    lv_scr_load_anim(s_screen, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, false);
+
+    ESP_LOGI(TAG, "Navigating to User Management screen");
 }
 
 void user_mgmt_ui_close(void)

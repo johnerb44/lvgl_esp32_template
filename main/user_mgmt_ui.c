@@ -778,6 +778,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_color(header, lv_color_hex(0x2a2a2a), 0);
     lv_obj_set_style_border_width(header, 0, 0);
     lv_obj_set_style_radius(header, 0, 0);
+    lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
     
     lv_obj_t *title = lv_label_create(header);
     lv_label_set_text(title, "User Management");
@@ -812,6 +813,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_color(left_pane, lv_color_hex(0x252525), 0);
     lv_obj_set_style_border_width(left_pane, 0, 0);
     lv_obj_set_style_radius(left_pane, 0, 0);
+    lv_obj_clear_flag(left_pane, LV_OBJ_FLAG_SCROLLABLE);
     
     lv_obj_t *list_label = lv_label_create(left_pane);
     lv_label_set_text(list_label, "Registered Users:");
@@ -835,6 +837,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_opa(bio_cont, 0, 0);
     lv_obj_set_style_border_width(bio_cont, 0, 0);
     lv_obj_set_style_pad_all(bio_cont, 0, 0);
+    lv_obj_clear_flag(bio_cont, LV_OBJ_FLAG_SCROLLABLE);
     
     s_userid_label = lv_label_create(bio_cont);
     lv_label_set_text(s_userid_label, "ID: (new)");
@@ -877,6 +880,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_set_style_pad_all(row, 0, 0); \
         lv_obj_set_flex_flow(row, LV_FLEX_FLOW_COLUMN); \
         lv_obj_set_style_pad_row(row, 5, 0); \
+        lv_obj_clear_flag(row, LV_OBJ_FLAG_SCROLLABLE); \
         lv_obj_t *lbl = lv_label_create(row); \
         lv_label_set_text(lbl, label_text); \
         lv_obj_set_style_text_color(lbl, lv_color_hex(0xaaaaaa), 0); \
@@ -903,6 +907,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_flex_flow(pin_row_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(pin_row_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(pin_row_cont, 20, 0);
+    lv_obj_clear_flag(pin_row_cont, LV_OBJ_FLAG_SCROLLABLE);
     
     {
         lv_obj_t *pin_col = lv_obj_create(pin_row_cont);
@@ -912,6 +917,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_set_style_pad_all(pin_col, 0, 0);
         lv_obj_set_flex_flow(pin_col, LV_FLEX_FLOW_COLUMN);
         lv_obj_set_style_pad_row(pin_col, 5, 0);
+        lv_obj_clear_flag(pin_col, LV_OBJ_FLAG_SCROLLABLE);
         
         lv_obj_t *lbl = lv_label_create(pin_col);
         lv_label_set_text(lbl, "PIN");
@@ -935,6 +941,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_set_style_pad_all(confirm_col, 0, 0);
         lv_obj_set_flex_flow(confirm_col, LV_FLEX_FLOW_COLUMN);
         lv_obj_set_style_pad_row(confirm_col, 5, 0);
+        lv_obj_clear_flag(confirm_col, LV_OBJ_FLAG_SCROLLABLE);
         
         lv_obj_t *lbl = lv_label_create(confirm_col);
         lv_label_set_text(lbl, "Confirm PIN");
@@ -958,6 +965,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_pad_all(switch_row_cont, 0, 0);
     lv_obj_set_flex_flow(switch_row_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(switch_row_cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_clear_flag(switch_row_cont, LV_OBJ_FLAG_SCROLLABLE);
 
     // Show PIN Switch
     {
@@ -969,6 +977,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_set_flex_flow(pin_switch_wrap, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(pin_switch_wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_pad_column(pin_switch_wrap, 10, 0);
+        lv_obj_clear_flag(pin_switch_wrap, LV_OBJ_FLAG_SCROLLABLE);
 
         lv_obj_t *lbl = lv_label_create(pin_switch_wrap);
         lv_label_set_text(lbl, "Show PIN");
@@ -989,6 +998,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         lv_obj_set_flex_flow(admin_switch_wrap, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(admin_switch_wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_pad_column(admin_switch_wrap, 10, 0);
+        lv_obj_clear_flag(admin_switch_wrap, LV_OBJ_FLAG_SCROLLABLE);
 
         lv_obj_t *lbl = lv_label_create(admin_switch_wrap);
         lv_label_set_text(lbl, "Admin");
@@ -1015,6 +1025,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_color(button_row, lv_color_hex(0x2a2a2a), 0);
     lv_obj_set_style_border_width(button_row, 0, 0);
     lv_obj_set_style_radius(button_row, 0, 0);
+    lv_obj_clear_flag(button_row, LV_OBJ_FLAG_SCROLLABLE);
     
     // Add button
     s_btn_add = lv_button_create(button_row);

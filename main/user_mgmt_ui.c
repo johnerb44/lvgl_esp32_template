@@ -828,10 +828,13 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     s_user_dropdown = lv_dropdown_create(left_pane);
     lv_obj_set_width(s_user_dropdown, 240);
     lv_obj_set_style_text_font(s_user_dropdown, &lv_font_montserrat_26, 0);
-    lv_obj_clear_flag(s_user_dropdown, LV_OBJ_FLAG_SCROLL_ON_FOCUS);  // prevent focus triggering scroll-to-view
+    lv_obj_set_style_shadow_width(s_user_dropdown, 0, 0);  // no shadow on button → no ARGB layer needed
+    lv_obj_set_style_radius(s_user_dropdown, 0, 0);         // no rounded corners → no clip-corner layer
+    lv_obj_clear_flag(s_user_dropdown, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_t * list = lv_dropdown_get_list(s_user_dropdown);
     lv_obj_set_style_text_font(list, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_shadow_width(list, 0, 0);    // remove shadow → no draw layer allocation needed
+    lv_obj_set_style_shadow_width(list, 0, 0);    // no shadow on list popup
+    lv_obj_set_style_radius(list, 0, 0);           // no rounded corners on list popup
     lv_obj_set_style_max_height(list, 220, 0);    // cap height so popup stays on screen
     lv_obj_align(s_user_dropdown, LV_ALIGN_TOP_LEFT, 20, 50);
     lv_obj_add_event_cb(s_user_dropdown, dropdown_changed_event_cb, LV_EVENT_VALUE_CHANGED, NULL);

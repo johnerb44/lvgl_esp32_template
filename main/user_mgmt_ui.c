@@ -770,6 +770,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_color(s_screen, lv_color_hex(0x1a1a1a), 0);
     lv_obj_clear_flag(s_screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(s_screen, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_clear_flag(s_screen, LV_OBJ_FLAG_SCROLL_CHAIN_VER | LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
     
     // Header
     lv_obj_t *header = lv_obj_create(s_screen);
@@ -806,6 +807,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_border_width(main_cont, 0, 0);
     lv_obj_set_scrollbar_mode(main_cont, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(main_cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(main_cont, LV_OBJ_FLAG_SCROLL_CHAIN_VER | LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
     
     // Left pane - user list
     lv_obj_t *left_pane = lv_obj_create(main_cont);
@@ -813,7 +815,10 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_bg_color(left_pane, lv_color_hex(0x252525), 0);
     lv_obj_set_style_border_width(left_pane, 0, 0);
     lv_obj_set_style_radius(left_pane, 0, 0);
+    lv_obj_set_style_pad_all(left_pane, 0, 0);
+    lv_obj_set_scrollbar_mode(left_pane, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(left_pane, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_clear_flag(left_pane, LV_OBJ_FLAG_SCROLL_CHAIN_VER | LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
     
     lv_obj_t *list_label = lv_label_create(left_pane);
     lv_label_set_text(list_label, "Registered Users:");
@@ -823,8 +828,11 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     s_user_dropdown = lv_dropdown_create(left_pane);
     lv_obj_set_width(s_user_dropdown, 240);
     lv_obj_set_style_text_font(s_user_dropdown, &lv_font_montserrat_26, 0);
+    lv_obj_clear_flag(s_user_dropdown, LV_OBJ_FLAG_SCROLL_ON_FOCUS);  // prevent focus triggering scroll-to-view
     lv_obj_t * list = lv_dropdown_get_list(s_user_dropdown);
     lv_obj_set_style_text_font(list, &lv_font_montserrat_24, 0);
+    lv_obj_set_style_shadow_width(list, 0, 0);    // remove shadow → no draw layer allocation needed
+    lv_obj_set_style_max_height(list, 220, 0);    // cap height so popup stays on screen
     lv_obj_align(s_user_dropdown, LV_ALIGN_TOP_LEFT, 20, 50);
     lv_obj_add_event_cb(s_user_dropdown, dropdown_changed_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     
@@ -1087,7 +1095,7 @@ void user_mgmt_ui_show(void)
     s_is_add_mode = false;
     s_io_task_running = false;
 
-    lv_scr_load_anim(s_screen, LV_SCR_LOAD_ANIM_MOVE_LEFT, 500, 0, false);
+    lv_screen_load(s_screen);
 
     ESP_LOGI(TAG, "Navigating to User Management screen");
 }

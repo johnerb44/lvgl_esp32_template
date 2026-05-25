@@ -96,8 +96,7 @@ lv_obj_t *ui_screen_change_pin_get(void)
 void ui_screen_user_mgmt_create(void)
 {
     if (!ui_screen_user_mgmt) {
-        // Default admin user ID is 1
-        ui_screen_user_mgmt = user_mgmt_ui_create(1);
+        ui_screen_user_mgmt = user_mgmt_ui_create(0); // userid set at show time from session
     }
 }
 

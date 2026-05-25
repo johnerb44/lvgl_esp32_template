@@ -9,6 +9,7 @@
 #include "user_mgmt_ui.h"
 #include "user_store.h"
 #include "user_service.h"
+#include "services/session_service.h"
 #include "lvgl_port.h"
 #include "esp_log.h"
 #include "ui/ui.h"
@@ -1093,6 +1094,9 @@ void user_mgmt_ui_show(void)
         return;
     }
 
+    // Capture the currently-authenticated admin's userid at show time
+    s_current_admin_userid = session_service_get_userid();
+
     // Reset transient UI state — data will load via SCREEN_LOADED background task
     s_selected_user_index = -1;
     s_is_add_mode = false;
@@ -1100,7 +1104,7 @@ void user_mgmt_ui_show(void)
 
     lv_screen_load(s_screen);
 
-    ESP_LOGI(TAG, "Navigating to User Management screen");
+    ESP_LOGI(TAG, "Navigating to User Management screen (admin userid=%d)", s_current_admin_userid);
 }
 
 void user_mgmt_ui_close(void)

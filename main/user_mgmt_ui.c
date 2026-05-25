@@ -572,6 +572,8 @@ static void set_buttons_idle(void)
 {
     if (s_btn_add)    lv_obj_clear_state(s_btn_add,    LV_STATE_DISABLED);
     if (s_btn_close)  lv_obj_clear_state(s_btn_close,  LV_STATE_DISABLED);
+    if (s_btn_unenroll_finger) lv_obj_clear_state(s_btn_unenroll_finger, LV_STATE_DISABLED);
+    if (s_btn_unenroll_face)   lv_obj_clear_state(s_btn_unenroll_face,   LV_STATE_DISABLED);
     if (s_selected_user_index >= 0) {
         if (s_btn_save)   lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
         if (s_btn_delete) lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);

@@ -10,6 +10,8 @@
 #include "user_store.h"
 #include "user_service.h"
 #include "services/session_service.h"
+#include "services/fingerprint_service.h"
+#include "services/face_service.h"
 #include "lvgl_port.h"
 #include "esp_log.h"
 #include "ui/ui.h"
@@ -30,6 +32,8 @@ static lv_obj_t *s_pin_confirm_input = NULL;
 static lv_obj_t *s_admin_switch = NULL;
 static lv_obj_t *s_fingerid_label = NULL;
 static lv_obj_t *s_faceid_label = NULL;
+static lv_obj_t *s_btn_unenroll_finger = NULL;
+static lv_obj_t *s_btn_unenroll_face = NULL;
 static lv_obj_t *s_lastlogon_label = NULL;
 static lv_obj_t *s_error_label = NULL;
 
@@ -68,6 +72,12 @@ typedef struct {
     int admin_userid;
 } delete_task_param_t;
 
+typedef struct {
+    int  target_userid;
+    int  bio_id;       // fingerid or faceid to delete from sensor
+    bool is_finger;    // true = fingerprint, false = face
+} unenroll_task_param_t;
+
 // Forward declarations
 static void populate_user_dropdown(void);
 static void load_user_to_form(int index);
@@ -83,6 +93,7 @@ static void show_pin_switch_event_cb(lv_event_t *e);
 static void user_mgmt_load_task(void *pvParam);
 static void user_mgmt_save_task(void *pvParam);
 static void user_mgmt_delete_task(void *pvParam);
+static void user_mgmt_unenroll_task(void *pvParam);
 static void user_mgmt_screen_loaded_cb(lv_event_t *e);
 
 // Edit overlay event handler
@@ -486,10 +497,20 @@ static void load_user_to_form(int index)
     snprintf(buf, sizeof(buf), "Finger: %s", 
              user->fingerid >= 0 ? "Enrolled" : "Not enrolled");
     lv_label_set_text(s_fingerid_label, buf);
+    if (user->fingerid >= 0) {
+        lv_obj_clear_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
+    }
     
     snprintf(buf, sizeof(buf), "Face: %s", 
              user->faceid >= 0 ? "Enrolled" : "Not enrolled");
     lv_label_set_text(s_faceid_label, buf);
+    if (user->faceid >= 0) {
+        lv_obj_clear_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
+    }
     
     const char *logon_text = (strlen(user->last_logon) > 0) ? user->last_logon : "Never";
     snprintf(buf, sizeof(buf), "Last Logon: %s", logon_text);
@@ -506,7 +527,9 @@ static void clear_form(void)
     lv_textarea_set_text(s_pin_confirm_input, "");
     lv_obj_clear_state(s_admin_switch, LV_STATE_CHECKED);
     lv_label_set_text(s_fingerid_label, "Finger: Not enrolled");
+    lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
     lv_label_set_text(s_faceid_label, "Face: Not enrolled");
+    lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
     lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
 }
 
@@ -537,10 +560,12 @@ static void show_status(const char *msg)
 
 static void set_buttons_busy(void)
 {
-    if (s_btn_save)   lv_obj_add_state(s_btn_save,   LV_STATE_DISABLED);
-    if (s_btn_delete) lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
-    if (s_btn_add)    lv_obj_add_state(s_btn_add,    LV_STATE_DISABLED);
-    if (s_btn_close)  lv_obj_add_state(s_btn_close,  LV_STATE_DISABLED);
+    if (s_btn_save)            lv_obj_add_state(s_btn_save,            LV_STATE_DISABLED);
+    if (s_btn_delete)          lv_obj_add_state(s_btn_delete,          LV_STATE_DISABLED);
+    if (s_btn_add)             lv_obj_add_state(s_btn_add,             LV_STATE_DISABLED);
+    if (s_btn_close)           lv_obj_add_state(s_btn_close,           LV_STATE_DISABLED);
+    if (s_btn_unenroll_finger) lv_obj_add_state(s_btn_unenroll_finger, LV_STATE_DISABLED);
+    if (s_btn_unenroll_face)   lv_obj_add_state(s_btn_unenroll_face,   LV_STATE_DISABLED);
 }
 
 static void set_buttons_idle(void)
@@ -761,6 +786,144 @@ static void user_mgmt_delete_task(void *pvParam)
     vTaskDelete(NULL);
 }
 
+static void user_mgmt_unenroll_task(void *pvParam)
+{
+    unenroll_task_param_t *p = (unenroll_task_param_t *)pvParam;
+
+    // Delete biometric template from sensor
+    esp_err_t bio_err;
+    if (p->is_finger) {
+        r503_status_t status = R503_STATUS_OK;
+        bio_err = fingerprint_service_delete_template(p->bio_id, &status);
+        if (bio_err != ESP_OK) {
+            ESP_LOGW(TAG, "Unenroll task: delete FP template %d failed (%s), proceeding with DB clear",
+                     p->bio_id, esp_err_to_name(bio_err));
+        }
+    } else {
+        bio_err = face_service_delete_face(p->bio_id);
+        if (bio_err != ESP_OK) {
+            ESP_LOGW(TAG, "Unenroll task: delete face %d failed (%s), proceeding with DB clear",
+                     p->bio_id, esp_err_to_name(bio_err));
+        }
+    }
+
+    // Clear the biometric ID in the user record on SD
+    user_list_t list = {0};
+    esp_err_t ret = user_store_load(&list);
+    const char *msg = NULL;
+    int new_selected = -1;
+
+    if (ret != ESP_OK) {
+        msg = "Failed to read SD card";
+        ESP_LOGE(TAG, "Unenroll task: user_store_load failed");
+    } else {
+        int idx = -1;
+        for (int i = 0; i < (int)list.count; i++) {
+            if (list.items[i].userid == p->target_userid) { idx = i; break; }
+        }
+        if (idx < 0) {
+            msg = "User not found";
+        } else {
+            if (p->is_finger) {
+                list.items[idx].fingerid = -1;
+            } else {
+                list.items[idx].faceid = -1;
+            }
+            ret = user_store_save(&list);
+            if (ret == ESP_OK) {
+                new_selected = idx;
+                msg = p->is_finger ? "Fingerprint unenrolled" : "Face unenrolled";
+                ESP_LOGI(TAG, "Unenroll task: %s cleared for userid=%d",
+                         p->is_finger ? "fingerid" : "faceid", p->target_userid);
+            } else {
+                msg = "Failed to save after unenroll";
+            }
+        }
+    }
+
+    free(p);
+
+    if (lvgl_port_lock(2000)) {
+        user_store_free(&s_user_list);
+        s_user_list = list;
+        s_selected_user_index = new_selected;
+        s_is_add_mode = false;
+        populate_user_dropdown();
+        if (new_selected >= 0) {
+            lv_dropdown_set_selected(s_user_dropdown, new_selected);
+            load_user_to_form(new_selected);
+            lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
+            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+        } else {
+            clear_form();
+        }
+        if (msg) show_error(msg);
+        set_buttons_idle();
+        s_io_task_running = false;
+        lvgl_port_unlock();
+    } else {
+        user_store_free(&list);
+        s_io_task_running = false;
+        ESP_LOGE(TAG, "Unenroll task: failed to acquire LVGL lock");
+    }
+
+    vTaskDelete(NULL);
+}
+
+static void unenroll_finger_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    if (s_io_task_running) return;
+    if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
+
+    user_t *user = &s_user_list.items[s_selected_user_index];
+    if (user->fingerid < 0) return;
+
+    unenroll_task_param_t *p = malloc(sizeof(unenroll_task_param_t));
+    if (!p) { show_error("Out of memory"); return; }
+    p->target_userid = user->userid;
+    p->bio_id        = user->fingerid;
+    p->is_finger     = true;
+
+    s_io_task_running = true;
+    set_buttons_busy();
+    show_status("Unenrolling fingerprint...");
+
+    if (xTaskCreate(user_mgmt_unenroll_task, "umgmt_unenroll", 4096, p,
+                    tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
+        free(p);
+        s_io_task_running = false;
+        show_error("Failed to start unenroll task");
+    }
+}
+
+static void unenroll_face_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    if (s_io_task_running) return;
+    if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
+
+    user_t *user = &s_user_list.items[s_selected_user_index];
+    if (user->faceid < 0) return;
+
+    unenroll_task_param_t *p = malloc(sizeof(unenroll_task_param_t));
+    if (!p) { show_error("Out of memory"); return; }
+    p->target_userid = user->userid;
+    p->bio_id        = user->faceid;
+    p->is_finger     = false;
+
+    s_io_task_running = true;
+    set_buttons_busy();
+    show_status("Unenrolling face...");
+
+    if (xTaskCreate(user_mgmt_unenroll_task, "umgmt_unenroll", 4096, p,
+                    tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
+        free(p);
+        s_io_task_running = false;
+        show_error("Failed to start unenroll task");
+    }
+}
+
 // Public functions
 lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
 {
@@ -842,7 +1005,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     
     // Biometric Info Section (in left pane)
     lv_obj_t *bio_cont = lv_obj_create(left_pane);
-    lv_obj_set_size(bio_cont, 240, 200);
+    lv_obj_set_size(bio_cont, 240, LV_SIZE_CONTENT);
     lv_obj_align(bio_cont, LV_ALIGN_TOP_LEFT, 20, 110);
     lv_obj_set_flex_flow(bio_cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_row(bio_cont, 10, 0);
@@ -855,16 +1018,58 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_label_set_text(s_userid_label, "ID: (new)");
     lv_obj_set_style_text_color(s_userid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_userid_label, &lv_font_montserrat_24, 0);
-    
-    s_fingerid_label = lv_label_create(bio_cont);
+
+    // Finger row: status label + unenroll button
+    lv_obj_t *finger_row = lv_obj_create(bio_cont);
+    lv_obj_set_size(finger_row, 240, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(finger_row, 0, 0);
+    lv_obj_set_style_border_width(finger_row, 0, 0);
+    lv_obj_set_style_pad_all(finger_row, 0, 0);
+    lv_obj_set_flex_flow(finger_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(finger_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_clear_flag(finger_row, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_fingerid_label = lv_label_create(finger_row);
     lv_label_set_text(s_fingerid_label, "Finger: Not enrolled");
     lv_obj_set_style_text_color(s_fingerid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_fingerid_label, &lv_font_montserrat_24, 0);
-    
-    s_faceid_label = lv_label_create(bio_cont);
+
+    s_btn_unenroll_finger = lv_button_create(finger_row);
+    lv_obj_set_size(s_btn_unenroll_finger, 100, 32);
+    lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_radius(s_btn_unenroll_finger, 4, 0);
+    lv_obj_t *uf_lbl = lv_label_create(s_btn_unenroll_finger);
+    lv_label_set_text(uf_lbl, "Unenroll");
+    lv_obj_set_style_text_font(uf_lbl, &lv_font_montserrat_20, 0);
+    lv_obj_center(uf_lbl);
+    lv_obj_add_event_cb(s_btn_unenroll_finger, unenroll_finger_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
+
+    // Face row: status label + unenroll button
+    lv_obj_t *face_row = lv_obj_create(bio_cont);
+    lv_obj_set_size(face_row, 240, LV_SIZE_CONTENT);
+    lv_obj_set_style_bg_opa(face_row, 0, 0);
+    lv_obj_set_style_border_width(face_row, 0, 0);
+    lv_obj_set_style_pad_all(face_row, 0, 0);
+    lv_obj_set_flex_flow(face_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(face_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_clear_flag(face_row, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_faceid_label = lv_label_create(face_row);
     lv_label_set_text(s_faceid_label, "Face: Not enrolled");
     lv_obj_set_style_text_color(s_faceid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_faceid_label, &lv_font_montserrat_24, 0);
+
+    s_btn_unenroll_face = lv_button_create(face_row);
+    lv_obj_set_size(s_btn_unenroll_face, 100, 32);
+    lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_radius(s_btn_unenroll_face, 4, 0);
+    lv_obj_t *ufac_lbl = lv_label_create(s_btn_unenroll_face);
+    lv_label_set_text(ufac_lbl, "Unenroll");
+    lv_obj_set_style_text_font(ufac_lbl, &lv_font_montserrat_20, 0);
+    lv_obj_center(ufac_lbl);
+    lv_obj_add_event_cb(s_btn_unenroll_face, unenroll_face_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
     
     s_lastlogon_label = lv_label_create(bio_cont);
     lv_label_set_text(s_lastlogon_label, "Last Logon: Never");

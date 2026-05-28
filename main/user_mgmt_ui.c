@@ -305,7 +305,7 @@ static void dropdown_changed_event_cb(lv_event_t *e)
             
             // Enable/disable buttons
             lv_obj_clear_state(s_btn_save, LV_STATE_DISABLED);
-            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+            // Delete state is set by load_user_to_form()
         }
     }
 }
@@ -457,6 +457,15 @@ static void close_button_event_cb(lv_event_t *e)
     }
 }
 
+// Returns true if the user at `index` is an admin and the only admin in the list.
+// Used to prevent deletion of the last admin account.
+static bool is_last_admin(int index)
+{
+    if (index < 0 || index >= (int)s_user_list.count) return false;
+    user_t *u = &s_user_list.items[index];
+    return u->admin && (user_service_count_admins(&s_user_list) <= 1);
+}
+
 // Helper functions
 static void populate_user_dropdown(void)
 {
@@ -517,6 +526,15 @@ static void load_user_to_form(int index)
     lv_label_set_text(s_lastlogon_label, buf);
     
     ESP_LOGI(TAG, "Loaded user '%s' to form", user->username);
+
+    // Delete is disabled for the last admin — there must always be one.
+    if (s_btn_delete) {
+        if (is_last_admin(index)) {
+            lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
+        } else {
+            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+        }
+    }
 }
 
 static void clear_form(void)
@@ -576,7 +594,14 @@ static void set_buttons_idle(void)
     if (s_btn_unenroll_face)   lv_obj_clear_state(s_btn_unenroll_face,   LV_STATE_DISABLED);
     if (s_selected_user_index >= 0) {
         if (s_btn_save)   lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
-        if (s_btn_delete) lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+        // Delete: enable only if this is not the last admin
+        if (s_btn_delete) {
+            if (is_last_admin(s_selected_user_index)) {
+                lv_obj_add_state(s_btn_delete, LV_STATE_DISABLED);
+            } else {
+                lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+            }
+        }
         if (s_btn_unenroll_finger) lv_obj_clear_state(s_btn_unenroll_finger, LV_STATE_DISABLED);
         if (s_btn_unenroll_face)   lv_obj_clear_state(s_btn_unenroll_face,   LV_STATE_DISABLED);
     }
@@ -605,7 +630,7 @@ static void user_mgmt_load_task(void *pvParam)
                 s_selected_user_index = 0;
                 load_user_to_form(0);
                 lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
-                lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+                // Delete state is set by load_user_to_form()
             }
             clear_error();
             ESP_LOGI(TAG, "Load task: %zu users loaded", s_user_list.count);
@@ -716,7 +741,7 @@ static void user_mgmt_save_task(void *pvParam)
             lv_dropdown_set_selected(s_user_dropdown, new_selected);
             load_user_to_form(new_selected);
             lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
-            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+            // Delete state is set by load_user_to_form()
         } else {
             clear_form();
         }
@@ -755,6 +780,29 @@ static void user_mgmt_delete_task(void *pvParam)
         if (idx < 0) {
             msg = "User not found";
         } else {
+            // Remove biometric templates from sensors before deleting the record.
+            // Failure is logged but does not block the DB delete.
+            int fingerid = list.items[idx].fingerid;
+            int faceid   = list.items[idx].faceid;
+
+            if (fingerid >= 0) {
+#if CONFIG_LOCKBOX_FEATURE_R503
+                r503_status_t fp_status = R503_STATUS_OK;
+                esp_err_t fp_err = fingerprint_service_delete_template(fingerid, &fp_status);
+                if (fp_err != ESP_OK) {
+                    ESP_LOGW(TAG, "Delete task: FP template %d delete failed (%s), continuing", fingerid, esp_err_to_name(fp_err));
+                }
+#endif
+            }
+            if (faceid >= 0) {
+#if CONFIG_LOCKBOX_FEATURE_HLK_TX510
+                esp_err_t face_err = face_service_delete_face(faceid);
+                if (face_err != ESP_OK) {
+                    ESP_LOGW(TAG, "Delete task: face %d delete failed (%s), continuing", faceid, esp_err_to_name(face_err));
+                }
+#endif
+            }
+
             ret = user_service_delete(&list, idx, p->admin_userid);
             if (ret == ESP_OK) {
                 ret = user_store_save(&list);
@@ -857,7 +905,7 @@ static void user_mgmt_unenroll_task(void *pvParam)
             lv_dropdown_set_selected(s_user_dropdown, new_selected);
             load_user_to_form(new_selected);
             lv_obj_clear_state(s_btn_save,   LV_STATE_DISABLED);
-            lv_obj_clear_state(s_btn_delete, LV_STATE_DISABLED);
+            // Delete state is set by load_user_to_form()
         } else {
             clear_form();
         }

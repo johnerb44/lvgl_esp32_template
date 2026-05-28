@@ -1023,57 +1023,15 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_text_color(s_userid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_userid_label, &lv_font_montserrat_24, 0);
 
-    // Finger row: status label + unenroll button
-    lv_obj_t *finger_row = lv_obj_create(bio_cont);
-    lv_obj_set_size(finger_row, 240, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_opa(finger_row, 0, 0);
-    lv_obj_set_style_border_width(finger_row, 0, 0);
-    lv_obj_set_style_pad_all(finger_row, 0, 0);
-    lv_obj_set_flex_flow(finger_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(finger_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_clear_flag(finger_row, LV_OBJ_FLAG_SCROLLABLE);
-
-    s_fingerid_label = lv_label_create(finger_row);
+    s_fingerid_label = lv_label_create(bio_cont);
     lv_label_set_text(s_fingerid_label, "Finger: Not enrolled");
     lv_obj_set_style_text_color(s_fingerid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_fingerid_label, &lv_font_montserrat_24, 0);
 
-    s_btn_unenroll_finger = lv_button_create(finger_row);
-    lv_obj_set_size(s_btn_unenroll_finger, 100, 32);
-    lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xF44336), 0);
-    lv_obj_set_style_radius(s_btn_unenroll_finger, 4, 0);
-    lv_obj_t *uf_lbl = lv_label_create(s_btn_unenroll_finger);
-    lv_label_set_text(uf_lbl, "Unenroll");
-    lv_obj_set_style_text_font(uf_lbl, &lv_font_montserrat_20, 0);
-    lv_obj_center(uf_lbl);
-    lv_obj_add_event_cb(s_btn_unenroll_finger, unenroll_finger_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
-
-    // Face row: status label + unenroll button
-    lv_obj_t *face_row = lv_obj_create(bio_cont);
-    lv_obj_set_size(face_row, 240, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_opa(face_row, 0, 0);
-    lv_obj_set_style_border_width(face_row, 0, 0);
-    lv_obj_set_style_pad_all(face_row, 0, 0);
-    lv_obj_set_flex_flow(face_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(face_row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_clear_flag(face_row, LV_OBJ_FLAG_SCROLLABLE);
-
-    s_faceid_label = lv_label_create(face_row);
+    s_faceid_label = lv_label_create(bio_cont);
     lv_label_set_text(s_faceid_label, "Face: Not enrolled");
     lv_obj_set_style_text_color(s_faceid_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_faceid_label, &lv_font_montserrat_24, 0);
-
-    s_btn_unenroll_face = lv_button_create(face_row);
-    lv_obj_set_size(s_btn_unenroll_face, 100, 32);
-    lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xF44336), 0);
-    lv_obj_set_style_radius(s_btn_unenroll_face, 4, 0);
-    lv_obj_t *ufac_lbl = lv_label_create(s_btn_unenroll_face);
-    lv_label_set_text(ufac_lbl, "Unenroll");
-    lv_obj_set_style_text_font(ufac_lbl, &lv_font_montserrat_20, 0);
-    lv_obj_center(ufac_lbl);
-    lv_obj_add_event_cb(s_btn_unenroll_face, unenroll_face_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
     
     s_lastlogon_label = lv_label_create(bio_cont);
     lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
@@ -1228,7 +1186,40 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
         
         s_admin_switch = lv_switch_create(admin_switch_wrap);
     }
-    
+
+    // Unenroll buttons row (right pane, below toggles)
+    lv_obj_t *unenroll_row_cont = lv_obj_create(right_pane);
+    lv_obj_set_size(unenroll_row_cont, LV_PCT(100), 50);
+    lv_obj_set_style_bg_opa(unenroll_row_cont, 0, 0);
+    lv_obj_set_style_border_width(unenroll_row_cont, 0, 0);
+    lv_obj_set_style_pad_all(unenroll_row_cont, 0, 0);
+    lv_obj_set_flex_flow(unenroll_row_cont, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(unenroll_row_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_pad_column(unenroll_row_cont, 20, 0);
+    lv_obj_clear_flag(unenroll_row_cont, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_btn_unenroll_finger = lv_button_create(unenroll_row_cont);
+    lv_obj_set_size(s_btn_unenroll_finger, 185, 44);
+    lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_radius(s_btn_unenroll_finger, 4, 0);
+    lv_obj_t *uf_lbl = lv_label_create(s_btn_unenroll_finger);
+    lv_label_set_text(uf_lbl, "Finger Unenroll");
+    lv_obj_set_style_text_font(uf_lbl, &lv_font_montserrat_22, 0);
+    lv_obj_center(uf_lbl);
+    lv_obj_add_event_cb(s_btn_unenroll_finger, unenroll_finger_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
+
+    s_btn_unenroll_face = lv_button_create(unenroll_row_cont);
+    lv_obj_set_size(s_btn_unenroll_face, 185, 44);
+    lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_radius(s_btn_unenroll_face, 4, 0);
+    lv_obj_t *ufac_lbl = lv_label_create(s_btn_unenroll_face);
+    lv_label_set_text(ufac_lbl, "Face Unenroll");
+    lv_obj_set_style_text_font(ufac_lbl, &lv_font_montserrat_22, 0);
+    lv_obj_center(ufac_lbl);
+    lv_obj_add_event_cb(s_btn_unenroll_face, unenroll_face_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
+
     // Error label
     s_error_label = lv_label_create(right_pane);
     lv_label_set_text(s_error_label, "");

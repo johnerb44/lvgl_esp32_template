@@ -1225,6 +1225,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_label_set_text(s_error_label, "");
     lv_obj_set_style_text_color(s_error_label, lv_color_hex(0xff4444), 0);
     lv_obj_set_style_text_font(s_error_label, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_margin_top(s_error_label, -15, 0);
     lv_obj_add_flag(s_error_label, LV_OBJ_FLAG_HIDDEN);
     
     // Bottom button row

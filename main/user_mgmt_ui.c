@@ -423,6 +423,7 @@ static void delete_button_event_cb(lv_event_t *e)
     
     // Create confirmation dialog
     lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_obj_set_size(mbox, 480, 280);
     lv_msgbox_add_title(mbox, "Confirm Delete");
     
     char msg[128];
@@ -998,6 +999,7 @@ static void unenroll_finger_event_cb(lv_event_t *e)
     if (user->fingerid < 0) return;
 
     lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_obj_set_size(mbox, 480, 280);
     lv_msgbox_add_title(mbox, "Confirm Unenroll");
     char msg[128];
     snprintf(msg, sizeof(msg), "Remove fingerprint for '%s'?\nThis cannot be undone.", user->username);
@@ -1018,6 +1020,7 @@ static void unenroll_face_event_cb(lv_event_t *e)
     if (user->faceid < 0) return;
 
     lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_obj_set_size(mbox, 480, 280);
     lv_msgbox_add_title(mbox, "Confirm Unenroll");
     char msg[128];
     snprintf(msg, sizeof(msg), "Remove face ID for '%s'?\nThis cannot be undone.", user->username);

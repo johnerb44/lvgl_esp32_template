@@ -97,6 +97,7 @@ static void user_mgmt_unenroll_task(void *pvParam);
 static void unenroll_finger_confirm_event_cb(lv_event_t *e);
 static void unenroll_face_confirm_event_cb(lv_event_t *e);
 static void user_mgmt_screen_loaded_cb(lv_event_t *e);
+static lv_obj_t *create_confirm_dialog(const char *title, const char *msg);
 
 // Edit overlay event handler
 static void edit_overlay_event_cb(lv_event_t *e)
@@ -250,6 +251,38 @@ static void textarea_focus_event_cb(lv_event_t *e)
         show_edit_overlay(ta, title, numeric);
         ESP_LOGI(TAG, "Edit overlay shown for: %s", title);
     }
+}
+
+// Shared helper: creates a sized, styled confirm dialog with title, body text, and X close button.
+// Caller adds the footer button via lv_msgbox_add_footer_button() and styles it with
+// style_confirm_footer_button().
+static lv_obj_t *create_confirm_dialog(const char *title, const char *msg)
+{
+    lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_obj_set_size(mbox, 300, 180);
+
+    lv_obj_t *title_lbl = lv_msgbox_add_title(mbox, title);
+    lv_obj_set_style_text_font(title_lbl, &lv_font_montserrat_22, 0);
+
+    lv_obj_t *close_btn = lv_msgbox_add_close_button(mbox);
+    lv_obj_set_size(close_btn, 44, 44);
+    lv_obj_t *close_lbl = lv_obj_get_child(close_btn, 0);
+    if (close_lbl) lv_obj_set_style_text_font(close_lbl, &lv_font_montserrat_22, 0);
+
+    lv_obj_t *text_lbl = lv_msgbox_add_text(mbox, msg);
+    lv_obj_set_style_text_font(text_lbl, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_align(text_lbl, LV_TEXT_ALIGN_CENTER, 0);
+
+    lv_obj_center(mbox);
+    return mbox;
+}
+
+// Apply consistent sizing and font to a footer confirm button.
+static void style_confirm_footer_button(lv_obj_t *btn)
+{
+    lv_obj_set_size(btn, 130, 48);
+    lv_obj_t *lbl = lv_obj_get_child(btn, 0);
+    if (lbl) lv_obj_set_style_text_font(lbl, &lv_font_montserrat_22, 0);
 }
 
 // Event handler for delete confirmation
@@ -421,22 +454,14 @@ static void delete_button_event_cb(lv_event_t *e)
         return;
     }
     
-    // Create confirmation dialog
-    lv_obj_t *mbox = lv_msgbox_create(s_screen);
-    lv_obj_set_size(mbox, 480, 280);
-    lv_msgbox_add_title(mbox, "Confirm Delete");
-    
     char msg[128];
     user_t *user = &s_user_list.items[s_selected_user_index];
-    snprintf(msg, sizeof(msg), "Delete user '%s' (ID %d)?\nThis cannot be undone.", 
+    snprintf(msg, sizeof(msg), "Delete user '%s' (ID %d)?\nThis cannot be undone.",
              user->username, user->userid);
-    lv_msgbox_add_text(mbox, msg);
-    
-    lv_msgbox_add_close_button(mbox);
+    lv_obj_t *mbox = create_confirm_dialog("Confirm Delete", msg);
     lv_obj_t *btn = lv_msgbox_add_footer_button(mbox, "Delete");
+    style_confirm_footer_button(btn);
     lv_obj_add_event_cb(btn, delete_confirm_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_center(mbox);
 }
 
 static void cancel_button_event_cb(lv_event_t *e)
@@ -998,16 +1023,12 @@ static void unenroll_finger_event_cb(lv_event_t *e)
     user_t *user = &s_user_list.items[s_selected_user_index];
     if (user->fingerid < 0) return;
 
-    lv_obj_t *mbox = lv_msgbox_create(s_screen);
-    lv_obj_set_size(mbox, 480, 280);
-    lv_msgbox_add_title(mbox, "Confirm Unenroll");
     char msg[128];
     snprintf(msg, sizeof(msg), "Remove fingerprint for '%s'?\nThis cannot be undone.", user->username);
-    lv_msgbox_add_text(mbox, msg);
-    lv_msgbox_add_close_button(mbox);
+    lv_obj_t *mbox = create_confirm_dialog("Confirm Unenroll", msg);
     lv_obj_t *btn = lv_msgbox_add_footer_button(mbox, "Unenroll");
+    style_confirm_footer_button(btn);
     lv_obj_add_event_cb(btn, unenroll_finger_confirm_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_center(mbox);
 }
 
 static void unenroll_face_event_cb(lv_event_t *e)
@@ -1019,16 +1040,12 @@ static void unenroll_face_event_cb(lv_event_t *e)
     user_t *user = &s_user_list.items[s_selected_user_index];
     if (user->faceid < 0) return;
 
-    lv_obj_t *mbox = lv_msgbox_create(s_screen);
-    lv_obj_set_size(mbox, 480, 280);
-    lv_msgbox_add_title(mbox, "Confirm Unenroll");
     char msg[128];
     snprintf(msg, sizeof(msg), "Remove face ID for '%s'?\nThis cannot be undone.", user->username);
-    lv_msgbox_add_text(mbox, msg);
-    lv_msgbox_add_close_button(mbox);
+    lv_obj_t *mbox = create_confirm_dialog("Confirm Unenroll", msg);
     lv_obj_t *btn = lv_msgbox_add_footer_button(mbox, "Unenroll");
+    style_confirm_footer_button(btn);
     lv_obj_add_event_cb(btn, unenroll_face_confirm_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_center(mbox);
 }
 
 // Public functions

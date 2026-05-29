@@ -352,6 +352,10 @@ static void save_button_event_cb(lv_event_t *e)
         show_error("Username cannot be empty");
         return;
     }
+    if (strcasecmp(username, "New User") == 0) {
+        show_error("Please enter a real username");
+        return;
+    }
     if (!user_service_validate_username(username)) {
         show_error("Invalid username format");
         return;

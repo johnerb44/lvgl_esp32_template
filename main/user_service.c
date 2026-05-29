@@ -232,6 +232,15 @@ esp_err_t user_service_update(user_list_t *list, int index, const user_t *update
         ESP_LOGE(TAG, "Cannot demote currently logged in admin");
         return ESP_ERR_INVALID_ARG;
     }
+
+    // Prevent demoting the last admin regardless of who is making the change
+    if (user->admin && !updated_user->admin) {
+        int admin_count = user_service_count_admins(list);
+        if (admin_count <= 1) {
+            ESP_LOGE(TAG, "Cannot demote last admin user");
+            return ESP_ERR_INVALID_ARG;
+        }
+    }
     
     // Update editable fields
     strncpy(user->username, updated_user->username, sizeof(user->username) - 1);

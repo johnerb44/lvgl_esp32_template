@@ -66,11 +66,10 @@ void ui_screen_main_create(void)
     lv_obj_set_style_text_align(info_box, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_text(info_box, "M.O.S.S. has classified the contents of this box:\n\nTOP SECRET\n\nAccess requires biometric and PIN authentication.");
     lv_obj_set_style_text_font(info_box, &lv_font_montserrat_26, 0);
-    lv_obj_set_align(info_box, LV_ALIGN_CENTER);
-    //lv_obj_set_y(info_box, 50);
+    lv_obj_align(info_box, LV_ALIGN_CENTER, 0, -30);
     
     lv_obj_t * start_button = lv_button_create(ui_screen_main);
-    lv_obj_align(start_button, LV_ALIGN_BOTTOM_MID, 0, -60);
+    lv_obj_align(start_button, LV_ALIGN_BOTTOM_MID, 0, -80);
     lv_obj_set_style_bg_color(start_button, lv_color_hex(0xe19419), 0);
     
     lv_obj_t * lv_label_0 = lv_label_create(start_button);
@@ -82,7 +81,7 @@ void ui_screen_main_create(void)
 
     // First-Time Setup button
     lv_obj_t *setup_button = lv_button_create(ui_screen_main);
-    lv_obj_align(setup_button, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_align(setup_button, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_obj_set_style_bg_color(setup_button, lv_color_hex(0x6c757d), 0);
 
     lv_obj_t *lv_label_1 = lv_label_create(setup_button);

@@ -94,6 +94,8 @@ static void user_mgmt_load_task(void *pvParam);
 static void user_mgmt_save_task(void *pvParam);
 static void user_mgmt_delete_task(void *pvParam);
 static void user_mgmt_unenroll_task(void *pvParam);
+static void unenroll_finger_confirm_event_cb(lv_event_t *e);
+static void unenroll_face_confirm_event_cb(lv_event_t *e);
 static void user_mgmt_screen_loaded_cb(lv_event_t *e);
 
 // Edit overlay event handler
@@ -926,9 +928,11 @@ static void user_mgmt_unenroll_task(void *pvParam)
     vTaskDelete(NULL);
 }
 
-static void unenroll_finger_event_cb(lv_event_t *e)
+static void unenroll_finger_confirm_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    lv_msgbox_close(lv_obj_get_parent(lv_event_get_target(e)));
+
     if (s_io_task_running) return;
     if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
 
@@ -949,13 +953,16 @@ static void unenroll_finger_event_cb(lv_event_t *e)
                     tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
         free(p);
         s_io_task_running = false;
+        set_buttons_idle();
         show_error("Failed to start unenroll task");
     }
 }
 
-static void unenroll_face_event_cb(lv_event_t *e)
+static void unenroll_face_confirm_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    lv_msgbox_close(lv_obj_get_parent(lv_event_get_target(e)));
+
     if (s_io_task_running) return;
     if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
 
@@ -976,8 +983,49 @@ static void unenroll_face_event_cb(lv_event_t *e)
                     tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
         free(p);
         s_io_task_running = false;
+        set_buttons_idle();
         show_error("Failed to start unenroll task");
     }
+}
+
+static void unenroll_finger_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    if (s_io_task_running) return;
+    if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
+
+    user_t *user = &s_user_list.items[s_selected_user_index];
+    if (user->fingerid < 0) return;
+
+    lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_msgbox_add_title(mbox, "Confirm Unenroll");
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Remove fingerprint for '%s'?\nThis cannot be undone.", user->username);
+    lv_msgbox_add_text(mbox, msg);
+    lv_msgbox_add_close_button(mbox);
+    lv_obj_t *btn = lv_msgbox_add_footer_button(mbox, "Unenroll");
+    lv_obj_add_event_cb(btn, unenroll_finger_confirm_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_center(mbox);
+}
+
+static void unenroll_face_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+    if (s_io_task_running) return;
+    if (s_selected_user_index < 0 || s_selected_user_index >= (int)s_user_list.count) return;
+
+    user_t *user = &s_user_list.items[s_selected_user_index];
+    if (user->faceid < 0) return;
+
+    lv_obj_t *mbox = lv_msgbox_create(s_screen);
+    lv_msgbox_add_title(mbox, "Confirm Unenroll");
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Remove face ID for '%s'?\nThis cannot be undone.", user->username);
+    lv_msgbox_add_text(mbox, msg);
+    lv_msgbox_add_close_button(mbox);
+    lv_obj_t *btn = lv_msgbox_add_footer_button(mbox, "Unenroll");
+    lv_obj_add_event_cb(btn, unenroll_face_confirm_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_center(mbox);
 }
 
 // Public functions

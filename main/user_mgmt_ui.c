@@ -208,7 +208,7 @@ static void show_edit_overlay(lv_obj_t *target_ta, const char *title, bool numer
     
     lv_obj_t *btn_apply = lv_button_create(btn_cont);
     lv_obj_set_size(btn_apply, 120, 45);
-    lv_obj_set_style_bg_color(btn_apply, lv_color_hex(0x2196F3), 0);
+    lv_obj_set_style_bg_color(btn_apply, lv_color_hex(0xe19419), 0);
     lv_obj_t *apply_label = lv_label_create(btn_apply);
     lv_label_set_text(apply_label, "Apply");
     lv_obj_set_style_text_font(apply_label, &lv_font_montserrat_26, 0);
@@ -217,7 +217,7 @@ static void show_edit_overlay(lv_obj_t *target_ta, const char *title, bool numer
     
     lv_obj_t *btn_cancel_edit = lv_button_create(btn_cont);
     lv_obj_set_size(btn_cancel_edit, 120, 45);
-    lv_obj_set_style_bg_color(btn_cancel_edit, lv_color_hex(0x757575), 0);
+    lv_obj_set_style_bg_color(btn_cancel_edit, lv_color_hex(0x555555), 0);
     lv_obj_set_style_margin_left(btn_cancel_edit, 20, 0);
     lv_obj_t *cancel_edit_label = lv_label_create(btn_cancel_edit);
     lv_label_set_text(cancel_edit_label, "Cancel");
@@ -1071,17 +1071,18 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     
     lv_obj_t *title = lv_label_create(header);
     lv_label_set_text(title, "User Management");
-    //lv_obj_set_style_text_color(title, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_color(title, lv_color_hex(0x8719e0), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_26, 0);
-    lv_obj_align(title, LV_ALIGN_LEFT_MID, 20, 0);
+    lv_obj_align(title, LV_ALIGN_CENTER, 0, 0);
     
     s_btn_close = lv_button_create(header);
-    lv_obj_set_size(s_btn_close, 100, 40);
-    lv_obj_align(s_btn_close, LV_ALIGN_RIGHT_MID, -20, 0);
+    lv_obj_set_size(s_btn_close, 90, 40);
+    lv_obj_align(s_btn_close, LV_ALIGN_LEFT_MID, 10, 0);
+    lv_obj_set_style_bg_color(s_btn_close, lv_color_hex(0x444444), 0);
     lv_obj_t *close_label = lv_label_create(s_btn_close);
-    lv_label_set_text(close_label, "Back");
-    lv_obj_set_style_text_font(close_label, &lv_font_montserrat_26, 0);
+    lv_label_set_text(close_label, "< Back");
+    lv_obj_set_style_text_color(close_label, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(close_label, &lv_font_montserrat_16, 0);
     lv_obj_center(close_label);
     lv_obj_add_event_cb(s_btn_close, close_button_event_cb, LV_EVENT_CLICKED, NULL);
     
@@ -1320,7 +1321,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
 
     s_btn_unenroll_finger = lv_button_create(unenroll_row_cont);
     lv_obj_set_size(s_btn_unenroll_finger, 185, 44);
-    lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xcc2222), 0);
     lv_obj_set_style_radius(s_btn_unenroll_finger, 4, 0);
     lv_obj_t *uf_lbl = lv_label_create(s_btn_unenroll_finger);
     lv_label_set_text(uf_lbl, "Finger Unenroll");
@@ -1331,7 +1332,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
 
     s_btn_unenroll_face = lv_button_create(unenroll_row_cont);
     lv_obj_set_size(s_btn_unenroll_face, 185, 44);
-    lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xcc2222), 0);
     lv_obj_set_style_radius(s_btn_unenroll_face, 4, 0);
     lv_obj_t *ufac_lbl = lv_label_create(s_btn_unenroll_face);
     lv_label_set_text(ufac_lbl, "Face Unenroll");
@@ -1363,6 +1364,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     // Add button
     s_btn_add = lv_button_create(button_row);
     lv_obj_set_size(s_btn_add, 160, 50);
+    lv_obj_set_style_bg_color(s_btn_add, lv_color_hex(0xe19419), 0);
     lv_obj_t *add_label = lv_label_create(s_btn_add);
     lv_label_set_text(add_label, "Add New");
     lv_obj_set_style_text_font(add_label, &lv_font_montserrat_26, 0);
@@ -1372,7 +1374,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     // Save button
     s_btn_save = lv_button_create(button_row);
     lv_obj_set_size(s_btn_save, 160, 50);
-    lv_obj_set_style_bg_color(s_btn_save, lv_color_hex(0x4CAF50), 0);
+    lv_obj_set_style_bg_color(s_btn_save, lv_color_hex(0x197de0), 0);
     lv_obj_t *save_label = lv_label_create(s_btn_save);
     lv_label_set_text(save_label, "Save");
     lv_obj_set_style_text_font(save_label, &lv_font_montserrat_26, 0);
@@ -1383,7 +1385,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     // Delete button
     s_btn_delete = lv_button_create(button_row);
     lv_obj_set_size(s_btn_delete, 160, 50);
-    lv_obj_set_style_bg_color(s_btn_delete, lv_color_hex(0xF44336), 0);
+    lv_obj_set_style_bg_color(s_btn_delete, lv_color_hex(0xcc2222), 0);
     lv_obj_t *delete_label = lv_label_create(s_btn_delete);
     lv_label_set_text(delete_label, "Delete");
     lv_obj_set_style_text_font(delete_label, &lv_font_montserrat_26, 0);
@@ -1394,7 +1396,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     // Cancel button
     s_btn_cancel = lv_button_create(button_row);
     lv_obj_set_size(s_btn_cancel, 160, 50);
-    lv_obj_set_style_bg_color(s_btn_cancel, lv_color_hex(0x757575), 0);
+    lv_obj_set_style_bg_color(s_btn_cancel, lv_color_hex(0x555555), 0);
     lv_obj_t *cancel_label = lv_label_create(s_btn_cancel);
     lv_label_set_text(cancel_label, "Cancel");
     lv_obj_set_style_text_font(cancel_label, &lv_font_montserrat_26, 0);

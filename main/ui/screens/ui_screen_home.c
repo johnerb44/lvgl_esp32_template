@@ -93,9 +93,11 @@ void ui_screen_home_create(void)
     lv_obj_set_style_bg_color(unlock_button, lv_color_hex(0xe19419), 0);
     
     lv_obj_t * lv_label_0 = lv_label_create(unlock_button);
-    lv_label_set_text(lv_label_0, "1  Unlock Secure Box");
+    lv_label_set_text(lv_label_0, "Unlock Secure Box");
     lv_obj_set_style_text_color(lv_label_0, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_0,  &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_align(lv_label_0, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(lv_label_0);
     
     lv_obj_add_event_cb(unlock_button, unlock_btn_event_cb, LV_EVENT_CLICKED, NULL);
     
@@ -106,9 +108,11 @@ void ui_screen_home_create(void)
     lv_obj_set_style_bg_color(change_pin_button, lv_color_hex(0x197de0), 0);
     
     lv_obj_t * lv_label_1 = lv_label_create(change_pin_button);
-    lv_label_set_text(lv_label_1, "2  Change PIN");
+    lv_label_set_text(lv_label_1, "Change PIN");
     lv_obj_set_style_text_color(lv_label_1, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_1,  &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_align(lv_label_1, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(lv_label_1);
     
     lv_obj_add_event_cb(change_pin_button, change_pin_btn_event_cb, LV_EVENT_CLICKED, NULL);
     
@@ -116,12 +120,14 @@ void ui_screen_home_create(void)
     lv_obj_set_align(register_button, LV_ALIGN_CENTER);
     lv_obj_set_width(register_button, 420);
     lv_obj_set_y(register_button, 20);
-    lv_obj_set_style_bg_color(register_button, lv_color_hex(0x21e019), 0);
+    lv_obj_set_style_bg_color(register_button, lv_color_hex(0x21a019), 0);
     
     lv_obj_t * lv_label_2 = lv_label_create(register_button);
-    lv_label_set_text(lv_label_2, "3  Register Biometrics");
+    lv_label_set_text(lv_label_2, "Register Biometrics");
     lv_obj_set_style_text_color(lv_label_2, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_2, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_align(lv_label_2, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(lv_label_2);
     
     lv_obj_add_event_cb(register_button, register_btn_event_cb, LV_EVENT_CLICKED, NULL);
     
@@ -132,9 +138,11 @@ void ui_screen_home_create(void)
     lv_obj_set_style_bg_color(admin_button, lv_color_hex(0x8719e0), 0);
     
     lv_obj_t * lv_label_3 = lv_label_create(admin_button);
-    lv_label_set_text(lv_label_3, "4  Admin");
+    lv_label_set_text(lv_label_3, "Admin");
     lv_obj_set_style_text_color(lv_label_3, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_3, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_align(lv_label_3, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(lv_label_3);
     
     lv_obj_add_event_cb(admin_button, admin_button_event_handler, LV_EVENT_CLICKED, NULL);
     
@@ -145,9 +153,11 @@ void ui_screen_home_create(void)
     lv_obj_set_style_bg_color(signout_button, lv_color_hex(0xd9e019), 0);
     
     lv_obj_t * lv_label_4 = lv_label_create(signout_button);
-    lv_label_set_text(lv_label_4, "5  Sign Out/Lock Secure Box             ");
+    lv_label_set_text(lv_label_4, "Sign Out / Lock Secure Box");
     lv_obj_set_style_text_color(lv_label_4, lv_color_hex3(0x000), 0);
     lv_obj_set_style_text_font(lv_label_4, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_align(lv_label_4, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(lv_label_4);
     
     lv_obj_add_event_cb(signout_button, signout_btn_event_cb, LV_EVENT_CLICKED, NULL);
 

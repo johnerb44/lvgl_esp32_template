@@ -29,6 +29,14 @@
  **********************/
 static const char *SCREEN_TAG = "UI_SCREEN_BIOMETRIC";
 
+// Event handler for back button
+static void back_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+        lv_scr_load_anim(ui_screen_main, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);
+    }
+}
+
 // Event handler for fingerprint button
 static void fingerprint_btn_event_cb(lv_event_t *event)
 {
@@ -153,7 +161,7 @@ void ui_screen_biometric_create(void)
     lv_obj_set_size(fingerprint_button, 260, 80);
     lv_obj_set_align(fingerprint_button, LV_ALIGN_CENTER);
     lv_obj_set_y(fingerprint_button, -60);
-    lv_obj_set_style_bg_color(fingerprint_button, lv_color_hex(0xe99309), 0);
+    lv_obj_set_style_bg_color(fingerprint_button, lv_color_hex(0xe19419), 0);
     lv_obj_t * lv_label_1 = lv_label_create(fingerprint_button);
     lv_label_set_text(lv_label_1, "Fingerprint Scan");
     lv_obj_center(lv_label_1);
@@ -165,7 +173,7 @@ void ui_screen_biometric_create(void)
     lv_obj_set_size(face_button, 260, 80);
     lv_obj_set_align(face_button, LV_ALIGN_CENTER);
     lv_obj_set_y(face_button, 40);
-    lv_obj_set_style_bg_color(face_button, lv_color_hex(0x19abe0), 0);
+    lv_obj_set_style_bg_color(face_button, lv_color_hex(0x197de0), 0);
     lv_obj_t * lv_label_2 = lv_label_create(face_button);
     lv_label_set_text(lv_label_2, "Face Scan");
     lv_obj_center(lv_label_2);
@@ -173,6 +181,18 @@ void ui_screen_biometric_create(void)
     lv_obj_set_style_text_font(lv_label_2, &lv_font_montserrat_20, 0);
     lv_obj_add_event_cb(face_button, face_btn_event_cb, LV_EVENT_CLICKED, NULL);
     
+    lv_obj_t *back_btn = lv_btn_create(ui_screen_biometric);
+    lv_obj_set_size(back_btn, 90, 40);
+    lv_obj_set_align(back_btn, LV_ALIGN_TOP_LEFT);
+    lv_obj_set_pos(back_btn, 10, 10);
+    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x444444), 0);
+    lv_obj_t *back_label = lv_label_create(back_btn);
+    lv_label_set_text(back_label, "< Back");
+    lv_obj_set_style_text_color(back_label, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(back_label, &lv_font_montserrat_16, 0);
+    lv_obj_center(back_label);
+    lv_obj_add_event_cb(back_btn, back_btn_event_cb, LV_EVENT_CLICKED, NULL);
+
     ESP_LOGI(SCREEN_TAG, "Biometric screen created");
 
     LV_TRACE_OBJ_CREATE("finished");

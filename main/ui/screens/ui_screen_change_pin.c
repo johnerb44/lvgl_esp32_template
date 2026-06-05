@@ -58,6 +58,7 @@ static void button_matrix_event_cb(lv_event_t *event);
 static void submit_btn_event_cb(lv_event_t *event);
 static void show_pin_checkbox_event_cb(lv_event_t *event);
 static void screen_loaded_event_cb(lv_event_t *event);
+static void cancel_btn_event_cb(lv_event_t *event);
 static const char *SCREEN_TAG = "UI_SCREEN_CHANGE_PIN";
 
 static void toast_timer_cb(lv_timer_t *timer);
@@ -293,6 +294,18 @@ void ui_screen_change_pin_create(void)
 
     lv_obj_add_event_cb(submit_button, submit_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
+    lv_obj_t *cancel_btn = lv_button_create(ui_screen_change_pin);
+    lv_obj_set_size(cancel_btn, 90, 40);
+    lv_obj_set_align(cancel_btn, LV_ALIGN_TOP_LEFT);
+    lv_obj_set_pos(cancel_btn, 10, 10);
+    lv_obj_set_style_bg_color(cancel_btn, lv_color_hex(0x444444), 0);
+    lv_obj_t *cancel_label = lv_label_create(cancel_btn);
+    lv_label_set_text(cancel_label, "< Back");
+    lv_obj_set_style_text_color(cancel_label, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_text_font(cancel_label, &lv_font_montserrat_16, 0);
+    lv_obj_center(cancel_label);
+    lv_obj_add_event_cb(cancel_btn, cancel_btn_event_cb, LV_EVENT_CLICKED, NULL);
+
     LV_TRACE_OBJ_CREATE("finished");
 }
 
@@ -308,6 +321,18 @@ static void toast_timer_cb(lv_timer_t *timer) {
 static void navigate_to_home_cb(lv_timer_t *timer) {
     (void)timer;
     lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
+}
+
+static void cancel_btn_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
+    memset(pin_buffer, 0, sizeof(pin_buffer));
+    pin_length = 0;
+    if (s_change_state == CHANGE_PIN_STATE_FORCED) {
+        lv_scr_load_anim(ui_screen_enroll, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);
+    } else {
+        lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);
+    }
 }
 
 static void create_toast(const char *text, int timeout_ms) {

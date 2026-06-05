@@ -285,10 +285,7 @@ static void pin_verify_task(void *arg)
             session_service_set_user(&matched_user);
         }
         if (!enroll_mode) {
-            esp_err_t lock_err = lock_service_unlock(NULL);
-            if (lock_err != ESP_OK) {
-                ESP_LOGE(SCREEN_TAG, "lock_service_unlock failed: %s", esp_err_to_name(lock_err));
-            }
+            // Lock is not driven here — user must press "Unlock Secure Box" on the home screen
         }
     }
     free(args);
@@ -300,8 +297,8 @@ static void pin_verify_task(void *arg)
 
         if (err == ESP_OK && match && !enroll_mode) {
             auth_service_record_success();
-            ESP_LOGI(SCREEN_TAG, "PIN accepted — box unlocked");
-            create_toast("PIN Accepted — Unlocked!", 2000);
+            ESP_LOGI(SCREEN_TAG, "PIN accepted — navigating to home");
+            create_toast("PIN Accepted!", 2000);
             lv_timer_t *t_home = lv_timer_create(navigate_to_home_cb, 2500, NULL);
             lv_timer_set_repeat_count(t_home, 1);
         } else if (err == ESP_OK && match && enroll_mode) {

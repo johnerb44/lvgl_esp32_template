@@ -73,7 +73,7 @@ void ui_screen_home_create(void)
 
     lv_obj_t * title_label = lv_label_create(ui_screen_home);
     lv_label_set_text(title_label, "Secure Lock Box");
-    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_30, 0);
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_28, 0);
     lv_obj_set_align(title_label, LV_ALIGN_TOP_MID);
     lv_obj_set_y(title_label, 10);
 

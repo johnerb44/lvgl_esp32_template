@@ -302,10 +302,11 @@ void ui_screen_enroll_create(void)
     lv_obj_set_x(s_fp_enroll_btn, 0);
     lv_obj_set_y(s_fp_enroll_btn, -40);
     lv_obj_set_width(s_fp_enroll_btn, 220);
-    lv_obj_set_style_bg_color(s_fp_enroll_btn, lv_color_hex(0x21a019), 0);
+    lv_obj_set_style_bg_color(s_fp_enroll_btn, lv_color_hex(0xe19419), 0);
     lv_obj_t *fp_label = lv_label_create(s_fp_enroll_btn);
     lv_label_set_text(fp_label, "Enroll Fingerprint");
-    lv_obj_set_style_text_color(fp_label, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_color(fp_label, lv_color_hex3(0x000), 0);
+    lv_obj_set_style_text_font(fp_label, &lv_font_montserrat_20, 0);
     lv_obj_center(fp_label);
     lv_obj_add_event_cb(s_fp_enroll_btn, fp_enroll_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
@@ -323,10 +324,11 @@ void ui_screen_enroll_create(void)
     lv_obj_set_x(s_face_enroll_btn, 0);
     lv_obj_set_y(s_face_enroll_btn, 90);
     lv_obj_set_width(s_face_enroll_btn, 220);
-    lv_obj_set_style_bg_color(s_face_enroll_btn, lv_color_hex(0x1975e0), 0);
+    lv_obj_set_style_bg_color(s_face_enroll_btn, lv_color_hex(0x197de0), 0);
     lv_obj_t *face_label = lv_label_create(s_face_enroll_btn);
     lv_label_set_text(face_label, "Enroll Face (Optional)");
     lv_obj_set_style_text_color(face_label, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_font(face_label, &lv_font_montserrat_16, 0);
     lv_obj_center(face_label);
     lv_obj_add_event_cb(s_face_enroll_btn, face_enroll_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
@@ -342,11 +344,12 @@ void ui_screen_enroll_create(void)
     lv_obj_set_align(s_done_btn, LV_ALIGN_CENTER);
     lv_obj_set_y(s_done_btn, 210);
     lv_obj_set_width(s_done_btn, 200);
-    lv_obj_set_style_bg_color(s_done_btn, lv_color_hex(0xe19419), 0);
+    lv_obj_set_style_bg_color(s_done_btn, lv_color_hex(0x21a019), 0);
     lv_obj_add_state(s_done_btn, LV_STATE_DISABLED);
     lv_obj_t *done_label = lv_label_create(s_done_btn);
     lv_label_set_text(done_label, "Done");
-    lv_obj_set_style_text_color(done_label, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_color(done_label, lv_color_hex3(0x000), 0);
+    lv_obj_set_style_text_font(done_label, &lv_font_montserrat_26, 0);
     lv_obj_center(done_label);
     lv_obj_add_event_cb(s_done_btn, done_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
@@ -356,10 +359,11 @@ void ui_screen_enroll_create(void)
     lv_obj_set_pos(back_btn, 10, -10);
     lv_obj_set_width(back_btn, 100);
     lv_obj_set_height(back_btn, 40);
-    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x444444), 0);
     lv_obj_t *back_label = lv_label_create(back_btn);
     lv_label_set_text(back_label, "< Back");
     lv_obj_set_style_text_color(back_label, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_font(back_label, &lv_font_montserrat_16, 0);
     lv_obj_center(back_label);
     lv_obj_add_event_cb(back_btn, back_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
@@ -368,7 +372,7 @@ void ui_screen_enroll_create(void)
     lv_obj_set_align(manage_fp_btn, LV_ALIGN_BOTTOM_RIGHT);
     lv_obj_set_pos(manage_fp_btn, -10, -10);
     lv_obj_set_size(manage_fp_btn, 160, 40);
-    lv_obj_set_style_bg_color(manage_fp_btn, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_bg_color(manage_fp_btn, lv_color_hex(0x444444), 0);
     lv_obj_t *manage_fp_label = lv_label_create(manage_fp_btn);
     lv_label_set_text(manage_fp_label, "Manage FP Templates");
     lv_obj_set_style_text_color(manage_fp_label, lv_color_hex(0xffffff), 0);

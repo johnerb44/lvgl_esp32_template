@@ -1055,7 +1055,7 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     
     // Create screen
     s_screen = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(s_screen, lv_color_hex(0x1a1a1a), 0);
+    lv_obj_set_style_bg_color(s_screen, lv_color_hex(0x041d3a), 0);
     lv_obj_clear_flag(s_screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(s_screen, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(s_screen, LV_OBJ_FLAG_SCROLL_CHAIN_VER | LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
@@ -1071,8 +1071,8 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     
     lv_obj_t *title = lv_label_create(header);
     lv_label_set_text(title, "User Management");
-    lv_obj_set_style_text_color(title, lv_color_hex(0x8719e0), 0);
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_26, 0);
+    lv_obj_set_style_text_color(title, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
     lv_obj_align(title, LV_ALIGN_CENTER, 0, 0);
     
     s_btn_close = lv_button_create(header);

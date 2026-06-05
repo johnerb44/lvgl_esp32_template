@@ -378,7 +378,7 @@ void ui_screen_fp_manage_create(void)
     lv_obj_set_align(back_btn, LV_ALIGN_BOTTOM_LEFT);
     lv_obj_set_pos(back_btn, 10, -10);
     lv_obj_set_size(back_btn, 100, 40);
-    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x555555), 0);
+    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x444444), 0);
     lv_obj_t *back_lbl = lv_label_create(back_btn);
     lv_label_set_text(back_lbl, "< Back");
     lv_obj_set_style_text_color(back_lbl, lv_color_hex(0xffffff), 0);
@@ -390,7 +390,7 @@ void ui_screen_fp_manage_create(void)
     lv_obj_set_align(refresh_btn, LV_ALIGN_BOTTOM_RIGHT);
     lv_obj_set_pos(refresh_btn, -10, -10);
     lv_obj_set_size(refresh_btn, 120, 40);
-    lv_obj_set_style_bg_color(refresh_btn, lv_color_hex(0x1975e0), 0);
+    lv_obj_set_style_bg_color(refresh_btn, lv_color_hex(0x197de0), 0);
     lv_obj_t *refresh_lbl = lv_label_create(refresh_btn);
     lv_label_set_text(refresh_lbl, LV_SYMBOL_REFRESH " Refresh");
     lv_obj_set_style_text_color(refresh_lbl, lv_color_hex(0xffffff), 0);

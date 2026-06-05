@@ -166,7 +166,7 @@ void ui_screen_biometric_create(void)
     lv_label_set_text(lv_label_1, "Fingerprint Scan");
     lv_obj_center(lv_label_1);
     lv_obj_set_style_text_color(lv_label_1, lv_color_hex3(0x000), 0);
-    lv_obj_set_style_text_font(lv_label_1, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_font(lv_label_1, &lv_font_montserrat_26, 0);
     lv_obj_add_event_cb(fingerprint_button, fingerprint_btn_event_cb, LV_EVENT_CLICKED, NULL);
        
     lv_obj_t * face_button = lv_btn_create(ui_screen_biometric);
@@ -178,7 +178,7 @@ void ui_screen_biometric_create(void)
     lv_label_set_text(lv_label_2, "Face Scan");
     lv_obj_center(lv_label_2);
     lv_obj_set_style_text_color(lv_label_2, lv_color_hex3(0x000), 0);
-    lv_obj_set_style_text_font(lv_label_2, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_font(lv_label_2, &lv_font_montserrat_26, 0);
     lv_obj_add_event_cb(face_button, face_btn_event_cb, LV_EVENT_CLICKED, NULL);
     
     lv_obj_t *back_btn = lv_btn_create(ui_screen_biometric);

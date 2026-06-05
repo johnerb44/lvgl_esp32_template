@@ -15,6 +15,10 @@
 #include "services/session_service.h"
 #include "ui/screens/ui_screen_change_pin.h"
 #include "ui/screens/ui_screen_enroll.h"
+#include "sdkconfig.h"
+#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
+#include "devices/status_inputs.h"
+#endif
 
 /*********************
  *      DEFINES
@@ -29,6 +33,8 @@
  **********************/
 static lv_obj_t *s_user_label = NULL;
 static lv_obj_t *s_lock_label = NULL;
+static lv_obj_t *s_lid_label  = NULL;
+static lv_obj_t *s_battery_box = NULL;
 
 /***********************
  *  STATIC PROTOTYPES
@@ -85,6 +91,27 @@ void ui_screen_home_create(void)
     lv_obj_set_style_text_font(s_lock_label, &lv_font_montserrat_20, 0);
     lv_obj_set_align(s_lock_label, LV_ALIGN_TOP_RIGHT);
     lv_obj_set_pos(s_lock_label, -10, 10);
+
+    // Lid status indicator
+    s_lid_label = lv_label_create(ui_screen_home);
+    lv_label_set_text(s_lid_label, "Lid: --");
+    lv_obj_set_style_text_font(s_lid_label, &lv_font_montserrat_20, 0);
+    lv_obj_align(s_lid_label, LV_ALIGN_TOP_RIGHT, -10, 40);
+
+    // Battery status indicator — label + colored rectangle
+    lv_obj_t *bat_title = lv_label_create(ui_screen_home);
+    lv_label_set_text(bat_title, "Battery");
+    lv_obj_set_style_text_font(bat_title, &lv_font_montserrat_20, 0);
+    lv_obj_align(bat_title, LV_ALIGN_TOP_RIGHT, -10, 70);
+
+    s_battery_box = lv_obj_create(ui_screen_home);
+    lv_obj_set_size(s_battery_box, 80, 22);
+    lv_obj_align(s_battery_box, LV_ALIGN_TOP_RIGHT, -10, 96);
+    lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);
+    lv_obj_set_style_border_color(s_battery_box, lv_color_hex3(0xfff), 0);
+    lv_obj_set_style_border_width(s_battery_box, 2, 0);
+    lv_obj_set_style_radius(s_battery_box, 4, 0);
+    lv_obj_clear_flag(s_battery_box, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     
     lv_obj_t * unlock_button = lv_button_create(ui_screen_home);
     lv_obj_set_align(unlock_button, LV_ALIGN_CENTER);
@@ -221,6 +248,26 @@ static void home_screen_loaded_cb(lv_event_t *e)
             lv_label_set_text(s_lock_label, "[UNLOCKED]");
             lv_obj_set_style_text_color(s_lock_label, lv_color_hex(0x44ff44), 0);
         }
+    }
+
+    // Lid status
+    if (s_lid_label && lv_obj_is_valid(s_lid_label)) {
+#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
+        lockbox_status_inputs_t inputs = {0};
+        if (status_inputs_read(&inputs) == ESP_OK) {
+            lv_label_set_text(s_lid_label, inputs.lid_open ? "Lid: Open" : "Lid: Closed");
+            lv_obj_set_style_text_color(s_lid_label,
+                inputs.lid_open ? lv_color_hex(0xff8800) : lv_color_hex(0x44ff44), 0);
+        }
+#else
+        lv_label_set_text(s_lid_label, "Lid: Closed");
+        lv_obj_set_style_text_color(s_lid_label, lv_color_hex(0x44ff44), 0);
+#endif
+    }
+
+    // Battery status — placeholder (green until battery service is implemented)
+    if (s_battery_box && lv_obj_is_valid(s_battery_box)) {
+        lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);
     }
 }
 

@@ -40,6 +40,7 @@ static lv_obj_t *s_status_label = NULL;
 static lv_obj_t *s_start_button = NULL;
 static lv_obj_t *s_enroll_button = NULL;
 static bool s_scan_in_progress = false;
+static lv_timer_t *s_nav_timer = NULL;
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -49,6 +50,7 @@ static int s_matched_userid = -1;
 
 static void navigate_to_pin_fp_cb(lv_timer_t *timer)
 {
+    s_nav_timer = NULL;
     lv_timer_del(timer);
     if (ui_screen_get_pin) {
         ui_screen_get_pin_set_auth_context(s_matched_userid);
@@ -97,14 +99,47 @@ static void fingerprint_scan_task(void *arg)
         }
         if (matched_with_user && ui_screen_get_pin) {
             // 5-second delay before navigating to PIN screen
-            lv_timer_t *t = lv_timer_create(navigate_to_pin_fp_cb, 5000, NULL);
-            lv_timer_set_repeat_count(t, 1);
+            s_nav_timer = lv_timer_create(navigate_to_pin_fp_cb, 5000, NULL);
+            lv_timer_set_repeat_count(s_nav_timer, 1);
         }
         lvgl_port_unlock();
     }
 
     s_scan_in_progress = false;
     vTaskDelete(NULL);
+}
+
+static void fpscan_reset_state(void)
+{
+    s_scan_in_progress = false;
+    s_matched_userid = -1;
+    if (s_nav_timer) {
+        lv_timer_del(s_nav_timer);
+        s_nav_timer = NULL;
+    }
+    if (s_status_label && lv_obj_is_valid(s_status_label)) {
+        lv_label_set_text(s_status_label, "Ready to scan");
+    }
+    if (s_start_button && lv_obj_is_valid(s_start_button)) {
+        lv_obj_clear_state(s_start_button, LV_STATE_DISABLED);
+    }
+    if (s_enroll_button && lv_obj_is_valid(s_enroll_button)) {
+        lv_obj_clear_state(s_enroll_button, LV_STATE_DISABLED);
+    }
+}
+
+static void screen_event_cb(lv_event_t *event)
+{
+    lv_event_code_t code = lv_event_get_code(event);
+    if (code == LV_EVENT_SCREEN_LOADED) {
+        fpscan_reset_state();
+    } else if (code == LV_EVENT_SCREEN_UNLOADED) {
+        if (s_nav_timer) {
+            lv_timer_del(s_nav_timer);
+            s_nav_timer = NULL;
+        }
+        s_scan_in_progress = false;
+    }
 }
 
 #if CONFIG_LOCKBOX_FEATURE_R503 && CONFIG_LOCKBOX_FEATURE_HLK_TX510
@@ -313,7 +348,7 @@ static void fingerprint_btn_event_cb(lv_event_t *event)
 
     s_enroll_button = lv_button_create(ui_screen_fpscan);
     lv_obj_set_align(s_enroll_button, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_color(s_enroll_button, lv_color_hex(0xe07019), 0);
+    lv_obj_set_style_bg_color(s_enroll_button, lv_color_hex(0x197de0), 0);
     lv_obj_set_pos(s_enroll_button, 100, 150);
     lv_obj_t *enroll_label = lv_label_create(s_enroll_button);
     lv_label_set_text(enroll_label, "Enroll FP");
@@ -326,7 +361,10 @@ static void fingerprint_btn_event_cb(lv_event_t *event)
     lv_obj_set_style_text_font(s_status_label, &lv_font_montserrat_24, 0);
     lv_obj_set_align(s_status_label, LV_ALIGN_CENTER);
     lv_obj_set_y(s_status_label, 230);
-    
+
+    lv_obj_add_event_cb(ui_screen_fpscan, screen_event_cb, LV_EVENT_SCREEN_LOADED, NULL);
+    lv_obj_add_event_cb(ui_screen_fpscan, screen_event_cb, LV_EVENT_SCREEN_UNLOADED, NULL);
+
     ESP_LOGI(SCREEN_TAG, "Fingerprint scan screen created");
 
     LV_TRACE_OBJ_CREATE("finished");

@@ -11,15 +11,15 @@
 static const char *TAG = "PCA9685_DEVICE";
 static bool s_initialized = false;
 
-#define PCA9685_I2C_ADDR            0x50
+#define PCA9685_I2C_ADDR            0x40
 #define PCA9685_MODE1_REG           0x00
 #define PCA9685_PRESCALE_REG        0xFE
 #define PCA9685_LED0_ON_L_REG       0x06
 #define PCA9685_CHANNEL_STRIDE      4
 
 #define LOCK_SERVO_CHANNEL          0
-#define LOCK_SERVO_PWM_LOCKED       500
-#define LOCK_SERVO_PWM_UNLOCKED     250
+#define LOCK_SERVO_PWM_LOCKED       150   // SERVOMIN — one end of travel
+#define LOCK_SERVO_PWM_UNLOCKED     600   // SERVOMAX — other end of travel
 #define LOCK_SERVO_PWM_ON           0
 #define PCA9685_SERVO_FREQ_HZ       50
 

@@ -274,12 +274,17 @@ static void home_screen_loaded_cb(lv_event_t *e)
 static void unlock_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
-    lock_service_unlock(NULL);
-    if (s_lock_label && lv_obj_is_valid(s_lock_label)) {
-        lv_label_set_text(s_lock_label, "Box: Unlocked");
-        lv_obj_set_style_text_color(s_lock_label, lv_color_hex(0x44ff44), 0);
+    esp_err_t err = lock_service_unlock(NULL);
+    if (err == ESP_OK) {
+        if (s_lock_label && lv_obj_is_valid(s_lock_label)) {
+            lv_label_set_text(s_lock_label, "Box: Unlocked");
+            lv_obj_set_style_text_color(s_lock_label, lv_color_hex(0x44ff44), 0);
+        }
+        create_toast("Box Unlocked", 2000);
+    } else {
+        create_toast("Unlock Failed (servo error)", 3000);
+        ESP_LOGE(SCREEN_TAG, "lock_service_unlock failed: %s", esp_err_to_name(err));
     }
-    create_toast("Box Unlocked", 2000);
 }
 
 static void change_pin_btn_event_cb(lv_event_t *e)

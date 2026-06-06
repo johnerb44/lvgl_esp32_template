@@ -105,10 +105,11 @@ esp_err_t pca9685_device_init(void)
         ESP_LOGE(TAG, "I2C setup failed: %s", esp_err_to_name(err));
         return err;
     }
+    ESP_LOGI(TAG, "I2C ready, configuring PCA9685 at 0x%02X", PCA9685_I2C_ADDR);
 
     err = pca9685_set_frequency(PCA9685_SERVO_FREQ_HZ);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "PCA9685 frequency configuration failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "PCA9685 frequency set failed (I2C error? wrong address?): %s", esp_err_to_name(err));
         return err;
     }
 

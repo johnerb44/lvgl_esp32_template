@@ -1,5 +1,6 @@
 #include "devices/pca9685_device.h"
 #include <stdbool.h>
+#include <stdlib.h>
 #include "sd/sd_card.h"
 #include "driver/i2c.h"
 #include "driver/gpio.h"
@@ -18,10 +19,21 @@ static bool s_initialized = false;
 #define PCA9685_CHANNEL_STRIDE      4
 
 #define LOCK_SERVO_CHANNEL          0
-#define LOCK_SERVO_PWM_LOCKED       150   // SERVOMIN — one end of travel
-#define LOCK_SERVO_PWM_UNLOCKED     600   // SERVOMAX — other end of travel
+#define LOCK_SERVO_PWM_LOCKED       200   // one end of travel
+#define LOCK_SERVO_PWM_UNLOCKED     300   // other end of travel
 #define LOCK_SERVO_PWM_ON           0
 #define PCA9685_SERVO_FREQ_HZ       50
+// Sweep: step size and delay control servo speed.
+// At 50Hz one PWM frame = 20ms. Step every 20ms = one frame per step.
+// 100 counts of travel × 20ms = 2 seconds full travel (half of instant).
+#define SERVO_SWEEP_STEP_SIZE       1     // counts per step
+#define SERVO_SWEEP_STEP_DELAY_MS   20    // ms between steps
+
+static uint16_t s_current_pwm = LOCK_SERVO_PWM_LOCKED;
+
+typedef struct {
+    uint16_t target;
+} servo_sweep_args_t;
 
 static esp_err_t ensure_i2c_ready(void)
 {
@@ -114,6 +126,27 @@ esp_err_t pca9685_device_init(void)
 #endif
 }
 
+static void servo_sweep_task(void *arg)
+{
+    servo_sweep_args_t *args = (servo_sweep_args_t *)arg;
+    uint16_t target = args->target;
+    free(args);
+
+    while (s_current_pwm != target) {
+        if (s_current_pwm < target) {
+            s_current_pwm += SERVO_SWEEP_STEP_SIZE;
+            if (s_current_pwm > target) s_current_pwm = target;
+        } else {
+            s_current_pwm -= SERVO_SWEEP_STEP_SIZE;
+            if (s_current_pwm < target) s_current_pwm = target;
+        }
+        pca9685_write_pwm(LOCK_SERVO_CHANNEL, LOCK_SERVO_PWM_ON, s_current_pwm);
+        vTaskDelay(pdMS_TO_TICKS(SERVO_SWEEP_STEP_DELAY_MS));
+    }
+    ESP_LOGI(TAG, "Servo sweep complete: pwm=%u", s_current_pwm);
+    vTaskDelete(NULL);
+}
+
 esp_err_t pca9685_device_set_lock_position(lock_servo_position_t position)
 {
     if (!s_initialized) {
@@ -127,9 +160,20 @@ esp_err_t pca9685_device_set_lock_position(lock_servo_position_t position)
     (void)position;
     return ESP_OK;
 #else
-    uint16_t target_pwm = (position == LOCK_SERVO_POSITION_LOCKED)
-                            ? LOCK_SERVO_PWM_LOCKED
-                            : LOCK_SERVO_PWM_UNLOCKED;
-    return pca9685_write_pwm(LOCK_SERVO_CHANNEL, LOCK_SERVO_PWM_ON, target_pwm);
+    uint16_t target = (position == LOCK_SERVO_POSITION_LOCKED)
+                        ? LOCK_SERVO_PWM_LOCKED
+                        : LOCK_SERVO_PWM_UNLOCKED;
+
+    servo_sweep_args_t *args = malloc(sizeof(servo_sweep_args_t));
+    if (!args) return ESP_ERR_NO_MEM;
+    args->target = target;
+
+    BaseType_t ok = xTaskCreate(servo_sweep_task, "servo_sweep", 2048,
+                                args, tskIDLE_PRIORITY + 1, NULL);
+    if (ok != pdPASS) {
+        free(args);
+        return ESP_ERR_NO_MEM;
+    }
+    return ESP_OK;
 #endif
 }

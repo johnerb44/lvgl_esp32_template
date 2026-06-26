@@ -1,3 +1,29 @@
-
 # Build validation directory logs
 build_idf_validate/log/
+
+# ESP-IDF build output
+build/
+build_*
+sdkconfig
+sdkconfig.old
+
+# Managed components (downloaded by idf_component_manager)
+managed_components/
+
+# ESP-IDF generated files
+partitions/*.csv
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Core dumps
+coredump/
+*.core
+
+# IDE
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

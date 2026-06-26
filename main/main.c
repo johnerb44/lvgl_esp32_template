@@ -28,8 +28,7 @@
 // Define APP_TAG for application logging
 static const char *APP_TAG = "LVGL_TEMPLATE";
 
-/**
- * Restart the board into UART download mode without a power cycle.
+ /* Restart the board into UART download mode without a power cycle.
  *
  * GPIO0 is shared between the BOOT strapping pin and LCD RGB DATA6.  Once the
  * LCD panel initialises and actively drives DATA6 HIGH, the CH343P DTR signal

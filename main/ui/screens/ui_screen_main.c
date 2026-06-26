@@ -82,7 +82,7 @@ void ui_screen_main_create(void)
     // First-Time Setup button
     lv_obj_t *setup_button = lv_button_create(ui_screen_main);
     lv_obj_align(setup_button, LV_ALIGN_BOTTOM_MID, 0, -20);
-    lv_obj_set_style_bg_color(setup_button, lv_color_hex(0x6c757d), 0);
+    lv_obj_set_style_bg_color(setup_button, lv_color_hex(0x197de0), 0);
 
     lv_obj_t *lv_label_1 = lv_label_create(setup_button);
     lv_label_set_text(lv_label_1, "First-Time Setup");

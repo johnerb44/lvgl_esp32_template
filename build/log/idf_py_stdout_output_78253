@@ -1,0 +1,18 @@
+-- IDF_TARGET is not set, guessed 'esp32s3' from sdkconfig '/home/erbj/lvgl-projects/lvgl_esp32_template/sdkconfig'
+-- Found Git: /usr/bin/git (found version "2.43.0") 
+-- The ASM compiler identification is GNU
+-- Found assembler: /usr/bin/aarch64-linux-gnu-gcc
+-- Building ESP-IDF components for target esp32s3
+NOTICE: Processing 7 dependencies:
+NOTICE: [1/7] esp-idf-lib/esp_idf_lib_helpers (1.4.0)
+NOTICE: [2/7] esp-idf-lib/i2cdev (2.1.1)
+NOTICE: [3/7] esp-idf-lib/ina219 (1.0.7)
+NOTICE: [4/7] espressif/esp_lcd_touch (1.2.1)
+NOTICE: [5/7] espressif/esp_lcd_touch_gt911 (1.2.0~1)
+NOTICE: [6/7] lvgl/lvgl (9.3.0)
+NOTICE: [7/7] idf (5.1.6)
+-- i2cdev: ESP-IDF v5.1 detected, using legacy driver
+-- i2cdev: Compiling with legacy I2C driver (i2cdev_legacy.c)
+-- Project sdkconfig file /home/erbj/lvgl-projects/lvgl_esp32_template/sdkconfig
+Loading defaults file /home/erbj/lvgl-projects/lvgl_esp32_template/sdkconfig.defaults...
+-- Configuring incomplete, errors occurred!

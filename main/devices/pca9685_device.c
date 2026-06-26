@@ -26,8 +26,8 @@ static bool s_initialized = false;
 // Sweep: step size and delay control servo speed.
 // At 50Hz one PWM frame = 20ms. Step every 20ms = one frame per step.
 // 100 counts of travel × 20ms = 2 seconds full travel (half of instant).
-#define SERVO_SWEEP_STEP_SIZE       1     // counts per step
-#define SERVO_SWEEP_STEP_DELAY_MS   20    // ms between steps
+#define SERVO_SWEEP_STEP_SIZE       7    // counts per step
+#define SERVO_SWEEP_STEP_DELAY_MS   5   // ms between steps
 
 static uint16_t s_current_pwm = LOCK_SERVO_PWM_LOCKED;
 
@@ -46,13 +46,22 @@ static esp_err_t ensure_i2c_ready(void)
         .master.clk_speed = I2C_MASTER_FREQ_HZ,
     };
 
+    // Try to configure the I2C port. If already configured, that's fine — the bus is usable.
     esp_err_t err = i2c_param_config(I2C_MASTER_NUM, &conf);
-    if (err != ESP_OK) {
+    if (err == ESP_ERR_INVALID_STATE || err == ESP_ERR_INVALID_ARG) {
+        // Port already configured (by waveshare_lcd_port or another peripheral), reuse existing bus
+        ESP_LOGI(TAG, "I2C port %d already configured, reusing existing bus", I2C_MASTER_NUM);
+        return ESP_OK;
+    } else if (err != ESP_OK) {
         return err;
     }
+
+    // Try to install the driver. If already installed, that's also fine.
     err = i2c_driver_install(I2C_MASTER_NUM, I2C_MODE_MASTER,
                              I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
-    if (err == ESP_ERR_INVALID_STATE) {
+    if (err == ESP_ERR_INVALID_STATE || err == ESP_FAIL) {
+        // Driver already installed, reuse it
+        ESP_LOGI(TAG, "I2C driver already installed on port %d, reusing", I2C_MASTER_NUM);
         return ESP_OK;
     }
     return err;

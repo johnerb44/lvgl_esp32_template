@@ -383,7 +383,7 @@ void ui_screen_facescan_create(void)
 
     s_start_button = lv_button_create(ui_screen_facescan);
     lv_obj_set_align(s_start_button, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_color(s_start_button, lv_color_hex(0x19abe0), 0);
+    lv_obj_set_style_bg_color(s_start_button, lv_color_hex(0xe19419), 0);
     lv_obj_set_pos(s_start_button, -100, 150);
     lv_obj_t *btn_label = lv_label_create(s_start_button);
     lv_label_set_text(btn_label, "Begin Scan");
@@ -393,7 +393,7 @@ void ui_screen_facescan_create(void)
 
     s_enroll_button = lv_button_create(ui_screen_facescan);
     lv_obj_set_align(s_enroll_button, LV_ALIGN_CENTER);
-    lv_obj_set_style_bg_color(s_enroll_button, lv_color_hex(0xe07019), 0);
+    lv_obj_set_style_bg_color(s_enroll_button, lv_color_hex(0x197de0), 0);
     lv_obj_set_pos(s_enroll_button, 100, 150);
     lv_obj_t *enroll_label = lv_label_create(s_enroll_button);
     lv_label_set_text(enroll_label, "Enroll Face");

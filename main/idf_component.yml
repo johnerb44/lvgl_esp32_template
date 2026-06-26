@@ -8,3 +8,11 @@ dependencies:
 
   esp_lcd_touch_gt911: "^1"
 
+  esp-idf-lib/esp_idf_lib_helpers:
+    version: '*'
+  
+  esp-idf-lib/i2cdev:
+    version: '*'
+  
+  esp-idf-lib/ina219:
+    version: '*'

@@ -155,5 +155,11 @@ menu "Example Configuration"
             bool "Enable lockbox status input signals"
             default n
             depends on LOCKBOX_INTEGRATION_ENABLE
+
+
+        config LOCKBOX_FEATURE_INA219
+           bool "Enable INA219 power monitoring"
+           default n
+           depends on LOCKBOX_INTEGRATION_ENABLE
     endmenu
 endmenu

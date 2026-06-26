@@ -1,0 +1,94 @@
+# User Management Screen Tests
+
+## User Management Screen Components
+- Title: "User Management"
+- Button: "Back"
+- Dropdown List: Users
+  - For each user, when selected, show:
+    - USERNAME
+    - USERID
+    - FINGERID
+    - FACEID
+    - LAST_LOGON
+- Text Input: Username
+- Text Input: PIN
+- Text Input: Confirm PIN
+- Check Box: Show PIN
+- Check Box: Admin
+- Check Box: Unenroll Finger   **NEW
+- Check Box: Unenroll Face     **NEW
+- Button: "Add New"
+- Button: "Save"
+- Button: "Delete"
+- Button: "Cancel"
+- The Dropdown List IS scrollable through entire list of users in user json database
+- The User Management screen should NOT be scrollable
+
+### Background:
+- Given the secure lockbox is powered on
+- And new user's name does NOT exist in the user database 
+- And an admin user exists in the user database with Name = "ADMIN"
+- And the new user's name is not "New User" or blank 
+- And the admin has successfully authenticated using face or fingerprint
+- And The ADMIN has been successfully athenticated by PIN
+- And admin is the "Current_User"
+- And admin account has the attribute "ADMIN" = true
+- And admin is on the Home screen
+- The admin can edit the USERNAME by editing the "Username" textbox  **There can NOT be duplicate USERNAME fields in the user json database
+- The admin can edit the PIN by editing "PIN" and "Confirm PIN" text boxes
+- The admin can set ADMIN = true by selecting/unselecting the "Admin" checkbox
+- The admin can NOT edit the USERID. This is system populated.
+- The admin can NOT edit "FINGERID" This is system populated.  **FINGERID can be reset back to NULL by admin
+- The admin can NOT edit "FACEID" This is system populated.  **FACEID can be reset back to NULL by admin
+
+### Test Procedure: Validate all screen components are present
+  - When admin selects "4 Admin" button
+  - Then the system verifies that the ADMIN user has the attribute "ADMIN" = true
+  - When the user does NOT have the attribute "ADMIN" = true
+  - Then the system displays a message "ADMIN status required"
+  - Then the system stays on the Home screen
+  - When the user has the attribute "ADMIN" = true
+  - Then the system goes to the User Management screen
+  - When admin selects the Users dropdown list 
+  - Then the screen displays a scrollable list of all created users in USERID order
+  - When admin selects an existing user name from the list
+  - Then the selected user becomes the user to be edited
+  - Then the system displays text below the dropdown list showing USERID, FINGERID, FACEID and LAST_LOGON
+  - Then the system populates the Username text box with the selected user's USERNAME
+  - Then the system displays ADMIN status by either checking or unchecking the ADMIN checkbox
+  - When the admin selects the "Show PIN" checkbox
+  - Then the system populates the PIN text box with the users's PIN
+  - When the user selects the "Delete" button  ("Are you sure?")
+  - Then the system deletes the user from the users json database
+  - Then the system deletes the user's Fingerprint template from the R503 fingerprint scanner's database
+  - Then the system deletes the user's Face template from the hlk-tx510 face scanner
+  - When admin selects the "Cancel" button ("Are you sure?)
+  - Then the system discards all edits to the edited user
+  - Then the system stays on the User Management screen
+  - When admin checks the "Unenroll Finger" checkbox
+  - Then the system sets the user's FINGERID field to Null ("Are you sure?")
+  - When admin checks the "Unenroll Face" checkbox ("Are you sure?")
+  - Then the system sets the user's FACEID field to Null
+  - When admin selects the "Add New" button
+  - Then the system populates the Username textbox with the "USERNAME" = "New User"  **The admin MUST change this user name
+  - Then the system populates the USERID, selecting the next unused ID available
+  - Then the system sets the FINGERID field to Null
+  - Then the system sets the FACEID field to NULL
+  - Then the system sets the ADMIN field to false
+  - Then the system sets the LAST_LOGON field to "never" (maybe some standard date-time default ???)
+  - Then admin edits the Username textbox with the new user's name
+  - Then admin enters the user's PIN in the PIN textbox
+  - Then admin confirms the PIN by re-entering the same PIN in the Confirm PIN textbox
+  - When admin selects the "Save" button 
+  - AND the admin has not entered both a valid USERNAME (cannot be "New User" or blank) and a valid PIN
+  - Then the system does NOT allow the new user template to be saved in the user json database
+  - When admin selects the "Save" button 
+  - AND admin HAS entered both a valid USERNAME (cannot be "New User" or blank) and a valid PIN
+  - Then the system allows the new user template to be saved in the user json database
+  - Then the system displays a message "New User Added"
+  - When admin selects the "Back" button
+  - Then the system returns to the Home screen
+  - Then Admin notifies any new user of their PIN number
+  
+  ### Test Results
+  - Not Tested

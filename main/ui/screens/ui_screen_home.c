@@ -13,6 +13,8 @@
 #include "user_mgmt_ui.h"
 #include "services/lock_service.h"
 #include "services/session_service.h"
+#include "services/battery_service.h"
+#include "services/ina219_service.h"
 #include "ui/screens/ui_screen_change_pin.h"
 #include "ui/screens/ui_screen_enroll.h"
 #include "sdkconfig.h"
@@ -35,6 +37,7 @@ static lv_obj_t *s_user_label = NULL;
 static lv_obj_t *s_lock_label = NULL;
 static lv_obj_t *s_lid_label  = NULL;
 static lv_obj_t *s_battery_box = NULL;
+static lv_obj_t *s_battery_debug_label = NULL;  // DEBUG: voltage readout
 
 /***********************
  *  STATIC PROTOTYPES
@@ -112,7 +115,13 @@ void ui_screen_home_create(void)
     lv_obj_set_style_border_width(s_battery_box, 2, 0);
     lv_obj_set_style_radius(s_battery_box, 4, 0);
     lv_obj_clear_flag(s_battery_box, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
-    
+
+    // DEBUG: Battery voltage readout (small label below battery box)
+    s_battery_debug_label = lv_label_create(ui_screen_home);
+    lv_label_set_text(s_battery_debug_label, "");
+    lv_obj_set_style_text_font(s_battery_debug_label, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_color(s_battery_debug_label, lv_color_hex(0xcccccc), 0);
+    lv_obj_align(s_battery_debug_label, LV_ALIGN_TOP_RIGHT, -10, 160);
     lv_obj_t * unlock_button = lv_button_create(ui_screen_home);
     lv_obj_set_align(unlock_button, LV_ALIGN_CENTER);
     lv_obj_set_width(unlock_button, 420);
@@ -265,10 +274,41 @@ static void home_screen_loaded_cb(lv_event_t *e)
 #endif
     }
 
-    // Battery status — placeholder (green until battery service is implemented)
-    if (s_battery_box && lv_obj_is_valid(s_battery_box)) {
-        lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);
-    }
+    // Battery status
+        if (s_battery_box && lv_obj_is_valid(s_battery_box)) {
+    #if CONFIG_LOCKBOX_FEATURE_INA219
+                // Use INA219-based battery monitoring
+            int voltage_mv = 0;
+            if (battery_service_get_voltage_mv(&voltage_mv) == ESP_OK) {
+                battery_color_t color;
+                battery_service_get_color(&color);
+
+                lv_color_t battery_color = lv_color_hex(0x44cc44);  // Default green
+                if (battery_service_get_lv_color(&battery_color) == ESP_OK) {
+                    lv_obj_set_style_bg_color(s_battery_box, battery_color, 0);
+                }
+
+                // DEBUG: Update voltage display
+                if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
+                    char voltage_buf[32];
+                    snprintf(voltage_buf, sizeof(voltage_buf), "%d.%02dV",
+                             voltage_mv / 1000, (voltage_mv % 1000) / 10);
+                    lv_label_set_text(s_battery_debug_label, voltage_buf);
+                }
+            } else {
+                lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);  // Green placeholder
+                if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
+                        lv_label_set_text(s_battery_debug_label, "Error");
+                }
+            }
+    #else
+            // Fallback when battery monitoring is disabled
+            lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);  // Green placeholder
+            if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
+                lv_label_set_text(s_battery_debug_label, "");
+            }
+    #endif
+        }
 }
 
 static void unlock_btn_event_cb(lv_event_t *e)

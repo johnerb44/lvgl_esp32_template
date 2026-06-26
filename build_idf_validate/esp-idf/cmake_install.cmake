@@ -409,7 +409,22 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/esp-idf/esp-idf-lib__esp_idf_lib_helpers/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/esp-idf/lvgl__lvgl/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/esp-idf/esp-idf-lib__i2cdev/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/erbj/lvgl-projects/lvgl_esp32_template/build_idf_validate/esp-idf/esp-idf-lib__ina219/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)

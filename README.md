@@ -16,6 +16,26 @@ This repository is the integration target for the Secure Lockbox project.
 | Supported Touch Controller  |  GT911 |
 | ----------------------------| -------|
 
+## Battery Monitoring System
+
+The system supports battery monitoring with:
+
+### ADC-based monitoring (Default)
+- Uses GPIO 6 with a 1:2 voltage divider circuit
+- Color indicators: Green (≥5.0V), Yellow (3.7-5.0V), Red (≤3.0V)
+- Home screen displays voltage readings with color transitions
+
+### INA219-based monitoring (Optional)
+- Uses INA219 I2C chip for power monitoring
+- When enabled via `CONFIG_LOCKBOX_FEATURE_INA219=y`:
+  - Shows High/Medium/Low capacity status indicators
+  - Displays voltage and percentage (e.g., "4.8V 72.5%")
+  - Takes precedence over ADC monitoring
+
+### Validation
+- 24-hour battery drain test completed successfully
+- System stable under real-world conditions
+
 # RGB Avoid Tearing Example
 
 [esp_lcd](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/lcd.html) provides several panel drivers out-of box, e.g. ST7789, SSD1306, NT35510. However, there're a lot of other panels on the market, it's beyond `esp_lcd` component's responsibility to include them all.

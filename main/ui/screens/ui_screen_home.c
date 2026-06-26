@@ -15,6 +15,9 @@
 #include "services/session_service.h"
 #include "services/battery_service.h"
 #include "services/ina219_service.h"
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+#include "services/sleep_service.h"
+#endif
 #include "ui/screens/ui_screen_change_pin.h"
 #include "ui/screens/ui_screen_enroll.h"
 #include "sdkconfig.h"
@@ -116,9 +119,9 @@ void ui_screen_home_create(void)
     lv_obj_set_style_radius(s_battery_box, 4, 0);
     lv_obj_clear_flag(s_battery_box, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
 
-    // DEBUG: Battery voltage readout (small label below battery box)
+    // SOC/energy readout label below battery box
     s_battery_debug_label = lv_label_create(ui_screen_home);
-    lv_label_set_text(s_battery_debug_label, "");
+    lv_label_set_text(s_battery_debug_label, "--%");
     lv_obj_set_style_text_font(s_battery_debug_label, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(s_battery_debug_label, lv_color_hex(0xcccccc), 0);
     lv_obj_align(s_battery_debug_label, LV_ALIGN_TOP_RIGHT, -10, 160);
@@ -274,46 +277,55 @@ static void home_screen_loaded_cb(lv_event_t *e)
 #endif
     }
 
-    // Battery status
-        if (s_battery_box && lv_obj_is_valid(s_battery_box)) {
-    #if CONFIG_LOCKBOX_FEATURE_INA219
-                // Use INA219-based battery monitoring
-            int voltage_mv = 0;
-            if (battery_service_get_voltage_mv(&voltage_mv) == ESP_OK) {
-                battery_color_t color;
-                battery_service_get_color(&color);
+        // Start sleep tick timer (every 1s)
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    static lv_timer_t *s_sleep_tick_timer = NULL;
+    if (s_sleep_tick_timer == NULL) {
+        s_sleep_tick_timer = lv_timer_create([](lv_timer_t *t) {
+            (void)t;
+            sleep_service_tick();
+        }, 1000, NULL);
+    }
+#endif
 
-                lv_color_t battery_color = lv_color_hex(0x44cc44);  // Default green
-                if (battery_service_get_lv_color(&battery_color) == ESP_OK) {
-                    lv_obj_set_style_bg_color(s_battery_box, battery_color, 0);
-                }
+    // Battery status SOC-based display
+    if (s_battery_box && lv_obj_is_valid(s_battery_box)) {
+#if CONFIG_LOCKBOX_FEATURE_INA219
+        battery_level_t level = BATTERY_LEVEL_UNKNOWN;
+        float soc_pct = 0.0f, remaining_wh = 0.0f;
+        if (battery_service_get_power_data(&level, &soc_pct, &remaining_wh) == ESP_OK) {
+            lv_color_t battery_color = lv_color_hex(0x888888);  // Gray = unknown
+            battery_service_get_lv_color(&battery_color);
+            lv_obj_set_style_bg_color(s_battery_box, battery_color, 0);
 
-                // DEBUG: Update voltage display
-                if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
-                    char voltage_buf[32];
-                    snprintf(voltage_buf, sizeof(voltage_buf), "%d.%02dV",
-                             voltage_mv / 1000, (voltage_mv % 1000) / 10);
-                    lv_label_set_text(s_battery_debug_label, voltage_buf);
-                }
-            } else {
-                lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);  // Green placeholder
-                if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
-                        lv_label_set_text(s_battery_debug_label, "Error");
-                }
-            }
-    #else
-            // Fallback when battery monitoring is disabled
-            lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);  // Green placeholder
+            // Update SOC/energy readout
             if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
-                lv_label_set_text(s_battery_debug_label, "");
+                char soc_buf[32];
+                snprintf(soc_buf, sizeof(soc_buf), "%.0f%% %.1fWh", soc_pct, remaining_wh);
+                lv_label_set_text(s_battery_debug_label, soc_buf);
             }
-    #endif
+        } else {
+            lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x888888), 0);
+            if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
+                lv_label_set_text(s_battery_debug_label, "Sensor Error");
+            }
         }
+#else
+        // Fallback when battery monitoring is disabled
+        lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);
+        if (s_battery_debug_label && lv_obj_is_valid(s_battery_debug_label)) {
+            lv_label_set_text(s_battery_debug_label, "");
+        }
+#endif
+    }
 }
 
 static void unlock_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    sleep_service_activity_detected();
+#endif
     esp_err_t err = lock_service_unlock(NULL);
     if (err == ESP_OK) {
         if (s_lock_label && lv_obj_is_valid(s_lock_label)) {
@@ -330,6 +342,9 @@ static void unlock_btn_event_cb(lv_event_t *e)
 static void change_pin_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    sleep_service_activity_detected();
+#endif
     ui_screen_change_pin_set_context(session_service_get_userid(), false);
     lv_scr_load_anim(ui_screen_change_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
 }
@@ -337,6 +352,9 @@ static void change_pin_btn_event_cb(lv_event_t *e)
 static void register_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    sleep_service_activity_detected();
+#endif
     ui_screen_enroll_set_context(session_service_get_userid(), false);
     lv_scr_load_anim(ui_screen_enroll, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
 }
@@ -344,6 +362,9 @@ static void register_btn_event_cb(lv_event_t *e)
 static void signout_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    sleep_service_activity_detected();
+#endif
     lock_service_lock(NULL);
     session_service_clear();
     lv_scr_load_anim(ui_screen_main, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);
@@ -354,6 +375,9 @@ static void admin_button_event_handler(lv_event_t * e)
     lv_event_code_t code = lv_event_get_code(e);
 
     if(code == LV_EVENT_CLICKED) {
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+        sleep_service_activity_detected();
+#endif
         ESP_LOGI(SCREEN_TAG, "Admin button clicked, showing user management UI");
         user_mgmt_ui_show();
     }

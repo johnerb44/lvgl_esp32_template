@@ -9,13 +9,14 @@ extern "C" {
 #endif
 
 /**
- * @brief Battery level status color
+ * @brief Battery level status (based on SOC, not voltage)
  */
 typedef enum {
-    BATTERY_COLOR_GREEN,  // >= 5.0V
-    BATTERY_COLOR_YELLOW, // 3.7V - 5.0V
-    BATTERY_COLOR_RED,    // <= 3.0V
-} battery_color_t;
+    BATTERY_LEVEL_UNKNOWN = 0,
+    BATTERY_LEVEL_LOW,
+    BATTERY_LEVEL_MEDIUM,
+    BATTERY_LEVEL_HIGH,
+} battery_level_t;
 
 /**
  * @brief Initialize battery monitoring service
@@ -24,21 +25,18 @@ typedef enum {
 esp_err_t battery_service_init(void);
 
 /**
- * @brief Get current battery voltage in millivolts
- * @param out_voltage_mv Pointer to store voltage (in mV)
+ * @brief Get complete battery power data from INA219
+ * @param out_level Pointer to store level enum (HIGH/MEDIUM/LOW/UNKNOWN)
+ * @param out_soc_pct Pointer to store state-of-charge percentage (0-100)
+ * @param out_remaining_wh Pointer to store remaining energy in watt-hours
  * @return ESP_OK on success
  */
-esp_err_t battery_service_get_voltage_mv(int *out_voltage_mv);
+esp_err_t battery_service_get_power_data(battery_level_t *out_level,
+                                          float *out_soc_pct,
+                                          float *out_remaining_wh);
 
 /**
- * @brief Get battery color based on current voltage
- * @param out_color Pointer to store color enum
- * @return ESP_OK on success
- */
-esp_err_t battery_service_get_color(battery_color_t *out_color);
-
-/**
- * @brief Get LVGL color for battery status
+ * @brief Get LVGL color for battery status (SOC-based)
  * @param out_lv_color Pointer to store LVGL color
  * @return ESP_OK on success
  */

@@ -1,25 +1,19 @@
 /**
  * @file battery_service.c
- * @brief Battery monitoring service — uses INA219 only
+ * @brief Battery monitoring service — SOC-based display via INA219
  */
 
 #include "battery_service.h"
-#include "esp_log.h"
 #include "services/ina219_service.h"
+#include "esp_log.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "BATTERY_SERVICE";
 
-// Voltage thresholds (in millivolts) - for UI purposes only
-#define BATTERY_VOLTAGE_MAX_GREEN   5000  // >= 5.0V: green
-#define BATTERY_VOLTAGE_MIN_YELLOW  3700  // 3.7V - 5.0V: yellow
-#define BATTERY_VOLTAGE_MAX_RED     3000  // <= 3.0V: red
-
 esp_err_t battery_service_init(void)
 {
 #if CONFIG_LOCKBOX_INTEGRATION_ENABLE || CONFIG_LOCKBOX_FEATURE_INA219
-    // Initialize INA219-based monitoring only
-    ESP_LOGI(TAG, "Battery service initialized (INA219-based)");
+    ESP_LOGI(TAG, "Battery service initialized (INA219-based SOC monitoring)");
     return ESP_OK;
 #else
     ESP_LOGI(TAG, "Battery service disabled (INA219 not enabled)");
@@ -27,60 +21,35 @@ esp_err_t battery_service_init(void)
 #endif
 }
 
-esp_err_t battery_service_get_voltage_mv(int *out_voltage_mv)
+esp_err_t battery_service_get_power_data(battery_level_t *out_level,
+                                          float *out_soc_pct,
+                                          float *out_remaining_wh)
 {
-    if (out_voltage_mv == NULL) {
-        ESP_LOGE(TAG, "Invalid argument: out_voltage_mv is NULL");
-        return ESP_ERR_INVALID_ARG;
-    }
-
-#if CONFIG_LOCKBOX_INTEGRATION_ENABLE || CONFIG_LOCKBOX_FEATURE_INA219
-    // Use INA219-based monitoring
     ina219_power_data_t power_data = {0};
     esp_err_t ret = ina219_service_get_power_data(&power_data);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to read INA219 power data: %s", esp_err_to_name(ret));
-        // Return default voltage on error
-        *out_voltage_mv = 5000;
-        return ret;
-    }
-    
-    // Convert voltage to millivolts (INA219 reports bus voltage in volts)
-    *out_voltage_mv = (int)(power_data.voltage_v * 1000.0f);
-    return ESP_OK;
-#else
-    // Return placeholder voltage if disabled
-    *out_voltage_mv = 5000;
-    return ESP_OK;
-#endif
-}
-
-esp_err_t battery_service_get_color(battery_color_t *out_color)
-{
-    if (out_color == NULL) {
-        ESP_LOGE(TAG, "Invalid argument: out_color is NULL");
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    int voltage_mv = 0;
-    esp_err_t ret = battery_service_get_voltage_mv(&voltage_mv);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get battery voltage");
-        // Return green as safe default
-        *out_color = BATTERY_COLOR_GREEN;
+        // Return UNKNOWN state on error
+        if (out_level)  *out_level = BATTERY_LEVEL_UNKNOWN;
+        if (out_soc_pct) *out_soc_pct = 0.0f;
+        if (out_remaining_wh) *out_remaining_wh = 0.0f;
         return ret;
     }
 
-    // Map voltage to color based on thresholds
-    if (voltage_mv >= BATTERY_VOLTAGE_MAX_GREEN) {
-        *out_color = BATTERY_COLOR_GREEN;
-    } else if (voltage_mv >= BATTERY_VOLTAGE_MIN_YELLOW) {
-        *out_color = BATTERY_COLOR_YELLOW;
-    } else {
-        *out_color = BATTERY_COLOR_RED;
+    // Map INA219 level (0=UNKNOWN, 1=LOW, 2=MEDIUM, 3=HIGH) to battery_level_t
+    if (out_level) {
+        *out_level = (battery_level_t)power_data.level;
+    }
+    if (out_soc_pct) {
+        *out_soc_pct = power_data.soc_pct;
+    }
+    if (out_remaining_wh) {
+        *out_remaining_wh = power_data.remaining_wh;
     }
 
-    ESP_LOGD(TAG, "Battery voltage: %dmV -> color: %d", voltage_mv, *out_color);
+    ESP_LOGD(TAG, "Battery: SOC=%.1f%% level=%u remaining=%.1fWh sensor_ok=%d",
+             power_data.soc_pct, power_data.level, power_data.remaining_wh,
+             power_data.sensor_ok);
     return ESP_OK;
 }
 
@@ -91,26 +60,26 @@ esp_err_t battery_service_get_lv_color(lv_color_t *out_lv_color)
         return ESP_ERR_INVALID_ARG;
     }
 
-    battery_color_t color;
-    esp_err_t ret = battery_service_get_color(&color);
+    battery_level_t level;
+    esp_err_t ret = battery_service_get_power_data(&level, NULL, NULL);
     if (ret != ESP_OK) {
-        // Return green as safe default on error
-        *out_lv_color = lv_color_hex(0x44ff44);
+        *out_lv_color = lv_color_hex(0x888888);  // Gray = sensor unknown
         return ret;
     }
 
-    switch (color) {
-        case BATTERY_COLOR_GREEN:
+    switch (level) {
+        case BATTERY_LEVEL_HIGH:
             *out_lv_color = lv_color_hex(0x44ff44);  // Green
             break;
-        case BATTERY_COLOR_YELLOW:
+        case BATTERY_LEVEL_MEDIUM:
             *out_lv_color = lv_color_hex(0xffff44);  // Yellow
             break;
-        case BATTERY_COLOR_RED:
+        case BATTERY_LEVEL_LOW:
             *out_lv_color = lv_color_hex(0xff4444);  // Red
             break;
-        default:
-            *out_lv_color = lv_color_hex(0x44ff44);  // Safe default: green
+        default:  // UNKNOWN
+            *out_lv_color = lv_color_hex(0x888888);  // Gray
+            break;
     }
 
     return ESP_OK;
@@ -119,7 +88,6 @@ esp_err_t battery_service_get_lv_color(lv_color_t *out_lv_color)
 esp_err_t battery_service_deinit(void)
 {
 #if CONFIG_LOCKBOX_INTEGRATION_ENABLE || CONFIG_LOCKBOX_FEATURE_INA219
-    // Deinitialize INA219-based monitoring only
     return ESP_OK;
 #else
     return ESP_OK;
@@ -128,6 +96,5 @@ esp_err_t battery_service_deinit(void)
 
 bool battery_service_is_ina219_used(void)
 {
-    // Return true if INA219 feature is enabled
     return CONFIG_LOCKBOX_FEATURE_INA219;
 }

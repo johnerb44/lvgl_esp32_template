@@ -7,9 +7,9 @@ static const char *TAG = "STATUS_INPUTS";
 static bool s_initialized = false;
 
 // Assumed SC16IS752 GPIO bit mapping for lockbox interface board.
-#define STATUS_GPIO_LID_BIT         (1 << 0)  // Active low: 0 means lid open
-#define STATUS_GPIO_FACE_STOW_BIT   (1 << 1)  // Active high: 1 means face module stowed
-#define STATUS_GPIO_TOUCH_BIT       (1 << 2)  // Active high: 1 means fingerprint touch detected
+#define STATUS_GPIO_LID_BIT         (1 << 1)  // Lid switch on GP1, active low: 0 means lid open
+#define STATUS_GPIO_FACE_STOW_BIT   (1 << 2)  // Face module stow on GP2, active high
+#define STATUS_GPIO_TOUCH_BIT       (1 << 3)  // Fingerprint touch on GP3, active high
 
 esp_err_t status_inputs_init(void)
 {

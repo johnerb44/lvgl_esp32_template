@@ -15,6 +15,7 @@ idf_component_register(
          "services/session_service.c"
          "services/status_service.c"
          "services/battery_service.c"
+         "services/sleep_service.c"
          "app/lockbox_app.c"
          "ui/ui.c"
          "ui/screens/ui_screen_start.c"

@@ -14,6 +14,10 @@
 #include "user_store.h"
 #include "user_mgmt_ui.h"
 #include "app/lockbox_app.h"
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+#include "services/sleep_service.h"
+#include "esp_sleep.h"
+#endif
 #include <string.h>
 #include <inttypes.h>
 #include "sdkconfig.h"
@@ -112,6 +116,14 @@ void app_main()
     if (lockbox_err != ESP_OK) {
         ESP_LOGW(APP_TAG, "lockbox_app_init returned %s", esp_err_to_name(lockbox_err));
     }
+
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    /* Check if we woke from deep sleep — restore display and show start screen */
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_DEEP) {
+        ESP_LOGI(APP_TAG, "Woke from deep sleep");
+        sleep_service_wake();
+    }
+#endif
 
     // End SD session - restore backlight (SD operations complete)
     ESP_LOGI(APP_TAG, "SD init complete, restoring backlight");

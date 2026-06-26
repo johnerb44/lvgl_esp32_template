@@ -4,6 +4,7 @@
 #include "services/status_service.h"
 #include "services/battery_service.h"
 #include "services/ina219_service.h"
+#include "services/sleep_service.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
 
@@ -29,6 +30,14 @@ esp_err_t lockbox_app_init(void)
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "status_service_init returned %s", esp_err_to_name(err));
     }
+
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    ESP_LOGI(TAG, "Initializing sleep service");
+    err = sleep_service_init();
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "sleep_service_init returned %s", esp_err_to_name(err));
+    }
+#endif
 
 #if CONFIG_LOCKBOX_FEATURE_INA219
     ESP_LOGI(TAG, "Initializing INA219 service for battery monitoring");

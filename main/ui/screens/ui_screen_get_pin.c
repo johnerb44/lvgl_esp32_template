@@ -16,7 +16,6 @@
 #include "services/auth_service.h"
 #include "services/lock_service.h"
 #include "services/session_service.h"
-#include "services/ina219_service.h"
 #include "ui/screens/ui_screen_enroll.h"
 #include "user_store.h"
 #include <string.h>
@@ -493,21 +492,7 @@ static void lockout_reset_cb(lv_timer_t *timer)
 // Timer callback to navigate to home screen
 static void navigate_to_home_cb(lv_timer_t *timer) {
     (void)timer;  // Unused parameter
-    ESP_LOGI(SCREEN_TAG, "Initializing INA219 service for battery monitoring");
-    // Use the default I2C port and address for INA219
-    esp_err_t err = ina219_service_init(0, 0x41);
-    if (err != ESP_OK) {
-        ESP_LOGW(SCREEN_TAG, "ina219_service_init returned %s", esp_err_to_name(err));
-        // Continue initialization as battery monitoring is not critical for core functionality
-    } else {
-        ESP_LOGI(SCREEN_TAG, "INA219 service initialized successfully");
-    }
     ESP_LOGI(SCREEN_TAG, "Navigating to home screen");
-    if(is_ina219_initialized){
-        ESP_LOGI(SCREEN_TAG, "INA219 service is initialized, navigating to home screen");
-    } else {
-        ESP_LOGW(SCREEN_TAG, "INA219 service is NOT initialized, navigating to home screen anyway");
-    }
     lv_scr_load_anim(ui_screen_home, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
 }
 

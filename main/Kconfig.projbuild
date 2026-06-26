@@ -153,13 +153,31 @@ menu "Example Configuration"
 
         config LOCKBOX_FEATURE_STATUS_INPUTS
             bool "Enable lockbox status input signals"
-            default n
+            default y
             depends on LOCKBOX_INTEGRATION_ENABLE
-
 
         config LOCKBOX_FEATURE_INA219
            bool "Enable INA219 power monitoring"
            default n
            depends on LOCKBOX_INTEGRATION_ENABLE
+
+        config LOCKBOX_FEATURE_SLEEP_MODE
+            bool "Enable sleep mode"
+            default n
+            depends on LOCKBOX_FEATURE_STATUS_INPUTS
+            help
+                Enables sleep mode functionality. When idle conditions
+                are met (lid closed, user logged out, face stowed,
+                lock engaged), the system enters deep sleep after a
+                60-second countdown to conserve battery power.
+                Wake via fingerprint touch.
+
+        config LOCKBOX_SLEEP_INACTIVITY_TIMEOUT_S
+            int "Inactivity timeout before sleep countdown (seconds)"
+            default 300
+            range 60 3600
+            depends on LOCKBOX_FEATURE_SLEEP_MODE
+            help
+                Seconds of inactivity before sleep countdown begins.
     endmenu
 endmenu

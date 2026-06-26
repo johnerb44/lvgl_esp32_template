@@ -1,2 +1,0 @@
-/home/erbj/lvgl-projects/lvgl_esp32_template/build/CMakeFiles/edit_cache.dir
-/home/erbj/lvgl-projects/lvgl_esp32_template/build/CMakeFiles/rebuild_cache.dir

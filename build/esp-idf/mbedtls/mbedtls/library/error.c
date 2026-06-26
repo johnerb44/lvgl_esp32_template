@@ -1,1 +1,0 @@
-/home/erbj/esp/v5.1.6/esp-idf/components/mbedtls/mbedtls/library/error.c

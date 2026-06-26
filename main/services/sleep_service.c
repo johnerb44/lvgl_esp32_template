@@ -135,7 +135,7 @@ esp_err_t sleep_service_check_entry(sleep_check_result_t *result)
 esp_err_t sleep_service_enter(void)
 {
     if (s_state != SLEEP_STATE_COUNTDOWN) {
-        return ESP_ERR_NOT_READY;
+        return ESP_FAIL;
     }
 
     /* Turn off LCD backlight */
@@ -167,23 +167,6 @@ void sleep_service_wake(void)
 }
 
 /* ---- Internal helpers ---- */
-
-static esp_err_t sleep_service_check_conditions(bool *p_lid_closed, bool *p_face_stowed)
-{
-#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
-    lockbox_status_inputs_t inputs = {0};
-    esp_err_t err = status_inputs_read(&inputs);
-    if (err != ESP_OK) {
-        return err;
-    }
-    if (p_lid_closed) *p_lid_closed = !inputs.lid_open;
-    if (p_face_stowed) *p_face_stowed = inputs.face_module_stowed;
-#else
-    if (p_lid_closed) *p_lid_closed = true;
-    if (p_face_stowed) *p_face_stowed = true;
-#endif
-    return ESP_OK;
-}
 
 static void set_state(sleep_state_t new_state)
 {

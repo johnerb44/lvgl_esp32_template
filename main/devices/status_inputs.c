@@ -1,4 +1,5 @@
 #include "devices/status_inputs.h"
+#include "devices/hlk_tx510_device.h"
 #include "comm/sc16is752_transport.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
@@ -6,10 +7,9 @@
 static const char *TAG = "STATUS_INPUTS";
 static bool s_initialized = false;
 
-// Assumed SC16IS752 GPIO bit mapping for lockbox interface board.
-#define STATUS_GPIO_LID_BIT         (1 << 1)  // Lid switch on GP1, active low: 0 means lid open
-#define STATUS_GPIO_FACE_STOW_BIT   (1 << 2)  // Face module stow on GP2, active high
-#define STATUS_GPIO_TOUCH_BIT       (1 << 3)  // Fingerprint touch on GP3, active high
+// SC16IS752 GPIO bit mapping for lockbox interface board.
+#define STATUS_GPIO_LID_BIT         (1 << 0)  // Lid switch on GP0, active low: 0 means lid open
+#define STATUS_GPIO_TOUCH_BIT       (1 << 1)  // Fingerprint touch (R503) on GP1, active high
 
 esp_err_t status_inputs_init(void)
 {
@@ -59,8 +59,17 @@ esp_err_t status_inputs_read(lockbox_status_inputs_t *out_status)
 
     // Lid signal from interface board is active low.
     out_status->lid_open = ((gpio_state & STATUS_GPIO_LID_BIT) == 0);
-    out_status->face_module_stowed = ((gpio_state & STATUS_GPIO_FACE_STOW_BIT) != 0);
     out_status->fingerprint_touch_detected = ((gpio_state & STATUS_GPIO_TOUCH_BIT) != 0);
+
+    // Face module stow detection: ping HLK-TX510 via SC16IS752.
+    // If no valid reply (timeout), module is stowed (power interrupted).
+#if CONFIG_LOCKBOX_FEATURE_HLK_TX510
+    out_status->face_module_stowed = (hlk_tx510_device_ping() != ESP_OK);
+#else
+    // No HLK feature — assume stowed (unknown state)
+    out_status->face_module_stowed = true;
+#endif
+
     return ESP_OK;
 #endif
 }

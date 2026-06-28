@@ -39,6 +39,7 @@
 static lv_obj_t *s_user_label = NULL;
 static lv_obj_t *s_lock_label = NULL;
 static lv_obj_t *s_lid_label  = NULL;
+static lv_obj_t *s_face_stow_label = NULL;
 static lv_obj_t *s_battery_box = NULL;
 static lv_obj_t *s_battery_debug_label = NULL;  // DEBUG: voltage readout
 
@@ -104,15 +105,21 @@ void ui_screen_home_create(void)
     lv_obj_set_style_text_font(s_lid_label, &lv_font_montserrat_20, 0);
     lv_obj_align(s_lid_label, LV_ALIGN_TOP_RIGHT, -10, 56);
 
+    // Face module stow status indicator
+    s_face_stow_label = lv_label_create(ui_screen_home);
+    lv_label_set_text(s_face_stow_label, "Face: --");
+    lv_obj_set_style_text_font(s_face_stow_label, &lv_font_montserrat_20, 0);
+    lv_obj_align(s_face_stow_label, LV_ALIGN_TOP_RIGHT, -10, 102);
+
     // Battery status indicator — label + colored rectangle
     lv_obj_t *bat_title = lv_label_create(ui_screen_home);
     lv_label_set_text(bat_title, "Battery");
     lv_obj_set_style_text_font(bat_title, &lv_font_montserrat_20, 0);
-    lv_obj_align(bat_title, LV_ALIGN_TOP_RIGHT, -10, 102);
+    lv_obj_align(bat_title, LV_ALIGN_TOP_RIGHT, -10, 148);
 
     s_battery_box = lv_obj_create(ui_screen_home);
     lv_obj_set_size(s_battery_box, 80, 22);
-    lv_obj_align(s_battery_box, LV_ALIGN_TOP_RIGHT, -10, 132);
+    lv_obj_align(s_battery_box, LV_ALIGN_TOP_RIGHT, -10, 178);
     lv_obj_set_style_bg_color(s_battery_box, lv_color_hex(0x44cc44), 0);
     lv_obj_set_style_border_color(s_battery_box, lv_color_hex3(0xfff), 0);
     lv_obj_set_style_border_width(s_battery_box, 2, 0);
@@ -124,7 +131,7 @@ void ui_screen_home_create(void)
     lv_label_set_text(s_battery_debug_label, "--%");
     lv_obj_set_style_text_font(s_battery_debug_label, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_color(s_battery_debug_label, lv_color_hex(0xcccccc), 0);
-    lv_obj_align(s_battery_debug_label, LV_ALIGN_TOP_RIGHT, -10, 160);
+    lv_obj_align(s_battery_debug_label, LV_ALIGN_TOP_RIGHT, -10, 206);
     lv_obj_t * unlock_button = lv_button_create(ui_screen_home);
     lv_obj_set_align(unlock_button, LV_ALIGN_CENTER);
     lv_obj_set_width(unlock_button, 420);
@@ -274,6 +281,21 @@ static void home_screen_loaded_cb(lv_event_t *e)
 #else
         lv_label_set_text(s_lid_label, "Lid: Closed");
         lv_obj_set_style_text_color(s_lid_label, lv_color_hex(0x44ff44), 0);
+#endif
+    }
+
+    // Face module stow status
+    if (s_face_stow_label && lv_obj_is_valid(s_face_stow_label)) {
+#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
+        lockbox_status_inputs_t inputs = {0};
+        if (status_inputs_read(&inputs) == ESP_OK) {
+            lv_label_set_text(s_face_stow_label, inputs.face_module_stowed ? "Face: Stowed" : "Face: Active");
+            lv_obj_set_style_text_color(s_face_stow_label,
+                inputs.face_module_stowed ? lv_color_hex(0x888888) : lv_color_hex(0x44ff44), 0);
+        }
+#else
+        lv_label_set_text(s_face_stow_label, "Face: --");
+        lv_obj_set_style_text_color(s_face_stow_label, lv_color_hex(0x888888), 0);
 #endif
     }
 

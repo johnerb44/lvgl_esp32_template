@@ -42,6 +42,7 @@ static lv_obj_t *s_lid_label  = NULL;
 static lv_obj_t *s_face_stow_label = NULL;
 static lv_obj_t *s_battery_box = NULL;
 static lv_obj_t *s_battery_debug_label = NULL;  // DEBUG: voltage readout
+static lv_obj_t *s_sleep_countdown_label = NULL; // Sleep countdown display
 
 /***********************
  *  STATIC PROTOTYPES
@@ -55,6 +56,9 @@ static void signout_btn_event_cb(lv_event_t *e);
 static void home_screen_loaded_cb(lv_event_t *e);
 static void toast_timer_cb(lv_timer_t *timer);
 static void create_toast(const char *text, int timeout_ms);
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+static void sleep_display_timer_cb(lv_timer_t *timer);
+#endif
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -110,6 +114,13 @@ void ui_screen_home_create(void)
     lv_label_set_text(s_face_stow_label, "Face: --");
     lv_obj_set_style_text_font(s_face_stow_label, &lv_font_montserrat_20, 0);
     lv_obj_align(s_face_stow_label, LV_ALIGN_TOP_RIGHT, -10, 102);
+
+    // Sleep countdown indicator (shown during countdown)
+    s_sleep_countdown_label = lv_label_create(ui_screen_home);
+    lv_label_set_text(s_sleep_countdown_label, "");
+    lv_obj_set_style_text_font(s_sleep_countdown_label, &lv_font_montserrat_16, 0);
+    lv_obj_align(s_sleep_countdown_label, LV_ALIGN_TOP_RIGHT, -10, 190);
+    lv_obj_set_style_text_color(s_sleep_countdown_label, lv_color_hex(0x888888), 0);
 
     // Battery status indicator — label + colored rectangle
     lv_obj_t *bat_title = lv_label_create(ui_screen_home);
@@ -242,6 +253,33 @@ static void create_toast(const char *text, int timeout_ms) {
     lv_timer_set_repeat_count(timer, 1);
 }
 
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+static void sleep_display_timer_cb(lv_timer_t *timer)
+{
+    (void)timer;
+
+    /* Skip tick() — driven by the main screen's sleep tick timer.
+       This callback only refreshes the home screen countdown label. */
+
+    /* Refresh countdown label if in countdown */
+    if (s_sleep_countdown_label && lv_obj_is_valid(s_sleep_countdown_label)) {
+        sleep_state_t state = sleep_service_get_state();
+        if (state == SLEEP_STATE_COUNTDOWN) {
+            sleep_check_result_t result = {0};
+            sleep_service_check_entry(&result);
+            char buf[32];
+            snprintf(buf, sizeof(buf), "Sleep in %ds", result.countdown_seconds);
+            lv_label_set_text(s_sleep_countdown_label, buf);
+            lv_obj_set_style_text_color(s_sleep_countdown_label,
+                                        lv_color_hex(0xe19419), 0);
+        } else {
+            lv_label_set_text(s_sleep_countdown_label, "");
+        }
+    }
+}
+
+#endif
+
 static void home_screen_loaded_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_SCREEN_LOADED) return;
@@ -299,15 +337,17 @@ static void home_screen_loaded_cb(lv_event_t *e)
 #endif
     }
 
-        // Start sleep tick timer (every 1s)
+        // Start sleep countdown refresh timer (every 1s to update label)
+        // Note: sleep_service_tick() is driven by the main screen's sleep tick timer,
+        // so this timer only refreshes the home screen's countdown label display.
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
-    static lv_timer_t *s_sleep_tick_timer = NULL;
-    if (s_sleep_tick_timer == NULL) {
-        s_sleep_tick_timer = lv_timer_create([](lv_timer_t *t) {
-            (void)t;
-            sleep_service_tick();
-        }, 1000, NULL);
+    static lv_timer_t *s_sleep_display_timer = NULL;
+    if (s_sleep_display_timer == NULL) {
+        s_sleep_display_timer = lv_timer_create(
+            sleep_display_timer_cb, 1000, (void *)ui_screen_home);
     }
+#else
+    (void)s_sleep_countdown_label;
 #endif
 
     // Battery status SOC-based display

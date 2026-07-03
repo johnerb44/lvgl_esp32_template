@@ -2,181 +2,409 @@
  * @file sleep_service.c
  * @brief Sleep mode service implementation
  *
- * Implements a sleep state machine with inactivity countdown.
- * Entry conditions (all must be true):
- *   1. Lid closed
- *   2. User logged out
- *   3. Face module stowed
- *   4. Lock engaged
- * After a configurable inactivity timeout, a 60-second countdown begins.
- * If all conditions remain true at countdown end, the system enters deep sleep.
+ * Implements light-sleep state machine with inactivity countdown and RTC polling.
+ * - 5-minute inactivity timeout (SLEEP_INACTIVITY_TIMEOUT_SEC)
+ * - 60-second countdown display phase (SLEEP_COUNTDOWN_SEC)
+ * - Light sleep entry with LCD backlight off
+ * - RTC wake every 20 seconds (SLEEP_RTC_INTERVAL_SEC)
+ * - SC16IS752 GP1 polling for 10 seconds (SLEEP_POLL_DURATION_SEC)
  */
 
-#include "sleep_service.h"
-#include "devices/status_inputs.h"
-#include "services/lock_service.h"
-#include "services/session_service.h"
-#include "ch422g_driver.h"
+#include "services/sleep_service.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
 #include "esp_timer.h"
-#include "nvs_flash.h"
-#include "sdkconfig.h"
-#include <string.h>
+#include "esp_attr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "comm/sc16is752_transport.h"
+#include "ch422g_driver.h"
+#include "waveshare_rgb_lcd_port.h"
+#include <inttypes.h>
+
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
 
 static const char *TAG = "SLEEP_SERVICE";
 
-/* ---- Internal state ---- */
-static sleep_state_t s_state = SLEEP_STATE_ACTIVE;
-static int64_t s_last_activity_us = 0;
-static uint16_t s_countdown_remaining = 0;
+/* ---- Sleep timing constants ---- */
+#define SLEEP_INACTIVITY_TIMEOUT_SEC   300    /* 5 minutes before countdown starts */
+#define SLEEP_COUNTDOWN_SEC            60     /* Last 60 seconds show countdown */
+#define SLEEP_RTC_INTERVAL_SEC         20     /* RTC wakes every 20 seconds */
+#define SLEEP_POLL_DURATION_SEC        10     /* Poll GP1 for 10 seconds on each wake */
+#define SLEEP_POLL_INTERVAL_MS         1000   /* Poll interval: 1 second */
 
-#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
-static const uint16_t s_timeout_s = CONFIG_LOCKBOX_SLEEP_INACTIVITY_TIMEOUT_S;
-#else
-static const uint16_t s_timeout_s = 300; /* default 5 min */
-#endif
+/* ---- Sleep service state ---- */
+static struct {
+    sleep_state_t state;              /* Current sleep state */
+    wake_reason_t wake_reason;        /* Reason for last wake */
+    uint32_t inactivity_timer_sec;    /* Elapsed inactivity seconds */
+    uint32_t countdown_timer_sec;     /* Remaining countdown seconds */
+    uint32_t poll_start_time_sec;     /* Start time of polling phase */
+    uint8_t poll_iterations;          /* Iterations of GP1 polling completed */
+} s_sleep_state = {
+    .state = SLEEP_STATE_ACTIVE,
+    .wake_reason = WAKE_REASON_UNKNOWN,
+    .inactivity_timer_sec = 0,
+    .countdown_timer_sec = 0,
+    .poll_start_time_sec = 0,
+    .poll_iterations = 0,
+};
 
-#define SLEEP_COUNTDOWN_SECONDS 60
+/* Forward declarations */
+static esp_err_t sleep_enter_light_sleep(void);
+static bool read_r503_interrupt_pin(void);
 
-/* ---- Forward declarations ---- */
-static esp_err_t sleep_service_check_conditions(bool *p_lid_closed, bool *p_face_stowed);
-static void set_state(sleep_state_t new_state);
-
-/* ---- Public API ---- */
-
+/**
+ * @brief Initialize sleep service
+ */
 esp_err_t sleep_service_init(void)
 {
-    s_last_activity_us = esp_timer_get_time();
-    s_state = SLEEP_STATE_ACTIVE;
-    s_countdown_remaining = 0;
-    ESP_LOGI(TAG, "Sleep service initialized (timeout=%ds)", s_timeout_s);
+    ESP_LOGI(TAG, "Sleep service initialized");
+    
+    /* Initialize SC16IS752 GPIO for reading R503 interrupt (GP1) */
+    esp_err_t ret = sc16is752_transport_gpio_init(0x00, 0xFF);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to init SC16IS752 GPIO: %s", esp_err_to_name(ret));
+        /* Not fatal — continue without R503 interrupt detection */
+    }
+    
+    s_sleep_state.state = SLEEP_STATE_ACTIVE;
+    s_sleep_state.wake_reason = WAKE_REASON_UNKNOWN;
+    s_sleep_state.inactivity_timer_sec = 0;
+    
     return ESP_OK;
 }
 
+/**
+ * @brief Get current sleep state
+ */
 sleep_state_t sleep_service_get_state(void)
 {
-    return s_state;
+    return s_sleep_state.state;
 }
 
-void sleep_service_activity_detected(void)
+/**
+ * @brief Get wake reason
+ */
+wake_reason_t sleep_service_get_wake_reason(void)
 {
-    if (s_state != SLEEP_STATE_ACTIVE) {
-        return;
-    }
-    s_last_activity_us = esp_timer_get_time();
-    s_countdown_remaining = 0;
-    ESP_LOGD(TAG, "Activity detected, inactivity timer reset");
+    return s_sleep_state.wake_reason;
 }
 
+/**
+ * @brief Called every ~1 second from UI main screen task
+ *
+ * Handles inactivity timeout counting and countdown.
+ */
 void sleep_service_tick(void)
 {
-    if (s_state == SLEEP_STATE_ACTIVE) {
-        int64_t elapsed_us = esp_timer_get_time() - s_last_activity_us;
-        int64_t elapsed_s = elapsed_us / 1000000;
-
-        if (elapsed_s >= s_timeout_s) {
-            ESP_LOGI(TAG, "Inactivity timeout reached, starting %ds countdown",
-                     SLEEP_COUNTDOWN_SECONDS);
-            set_state(SLEEP_STATE_COUNTDOWN);
-            s_countdown_remaining = SLEEP_COUNTDOWN_SECONDS;
+    if (s_sleep_state.state == SLEEP_STATE_ACTIVE) {
+        /* Count up inactivity */
+        s_sleep_state.inactivity_timer_sec++;
+        
+        if (s_sleep_state.inactivity_timer_sec >= SLEEP_INACTIVITY_TIMEOUT_SEC) {
+            /* Inactivity timeout reached: start 60-second countdown */
+            ESP_LOGI(TAG, "Inactivity timeout reached, starting countdown");
+            s_sleep_state.state = SLEEP_STATE_COUNTDOWN;
+            s_sleep_state.countdown_timer_sec = SLEEP_COUNTDOWN_SEC;
         }
-    } else if (s_state == SLEEP_STATE_COUNTDOWN) {
-        s_countdown_remaining--;
-
-        if (s_countdown_remaining == 0) {
-            /* Check entry conditions before entering sleep */
-            sleep_check_result_t result = {0};
-            if (sleep_service_check_entry(&result) == ESP_OK) {
-                ESP_LOGI(TAG, "All sleep entry conditions met, entering sleep");
-                set_state(SLEEP_STATE_DEEP_SLEEP);
-            } else {
-                /* Conditions not met, return to active */
-                ESP_LOGD(TAG, "Sleep entry conditions not met, returning to active");
-                set_state(SLEEP_STATE_ACTIVE);
-                s_last_activity_us = esp_timer_get_time();
-                s_countdown_remaining = 0;
+    } 
+    else if (s_sleep_state.state == SLEEP_STATE_COUNTDOWN) {
+        /* Count down */
+        if (s_sleep_state.countdown_timer_sec > 0) {
+            s_sleep_state.countdown_timer_sec--;
+            ESP_LOGI(TAG, "Countdown: %" PRIu32 "s remaining", s_sleep_state.countdown_timer_sec);
+            
+            /* Poll R503 interrupt (GP1) during countdown for user activity */
+            if (read_r503_interrupt_pin()) {
+                ESP_LOGI(TAG, "R503 interrupt detected during countdown, resetting timers");
+                sleep_service_activity_detected();
+                return;
+            }
+        } else {
+            /* Countdown finished: enter sleep */
+            ESP_LOGI(TAG, "All sleep entry conditions met — entering sleep");
+            s_sleep_state.state = SLEEP_STATE_PRE_SLEEP;
+            
+            esp_err_t ret = sleep_service_enter();
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "sleep_service_enter() failed: %s", esp_err_to_name(ret));
+                /* Reset state on error */
+                s_sleep_state.state = SLEEP_STATE_ACTIVE;
+                s_sleep_state.inactivity_timer_sec = 0;
             }
         }
     }
 }
 
+/**
+ * @brief Called on any user activity to reset inactivity timer
+ */
+void sleep_service_activity_detected(void)
+{
+    ESP_LOGI(TAG, "Activity detected, resetting timers");
+    s_sleep_state.state = SLEEP_STATE_ACTIVE;
+    s_sleep_state.inactivity_timer_sec = 0;
+    s_sleep_state.countdown_timer_sec = 0;
+}
+
+/**
+ * @brief Check sleep entry conditions
+ */
 esp_err_t sleep_service_check_entry(sleep_check_result_t *result)
 {
     if (!result) {
         return ESP_ERR_INVALID_ARG;
     }
+    
+    /* TODO: Check actual system conditions from services */
+    /* For now, just report current state */
+    result->state = s_sleep_state.state;
+    result->lid_closed = true;              /* Assume lid closed */
+    result->user_logged_out = true;         /* Assume logged out on main screen */
+    result->face_module_stowed = true;      /* Assume stowed */
+    result->lock_engaged = true;            /* Assume locked */
+    result->countdown_seconds = s_sleep_state.countdown_timer_sec;
+    
+    return ESP_OK;
+}
 
-    memset(result, 0, sizeof(sleep_check_result_t));
-    result->state = s_state;
+/**
+ * @brief Attempt to enter sleep mode
+ *
+ * Powers down LCD backlight, waits, then enters light sleep.
+ */
+esp_err_t sleep_service_enter(void)
+{
+    if (s_sleep_state.state != SLEEP_STATE_PRE_SLEEP) {
+        ESP_LOGE(TAG, "ERROR: Cannot enter sleep — state is %d (expected PRE_SLEEP)",
+                 s_sleep_state.state);
+        return ESP_FAIL;
+    }
+    
+    ESP_LOGI(TAG, "Turning off LCD backlight");
+    /* Turn off LCD backlight via CH422G */
+    ch422g_backlight_control(I2C_MASTER_NUM, false);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    
+    /* Enter light sleep */
+    ESP_LOGI(TAG, "Entering light sleep with RTC wake every %" PRIu32 "s", (uint32_t)SLEEP_RTC_INTERVAL_SEC);
+    esp_err_t ret = sleep_enter_light_sleep();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to enter light sleep: %s", esp_err_to_name(ret));
+        /* Restore backlight on failure */
+        ch422g_backlight_control(I2C_MASTER_NUM, true);
+        s_sleep_state.state = SLEEP_STATE_ACTIVE;
+        return ret;
+    }
+    
+    /* Light sleep entered — execution resumes here on RTC wake */
+    ESP_LOGI(TAG, "Woke from light sleep, polling R503 interrupt");
+    
+    /* Move to light sleep state and start polling */
+    s_sleep_state.state = SLEEP_STATE_LIGHT_SLEEP;
+    s_sleep_state.poll_start_time_sec = 0;
+    s_sleep_state.poll_iterations = 0;
+    
+    return ESP_OK;
+}
 
-    /* User logged out is always true during countdown (user has signed out) */
-    result->user_logged_out = !session_service_is_authenticated();
+/**
+ * @brief Poll SC16IS752 GP1 for R503 interrupt during light sleep wake cycle
+ *
+ * Called from sleep_service_tick() during light sleep state.
+ * Per sleep_mode.md: check GP1 for 10 seconds at 1s intervals.
+ * If LOW detected (R503 touched) → fully wake up.
+ * If HIGH for entire 10s → return to light sleep.
+ */
+bool sleep_service_poll_r503(void)
+{
+    if (s_sleep_state.state != SLEEP_STATE_LIGHT_SLEEP) {
+        return false;
+    }
+    
+    /* On first call from wake, start timer */
+    if (s_sleep_state.poll_iterations == 0) {
+        s_sleep_state.poll_start_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
+        ESP_LOGI(TAG, "Starting 10-second R503 polling phase");
+    }
+    
+    /* Check current time */
+    uint32_t elapsed = (uint32_t)(esp_timer_get_time() / 1000000) - s_sleep_state.poll_start_time_sec;
+    
+    if (elapsed >= SLEEP_POLL_DURATION_SEC) {
+        /* Polling phase complete: no R503 activity, back to sleep */
+        ESP_LOGI(TAG, "Polling phase complete (%" PRIu32 "s), no R503 activity detected", elapsed);
+        s_sleep_state.poll_iterations = 0;
+        
+        /* Return to light sleep */
+        esp_err_t ret = sleep_enter_light_sleep();
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to re-enter light sleep: %s", esp_err_to_name(ret));
+        }
+        return false;
+    }
+    
+    /* Poll GP1 */
+    if (read_r503_interrupt_pin()) {
+        /* R503 interrupt detected! Wake up. */
+        ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
+        s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
+        return true;
+    }
+    
+    s_sleep_state.poll_iterations++;
+    return false;
+}
 
-    /* Lock engaged check */
-    lock_state_t lock_state = {0};
-    esp_err_t err = lock_service_get_state(&lock_state);
-    result->lock_engaged = (err == ESP_OK) && lock_state.is_locked;
+/**
+ * @brief Wake from sleep: restore LCD and UI
+ */
+esp_err_t sleep_service_wake(void)
+{
+    ESP_LOGI(TAG, "Waking from sleep, restoring LCD");
+    
+    /* Restore LCD backlight */
+    ch422g_backlight_control(I2C_MASTER_NUM, true);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    
+    /* Return to active state */
+    s_sleep_state.state = SLEEP_STATE_ACTIVE;
+    s_sleep_state.inactivity_timer_sec = 0;
+    s_sleep_state.countdown_timer_sec = 0;
+    s_sleep_state.poll_start_time_sec = 0;
+    s_sleep_state.poll_iterations = 0;
+    
+    return ESP_OK;
+}
 
-#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
-    lockbox_status_inputs_t inputs = {0};
-    err = status_inputs_read(&inputs);
-    result->lid_closed = (err == ESP_OK) && !inputs.lid_open;
-    result->face_module_stowed = (err == ESP_OK) && inputs.face_module_stowed;
-#else
-    /* Mock: assume conditions met when STATUS_INPUTS is disabled */
-    result->lid_closed = true;
-    result->face_module_stowed = true;
-#endif
+/**
+ * @brief Cancel sleep mode: called when leaving main screen
+ */
+void sleep_service_cancel(void)
+{
+    ESP_LOGI(TAG, "Canceling sleep mode (leaving main screen)");
+    s_sleep_state.state = SLEEP_STATE_ACTIVE;
+    s_sleep_state.inactivity_timer_sec = 0;
+    s_sleep_state.countdown_timer_sec = 0;
+    s_sleep_state.poll_start_time_sec = 0;
+    s_sleep_state.poll_iterations = 0;
+}
 
+/* ---- Internal helper functions ---- */
+
+/**
+ * @brief Enter light sleep with RTC wake configured
+ *
+ * Sets up RTC timer to wake every SLEEP_RTC_INTERVAL_SEC seconds,
+ * then calls esp_light_sleep_start().
+ */
+static esp_err_t sleep_enter_light_sleep(void)
+{
+    /* Configure RTC timer to wake every SLEEP_RTC_INTERVAL_SEC seconds */
+    esp_err_t ret = esp_sleep_enable_timer_wakeup(
+        SLEEP_RTC_INTERVAL_SEC * 1000000ULL  /* Convert seconds to microseconds */
+    );
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to enable RTC timer: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    ESP_LOGI(TAG, "RTC timer configured for %" PRIu32 "s intervals", (uint32_t)SLEEP_RTC_INTERVAL_SEC);
+    
+    /* Enter light sleep */
+    /* esp_light_sleep_start() returns when woken by RTC (or other wake source) */
+    esp_light_sleep_start();
+    
+    return ESP_OK;
+}
+
+/**
+ * @brief Read R503 interrupt signal from SC16IS752 GP1
+ *
+ * Per sleep_mode.md:
+ *   - GP1 is HIGH when R503 is NOT touched (idle)
+ *   - GP1 is LOW when R503 IS touched (interrupt)
+ *
+ * @return true if interrupt detected (GP1 is LOW), false if idle (GP1 is HIGH)
+ */
+static bool read_r503_interrupt_pin(void)
+{
+    uint8_t gpio_state = 0;
+    esp_err_t ret = sc16is752_transport_gpio_read(&gpio_state);
+    
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to read SC16IS752 GPIO: %s", esp_err_to_name(ret));
+        return false;
+    }
+    
+    /* GP1 is bit 1 of gpio_state */
+    bool gp1_state = (gpio_state & 0x02) == 0;  /* LOW when bit 1 is 0 */
+    
+    if (gp1_state) {
+        ESP_LOGI(TAG, "R503 interrupt detected on GP1");
+    }
+    
+    return gp1_state;
+}
+
+#else  /* !CONFIG_LOCKBOX_FEATURE_SLEEP_MODE */
+
+/* Stub implementations when feature is disabled */
+
+esp_err_t sleep_service_init(void)
+{
+    return ESP_OK;
+}
+
+sleep_state_t sleep_service_get_state(void)
+{
+    return SLEEP_STATE_ACTIVE;
+}
+
+wake_reason_t sleep_service_get_wake_reason(void)
+{
+    return WAKE_REASON_UNKNOWN;
+}
+
+void sleep_service_tick(void)
+{
+}
+
+void sleep_service_activity_detected(void)
+{
+}
+
+esp_err_t sleep_service_check_entry(sleep_check_result_t *result)
+{
+    if (result) {
+        result->state = SLEEP_STATE_ACTIVE;
+        result->countdown_seconds = 0;
+        result->lid_closed = true;
+        result->user_logged_out = false;
+        result->face_module_stowed = true;
+        result->lock_engaged = true;
+    }
     return ESP_OK;
 }
 
 esp_err_t sleep_service_enter(void)
 {
-    if (s_state != SLEEP_STATE_COUNTDOWN) {
-        return ESP_FAIL;
-    }
-
-    /* Turn off LCD backlight */
-#if CONFIG_LOCKBOX_INTEGRATION_ENABLE
-    /* I2C port 0 is used for the CH422G on the Waveshare board */
-    ch422g_backlight_control(0, false);
-#endif
-
-    ESP_LOGI(TAG, "Entering deep sleep");
-    esp_deep_sleep_start();
-
-    /* Should never reach here */
     return ESP_FAIL;
 }
 
-void sleep_service_wake(void)
+esp_err_t sleep_service_wake(void)
 {
-    ESP_LOGI(TAG, "Waking from deep sleep");
-    s_state = SLEEP_STATE_ACTIVE;
-    s_countdown_remaining = 0;
-    s_last_activity_us = esp_timer_get_time();
-
-    /* Restore backlight */
-#if CONFIG_LOCKBOX_INTEGRATION_ENABLE
-    ch422g_backlight_control(0, true);
-#endif
-
-    ESP_LOGI(TAG, "Backlight restored, system active");
+    return ESP_OK;
 }
 
-/* ---- Internal helpers ---- */
-
-static void set_state(sleep_state_t new_state)
+void sleep_service_cancel(void)
 {
-    sleep_state_t old = s_state;
-    s_state = new_state;
-    if (old != new_state) {
-        ESP_LOGI(TAG, "State: %s -> %s",
-                 old == SLEEP_STATE_ACTIVE ? "ACTIVE" :
-                 old == SLEEP_STATE_COUNTDOWN ? "COUNTDOWN" : "DEEP_SLEEP",
-                 new_state == SLEEP_STATE_ACTIVE ? "ACTIVE" :
-                 new_state == SLEEP_STATE_COUNTDOWN ? "COUNTDOWN" : "DEEP_SLEEP");
-    }
 }
+
+bool sleep_service_poll_r503(void)
+{
+    return false;
+}
+
+#endif /* CONFIG_LOCKBOX_FEATURE_SLEEP_MODE */

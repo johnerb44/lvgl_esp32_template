@@ -119,9 +119,12 @@ void app_main()
 
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
     /* Check if we woke from deep sleep — restore display and show start screen */
-    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_DEEP) {
-        ESP_LOGI(APP_TAG, "Woke from deep sleep");
+    esp_sleep_wakeup_cause_t wake_cause = esp_sleep_get_wakeup_cause();
+    if (wake_cause != ESP_SLEEP_WAKEUP_UNDEFINED) {
+        ESP_LOGI(APP_TAG, "Wake cause: %d (not undefined) — checking sleep service", (int)wake_cause);
         sleep_service_wake();
+    } else {
+        ESP_LOGI(APP_TAG, "Wake cause: undefined (normal power-on or reset)");
     }
 #endif
 

@@ -36,6 +36,14 @@ Based on the project architecture, I need to implement sleep mode functionality 
    - Define sleep levels (deep sleep, light sleep, idle)
    - Implement state machine for sleep transitions
    - Handle wake-up conditions
+   
+ 3. **Sleep State Initiation Requirements
+   - All users logged off system
+   - HLK-TX510 Face Recognition Module is Stowed
+   - LID is closed
+   - Lock Status is Locked
+   - UI is on Main (Start) screen
+   - System counts down from 5 minutes
 
 ### Phase 2: Hardware Power Management
 **Objective**: Implement power control for key components
@@ -73,8 +81,6 @@ Based on the project architecture, I need to implement sleep mode functionality 
 **Objective**: Seamlessly integrate sleep mode with current architecture
 
 1. **UI Integration**
-   - Update home screen to show sleep status
-   - Add sleep mode controls
    - Display sleep timer countdown
 
 2. **Service Integration**
@@ -150,6 +156,10 @@ Implement sleep states:
    - Preserve user sessions during sleep
    - Handle lock status preservation
    - Implement secure wake-up
+ 
+ 3. **R503 Fingerprint Scanner
+   - Has "Wake-up/Touch/Interrupt" signal to trigger system wake-up
+   - R503 "Wake-up/Touch/Interrupt" signal is connected to SC16IS752 chip, GP1
 
 ## Configuration Options
 Add to `main/Kconfig.projbuild`:

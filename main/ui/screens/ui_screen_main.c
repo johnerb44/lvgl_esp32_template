@@ -136,6 +136,9 @@ static void test_btn_event_cb(lv_event_t *event)
 {
     if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
         ESP_LOGI(SCREEN_TAG, "Begin Authentication clicked");
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+        sleep_service_cancel();
+#endif
         lv_scr_load_anim(ui_screen_biometric, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);
     }
 }
@@ -144,6 +147,9 @@ static void first_time_setup_btn_event_cb(lv_event_t *event)
 {
     if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
     ESP_LOGI(SCREEN_TAG, "First-Time Setup clicked");
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    sleep_service_cancel();
+#endif
     ui_screen_get_pin_set_auth_context(-1);
     ui_screen_get_pin_set_enroll_mode(true);
     lv_scr_load_anim(ui_screen_get_pin, LV_SCR_LOAD_ANIM_MOVE_TOP, 500, 0, false);

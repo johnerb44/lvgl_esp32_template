@@ -195,6 +195,11 @@ static void sleep_tick_update_cb(lv_timer_t *timer)
 {
     (void)timer;
 
+    /* Only run timer if main screen is the active screen */
+    if (lv_screen_active() != ui_screen_main) {
+        return;
+    }
+
     ESP_LOGD(SCREEN_TAG, "Sleep tick: entering service tick");
     sleep_service_tick();
     ESP_LOGD(SCREEN_TAG, "Sleep tick: service tick returned");

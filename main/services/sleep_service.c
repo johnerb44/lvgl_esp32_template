@@ -135,6 +135,14 @@ void sleep_service_tick(void)
             }
         }
     }
+    else if (s_sleep_state.state == SLEEP_STATE_LIGHT_SLEEP) {
+        /* During light sleep polling phase: check R503 interrupt */
+        if (sleep_service_poll_r503()) {
+            /* R503 interrupt detected! Wake up fully */
+            ESP_LOGI(TAG, "R503 interrupt detected during sleep polling, waking up");
+            sleep_service_wake();
+        }
+    }
 }
 
 /**
@@ -220,21 +228,27 @@ esp_err_t sleep_service_enter(void)
 bool sleep_service_poll_r503(void)
 {
     if (s_sleep_state.state != SLEEP_STATE_LIGHT_SLEEP) {
+        ESP_LOGD(TAG, "poll_r503: not in LIGHT_SLEEP state, skipping");
         return false;
     }
     
     /* On first call from wake, start timer */
     if (s_sleep_state.poll_iterations == 0) {
         s_sleep_state.poll_start_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
-        ESP_LOGI(TAG, "Starting 10-second R503 polling phase");
+        ESP_LOGI(TAG, "Starting 10-second R503 polling phase (start_time=%" PRIu32 "s)", 
+                 s_sleep_state.poll_start_time_sec);
     }
     
     /* Check current time */
-    uint32_t elapsed = (uint32_t)(esp_timer_get_time() / 1000000) - s_sleep_state.poll_start_time_sec;
+    uint32_t current_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
+    uint32_t elapsed = current_time_sec - s_sleep_state.poll_start_time_sec;
+    
+    ESP_LOGD(TAG, "poll_r503: iteration %d, elapsed=%" PRIu32 "s (current=%" PRIu32 "s, start=%" PRIu32 "s)", 
+             s_sleep_state.poll_iterations, elapsed, current_time_sec, s_sleep_state.poll_start_time_sec);
     
     if (elapsed >= SLEEP_POLL_DURATION_SEC) {
         /* Polling phase complete: no R503 activity, back to sleep */
-        ESP_LOGI(TAG, "Polling phase complete (%" PRIu32 "s), no R503 activity detected", elapsed);
+        ESP_LOGI(TAG, "Polling phase complete (%" PRIu32 "s), no R503 activity detected, returning to sleep", elapsed);
         s_sleep_state.poll_iterations = 0;
         
         /* Return to light sleep */
@@ -250,6 +264,7 @@ bool sleep_service_poll_r503(void)
         /* R503 interrupt detected! Wake up. */
         ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
         s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
+        s_sleep_state.poll_iterations = 0;
         return true;
     }
     

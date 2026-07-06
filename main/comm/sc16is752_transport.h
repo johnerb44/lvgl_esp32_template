@@ -33,6 +33,10 @@ esp_err_t sc16is752_transport_gpio_init(uint8_t direction_mask, uint8_t initial_
 esp_err_t sc16is752_transport_gpio_read(uint8_t *out_state);
 esp_err_t sc16is752_transport_gpio_write(uint8_t state);
 
+/* Mock R503 touch simulation for testing wake detection */
+void sc16is752_transport_r503_set_mock_touch(bool touched);
+bool sc16is752_transport_r503_get_mock_touch(void);
+
 #ifdef __cplusplus
 }
 #endif

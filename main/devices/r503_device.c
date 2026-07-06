@@ -568,3 +568,31 @@ esp_err_t r503_device_read_index_table(uint8_t page, uint8_t bitmap_out[32], r50
     memcpy(bitmap_out, &ack[1], 32);
     return ESP_OK;
 }
+
+/* ---- Mock R503 device functions ---- */
+
+#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+#include "comm/sc16is752_transport.h"
+static volatile bool s_r503_mock_touched = false;
+
+void r503_device_set_mock_touch(bool touched)
+{
+    s_r503_mock_touched = touched;
+    sc16is752_transport_r503_set_mock_touch(touched);
+}
+
+bool r503_device_get_mock_touch(void)
+{
+    return s_r503_mock_touched;
+}
+#else
+void r503_device_set_mock_touch(bool touched)
+{
+    (void)touched;
+}
+
+bool r503_device_get_mock_touch(void)
+{
+    return false;
+}
+#endif

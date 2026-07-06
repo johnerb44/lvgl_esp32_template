@@ -12,6 +12,9 @@ static const char *TAG = "SC16IS752_TRANSPORT";
 static bool s_transport_ready = false;
 static bool s_channels_configured = false;
 
+/* Mock R503 touch simulation for testing sleep wake detection */
+static volatile bool s_r503_mock_touched = false;
+
 #define SC16IS752_ADDR_DEFAULT      0x4D
 #define SC16IS752_CH_A              0x00
 #define SC16IS752_CH_B              0x01
@@ -520,7 +523,9 @@ esp_err_t sc16is752_transport_gpio_read(uint8_t *out_state)
         return ESP_ERR_INVALID_STATE;
     }
 #if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
-    *out_state = 0;
+    /* Default: GP pins = 0x00 (all LOW). GP1=bit1=0 means R503 touched.
+     * Override with sc16is752_transport_r503_set_mock_touch() for testing. */
+    *out_state = s_r503_mock_touched ? 0x02 : 0x00;
     return ESP_OK;
 #else
     return sc16_read_reg(SC16IS752_CH_A, SC16IS752_IOSTATE_REG, out_state);
@@ -537,5 +542,25 @@ esp_err_t sc16is752_transport_gpio_write(uint8_t state)
     return ESP_OK;
 #else
     return sc16_write_reg(SC16IS752_CH_A, SC16IS752_IOSTATE_REG, state);
+#endif
+}
+
+/* ---- Mock R503 touch simulation ---- */
+
+void sc16is752_transport_r503_set_mock_touch(bool touched)
+{
+#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+    s_r503_mock_touched = touched;
+#else
+    (void)touched;
+#endif
+}
+
+bool sc16is752_transport_r503_get_mock_touch(void)
+{
+#if CONFIG_LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
+    return s_r503_mock_touched;
+#else
+    return false;
 #endif
 }

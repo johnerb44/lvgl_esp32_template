@@ -46,6 +46,10 @@ esp_err_t r503_device_read_index_table(uint8_t page, uint8_t bitmap_out[32], r50
 
 const char *r503_status_to_string(r503_status_t status);
 
+/* Mock R503 device functions for testing */
+void r503_device_set_mock_touch(bool touched);
+bool r503_device_get_mock_touch(void);
+
 #ifdef __cplusplus
 }
 #endif

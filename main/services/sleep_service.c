@@ -20,6 +20,7 @@
 #include "comm/sc16is752_transport.h"
 #include "ch422g_driver.h"
 #include "waveshare_rgb_lcd_port.h"
+#include "devices/r503_device.h"
 #include <inttypes.h>
 
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
@@ -191,32 +192,32 @@ esp_err_t sleep_service_enter(void)
                  s_sleep_state.state);
         return ESP_FAIL;
     }
-    
-    ESP_LOGI(TAG, "Turning off LCD backlight");
-    /* Turn off LCD backlight via CH422G */
+
+    ESP_LOGI(TAG, "Shutting down LCD backlight");
     ch422g_backlight_control(I2C_MASTER_NUM, false);
     vTaskDelay(pdMS_TO_TICKS(500));
-    
-    /* Enter light sleep */
+
+    /* Set poll start time NOW — before sleeping.
+     * Without this, elapsed would be ~0 at first RTC wake, causing the
+     * 10-second poll window to never complete and restart forever. */
+    s_sleep_state.poll_start_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
+    s_sleep_state.poll_iterations = 0;
+    s_sleep_state.poll_last_ms = 0;
+
     ESP_LOGI(TAG, "Entering light sleep with RTC wake every %" PRIu32 "s", (uint32_t)SLEEP_RTC_INTERVAL_SEC);
     esp_err_t ret = sleep_enter_light_sleep();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to enter light sleep: %s", esp_err_to_name(ret));
-        /* Restore backlight on failure */
         ch422g_backlight_control(I2C_MASTER_NUM, true);
         s_sleep_state.state = SLEEP_STATE_ACTIVE;
+        s_sleep_state.inactivity_timer_sec = 0;
         return ret;
     }
-    
-    /* Light sleep entered — execution resumes here on RTC wake */
-    ESP_LOGI(TAG, "Woke from light sleep, polling R503 interrupt");
-    
-    /* Move to light sleep state and start polling */
+
+    /* RTC wake — execution resumes here */
+    ESP_LOGI(TAG, "Woke from light sleep, checking R503 interrupt");
     s_sleep_state.state = SLEEP_STATE_LIGHT_SLEEP;
-    s_sleep_state.poll_start_time_sec = 0;
-    s_sleep_state.poll_iterations = 0;
-    s_sleep_state.poll_last_ms = 0;
-    
+
     return ESP_OK;
 }
 
@@ -224,9 +225,14 @@ esp_err_t sleep_service_enter(void)
  * @brief Poll SC16IS752 GP1 for R503 interrupt during light sleep wake cycle
  *
  * Called from sleep_service_tick() during light sleep state.
- * Polls GP1 every SLEEP_POLL_INTERVAL_MS (500ms) for SLEEP_POLL_DURATION_SEC (10s).
- * If LOW detected (R503 touched) → fully wake up.
- * If HIGH for entire 10s → return to light sleep.
+ * On each RTC wake (every ~20s):
+ *   1. Check R503 interrupt (GP1 LOW = touched)
+ *   2. If detected → fully wake up
+ *   3. If not after 100s total → return to light sleep
+ *
+ * Note: SLEEP_POLL_INTERVAL_MS (500ms) is the intended interval between polls
+ * during the active window; the actual polling frequency is limited by the
+ * RTC wake interval (SLEEP_RTC_INTERVAL_SEC), which is the dominant factor.
  */
 bool sleep_service_poll_r503(void)
 {
@@ -234,53 +240,36 @@ bool sleep_service_poll_r503(void)
         ESP_LOGD(TAG, "poll_r503: not in LIGHT_SLEEP state, skipping");
         return false;
     }
-    
-    /* On first call from wake, start timers */
-    if (s_sleep_state.poll_iterations == 0) {
-        s_sleep_state.poll_start_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
-        s_sleep_state.poll_last_ms = (uint32_t)(esp_timer_get_time() / 1000);  /* Track last poll time in ms */
-        ESP_LOGI(TAG, "Starting 10-second R503 polling phase (every 500ms, max 20 polls)");
-    }
-    
-    /* Check absolute poll timing */
+
+    /* Check elapsed time — if exceeded, return to sleep without polling */
     uint32_t current_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
-    uint32_t current_time_ms = (uint32_t)(esp_timer_get_time() / 1000);
     uint32_t elapsed = current_time_sec - s_sleep_state.poll_start_time_sec;
-    
-    /* Check current time */
-    ESP_LOGD(TAG, "poll_r503: iteration %d, elapsed=%" PRIu32 "s (current=%" PRIu32 "s, start=%" PRIu32 "s)", 
-             s_sleep_state.poll_iterations, elapsed, current_time_sec, s_sleep_state.poll_start_time_sec);
-    
+
     if (elapsed >= SLEEP_POLL_DURATION_SEC) {
-        /* Polling phase complete: no R503 activity, back to sleep */
-        ESP_LOGI(TAG, "Polling phase complete (%" PRIu32 "s), no R503 activity detected, returning to sleep", elapsed);
+        ESP_LOGI(TAG, "Polling phase complete (%" PRIu32 "s), no R503 activity, returning to sleep",
+                 elapsed);
         s_sleep_state.poll_iterations = 0;
-        
-        /* Return to light sleep */
         esp_err_t ret = sleep_enter_light_sleep();
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "Failed to re-enter light sleep: %s", esp_err_to_name(ret));
         }
         return false;
     }
-    
-    /* Check time since last poll to apply poll interval */
-    uint32_t ms_since_last = current_time_ms - s_sleep_state.poll_last_ms;
-    
-    /* Poll GP1 at configured interval */
-    if (ms_since_last >= SLEEP_POLL_INTERVAL_MS) {
-        s_sleep_state.poll_last_ms = current_time_ms;   /* Update last poll time */
-        
-        if (read_r503_interrupt_pin()) {
-            /* R503 interrupt detected! Wake up. */
-            ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
-            s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
-            s_sleep_state.poll_iterations = 0;
-            return true;
-        }
-        s_sleep_state.poll_iterations++;
+
+    /* Poll R503 interrupt on every RTC wake */
+    s_sleep_state.poll_last_ms = (uint32_t)(esp_timer_get_time() / 1000);
+    s_sleep_state.poll_iterations++;
+
+    if (read_r503_interrupt_pin()) {
+        ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
+        s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
+        s_sleep_state.poll_iterations = 0;
+        return true;
     }
-    
+
+    ESP_LOGI(TAG, "RTC wake #%d: no R503 activity (%" PRIu32 "s elapsed)",
+             s_sleep_state.poll_iterations, elapsed);
+
     return false;
 }
 
@@ -359,6 +348,13 @@ static esp_err_t sleep_enter_light_sleep(void)
  */
 static bool read_r503_interrupt_pin(void)
 {
+    /* Check mock R503 touch state first (for testing) */
+    if (r503_device_get_mock_touch()) {
+        ESP_LOGI(TAG, "R503 interrupt detected via mock (R503 touch simulated)");
+        return true;
+    }
+
+    /* Read real GP1 state via SC16IS752 */
     uint8_t gpio_state = 0;
     esp_err_t ret = sc16is752_transport_gpio_read(&gpio_state);
     
@@ -367,8 +363,8 @@ static bool read_r503_interrupt_pin(void)
         return false;
     }
     
-    /* GP1 is bit 1 of gpio_state */
-    bool gp1_state = (gpio_state & 0x02) == 0;  /* LOW when bit 1 is 0 */
+    /* GP1 is bit 1 of gpio_state: LOW (bit 1 == 0) when R503 touched */
+    bool gp1_state = (gpio_state & 0x02) == 0;
     
     if (gp1_state) {
         ESP_LOGI(TAG, "R503 interrupt detected on GP1");

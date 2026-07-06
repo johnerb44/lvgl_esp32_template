@@ -31,7 +31,7 @@ static const char *TAG = "SLEEP_SERVICE";
 #define SLEEP_COUNTDOWN_SEC            60     /* Last 60 seconds show countdown */
 #define SLEEP_RTC_INTERVAL_SEC         20     /* RTC wakes every 20 seconds */
 #define SLEEP_POLL_DURATION_SEC        10     /* Poll GP1 for 10 seconds on each wake */
-#define SLEEP_POLL_INTERVAL_MS         1000   /* Poll interval: 1 second */
+#define SLEEP_POLL_INTERVAL_MS         500    /* Poll interval: 500ms (20 times in 10s) */
 
 /* ---- Sleep service state ---- */
 static struct {
@@ -41,6 +41,7 @@ static struct {
     uint32_t countdown_timer_sec;     /* Remaining countdown seconds */
     uint32_t poll_start_time_sec;     /* Start time of polling phase */
     uint8_t poll_iterations;          /* Iterations of GP1 polling completed */
+    uint32_t poll_last_ms;            /* Last poll time in ms (for interval tracking) */
 } s_sleep_state = {
     .state = SLEEP_STATE_ACTIVE,
     .wake_reason = WAKE_REASON_UNKNOWN,
@@ -48,6 +49,7 @@ static struct {
     .countdown_timer_sec = 0,
     .poll_start_time_sec = 0,
     .poll_iterations = 0,
+    .poll_last_ms = 0,
 };
 
 /* Forward declarations */
@@ -213,6 +215,7 @@ esp_err_t sleep_service_enter(void)
     s_sleep_state.state = SLEEP_STATE_LIGHT_SLEEP;
     s_sleep_state.poll_start_time_sec = 0;
     s_sleep_state.poll_iterations = 0;
+    s_sleep_state.poll_last_ms = 0;
     
     return ESP_OK;
 }
@@ -221,7 +224,7 @@ esp_err_t sleep_service_enter(void)
  * @brief Poll SC16IS752 GP1 for R503 interrupt during light sleep wake cycle
  *
  * Called from sleep_service_tick() during light sleep state.
- * Per sleep_mode.md: check GP1 for 10 seconds at 1s intervals.
+ * Polls GP1 every SLEEP_POLL_INTERVAL_MS (500ms) for SLEEP_POLL_DURATION_SEC (10s).
  * If LOW detected (R503 touched) → fully wake up.
  * If HIGH for entire 10s → return to light sleep.
  */
@@ -232,17 +235,19 @@ bool sleep_service_poll_r503(void)
         return false;
     }
     
-    /* On first call from wake, start timer */
+    /* On first call from wake, start timers */
     if (s_sleep_state.poll_iterations == 0) {
         s_sleep_state.poll_start_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
-        ESP_LOGI(TAG, "Starting 10-second R503 polling phase (start_time=%" PRIu32 "s)", 
-                 s_sleep_state.poll_start_time_sec);
+        s_sleep_state.poll_last_ms = (uint32_t)(esp_timer_get_time() / 1000);  /* Track last poll time in ms */
+        ESP_LOGI(TAG, "Starting 10-second R503 polling phase (every 500ms, max 20 polls)");
     }
     
-    /* Check current time */
+    /* Check absolute poll timing */
     uint32_t current_time_sec = (uint32_t)(esp_timer_get_time() / 1000000);
+    uint32_t current_time_ms = (uint32_t)(esp_timer_get_time() / 1000);
     uint32_t elapsed = current_time_sec - s_sleep_state.poll_start_time_sec;
     
+    /* Check current time */
     ESP_LOGD(TAG, "poll_r503: iteration %d, elapsed=%" PRIu32 "s (current=%" PRIu32 "s, start=%" PRIu32 "s)", 
              s_sleep_state.poll_iterations, elapsed, current_time_sec, s_sleep_state.poll_start_time_sec);
     
@@ -259,16 +264,23 @@ bool sleep_service_poll_r503(void)
         return false;
     }
     
-    /* Poll GP1 */
-    if (read_r503_interrupt_pin()) {
-        /* R503 interrupt detected! Wake up. */
-        ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
-        s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
-        s_sleep_state.poll_iterations = 0;
-        return true;
+    /* Check time since last poll to apply poll interval */
+    uint32_t ms_since_last = current_time_ms - s_sleep_state.poll_last_ms;
+    
+    /* Poll GP1 at configured interval */
+    if (ms_since_last >= SLEEP_POLL_INTERVAL_MS) {
+        s_sleep_state.poll_last_ms = current_time_ms;   /* Update last poll time */
+        
+        if (read_r503_interrupt_pin()) {
+            /* R503 interrupt detected! Wake up. */
+            ESP_LOGI(TAG, "R503 interrupt detected after %" PRIu32 "s polling, waking system", elapsed);
+            s_sleep_state.wake_reason = WAKE_REASON_R503_INTERRUPT;
+            s_sleep_state.poll_iterations = 0;
+            return true;
+        }
+        s_sleep_state.poll_iterations++;
     }
     
-    s_sleep_state.poll_iterations++;
     return false;
 }
 
@@ -289,6 +301,7 @@ esp_err_t sleep_service_wake(void)
     s_sleep_state.countdown_timer_sec = 0;
     s_sleep_state.poll_start_time_sec = 0;
     s_sleep_state.poll_iterations = 0;
+    s_sleep_state.poll_last_ms = 0;
     
     return ESP_OK;
 }
@@ -304,6 +317,7 @@ void sleep_service_cancel(void)
     s_sleep_state.countdown_timer_sec = 0;
     s_sleep_state.poll_start_time_sec = 0;
     s_sleep_state.poll_iterations = 0;
+    s_sleep_state.poll_last_ms = 0;
 }
 
 /* ---- Internal helper functions ---- */

@@ -172,7 +172,7 @@ static void update_sleep_status_label(void)
         /* During countdown, show remaining seconds */
         sleep_check_result_t result = {0};
         sleep_service_check_entry(&result);
-        snprintf(buf, sizeof(buf), "Sleep in %ds", result.countdown_seconds);
+        snprintf(buf, sizeof(buf), "Shutdown in %ds", result.countdown_seconds);
         lv_label_set_text(s_sleep_status_label, buf);
         lv_obj_set_style_text_color(s_sleep_status_label, lv_color_hex(0xe19419), 0);
         ESP_LOGI(SCREEN_TAG, "Sleep countdown: %ds remaining", result.countdown_seconds);
@@ -180,8 +180,8 @@ static void update_sleep_status_label(void)
         /* Check if we're approaching timeout */
         bool authenticated = session_service_is_authenticated();
         if (!authenticated) {
-            /* User is logged out — show a brief "Sleep mode active" status */
-            snprintf(buf, sizeof(buf), "Sleep mode active");
+            /* User is logged out — show shutdown status */
+            snprintf(buf, sizeof(buf), "Shutdown sequence initiated");
             lv_label_set_text(s_sleep_status_label, buf);
             lv_obj_set_style_text_color(s_sleep_status_label, lv_color_hex(0x888888), 0);
         } else {

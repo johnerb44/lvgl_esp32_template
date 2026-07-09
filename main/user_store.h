@@ -21,7 +21,7 @@ extern "C" {
 #define USER_STORE_MAX_USERS 64
 #define USER_STORE_MAX_USERNAME_LEN 32
 #define USER_STORE_MAX_PIN_LEN 8
-#define USER_STORE_MAX_TIMESTAMP_LEN 32
+#define USER_STORE_MAX_LOGON_LEN 11  // "dd-mm-yyyy" format (10 chars + null)
 #define USER_STORE_DEFAULT_PATH "/sdcard/users.jsn"
 
 // User data structure matching JSON schema
@@ -32,7 +32,7 @@ typedef struct {
     char pin[USER_STORE_MAX_PIN_LEN + 1];           // PIN code (4-8 digits as string)
     char username[USER_STORE_MAX_USERNAME_LEN + 1]; // Display name
     bool admin;                                      // Admin flag
-    char last_logon[USER_STORE_MAX_TIMESTAMP_LEN + 1]; // ISO 8601 timestamp or empty
+    char last_logon[USER_STORE_MAX_LOGON_LEN]; /* "dd-mm-yyyy" format or "" */
 } user_t;
 
 // User list container

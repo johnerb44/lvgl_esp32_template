@@ -120,6 +120,14 @@ esp_err_t user_service_delete(user_list_t *list, int index, int current_admin_us
  */
 int user_service_count_admins(const user_list_t *list);
 
+/**
+ * @brief Record the RTC date as last_logon for a user and persist to storage
+ * 
+ * @param userid User ID to update
+ * @return esp_err_t ESP_OK on success
+ */
+esp_err_t user_service_record_last_logon(int userid);
+
 #ifdef __cplusplus
 }
 #endif

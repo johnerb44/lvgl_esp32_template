@@ -7,6 +7,7 @@
  */
 
 #include "user_mgmt_ui.h"
+#include "ui/screens/ui_screen_rtc_date.h"
 #include "user_store.h"
 #include "user_service.h"
 #include "services/session_service.h"
@@ -35,6 +36,7 @@ static lv_obj_t *s_faceid_label = NULL;
 static lv_obj_t *s_btn_unenroll_finger = NULL;
 static lv_obj_t *s_btn_unenroll_face = NULL;
 static lv_obj_t *s_lastlogon_label = NULL;
+static lv_obj_t *s_btn_rtc_date = NULL;
 static lv_obj_t *s_error_label = NULL;
 
 static lv_obj_t *s_btn_add = NULL;
@@ -96,6 +98,9 @@ static void user_mgmt_delete_task(void *pvParam);
 static void user_mgmt_unenroll_task(void *pvParam);
 static void unenroll_finger_confirm_event_cb(lv_event_t *e);
 static void unenroll_face_confirm_event_cb(lv_event_t *e);
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+static void rtc_date_button_event_cb(lv_event_t *e);
+#endif
 static void user_mgmt_screen_loaded_cb(lv_event_t *e);
 static lv_obj_t *create_confirm_dialog(const char *title, const char *msg);
 
@@ -1159,6 +1164,21 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_text_color(s_lastlogon_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_lastlogon_label, &lv_font_montserrat_24, 0);
     
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+    /* Set RTC Date button */
+    s_btn_rtc_date = lv_button_create(bio_cont);
+    lv_obj_set_size(s_btn_rtc_date, 160, 35);
+    lv_obj_set_style_bg_color(s_btn_rtc_date, lv_color_hex(0x1e6bb5), 0);
+    {
+        lv_obj_t *rtc_lbl = lv_label_create(s_btn_rtc_date);
+        lv_label_set_text(rtc_lbl, "Set RTC Date");
+        lv_obj_center(rtc_lbl);
+        lv_obj_set_style_text_font(rtc_lbl, &lv_font_montserrat_16, 0);
+        lv_obj_set_style_text_color(rtc_lbl, lv_color_hex(0xffffff), 0);
+    }
+    lv_obj_add_event_cb(s_btn_rtc_date, rtc_date_button_event_cb, LV_EVENT_CLICKED, NULL);
+#endif
+    
     // Right pane - form
     lv_obj_t *right_pane = lv_obj_create(main_cont);
     lv_obj_set_flex_grow(right_pane, 1);
@@ -1447,3 +1467,12 @@ lv_obj_t* user_mgmt_ui_get_screen(void)
 {
     return s_screen;
 }
+
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+static void rtc_date_button_event_cb(lv_event_t *e)
+{
+    (void)e;
+    /* Navigate to RTC date-set screen */
+    ui_screen_rtc_date_create();
+}
+#endif

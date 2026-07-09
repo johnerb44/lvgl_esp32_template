@@ -156,6 +156,15 @@ menu "Example Configuration"
             default y
             depends on LOCKBOX_INTEGRATION_ENABLE
 
+        config LOCKBOX_FEATURE_DS3231
+            bool "Enable DS3231 RTC (Real-Time Clock)"
+            default n
+            depends on LOCKBOX_INTEGRATION_ENABLE
+            help
+                Enables the DS3231 I2C RTC for persistent date/time storage.
+                Used to capture real dates (via INTCN) on user authentication.
+                Also allows admin to set the RTC date manually.
+
         config LOCKBOX_FEATURE_INA219
            bool "Enable INA219 power monitoring"
            default n

@@ -23,6 +23,7 @@
 #include "sdkconfig.h"
 #if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
 #include "devices/status_inputs.h"
+#include "services/status_service.h"
 #endif
 
 /*********************
@@ -56,9 +57,11 @@ static void signout_btn_event_cb(lv_event_t *e);
 static void home_screen_loaded_cb(lv_event_t *e);
 static void toast_timer_cb(lv_timer_t *timer);
 static void create_toast(const char *text, int timeout_ms);
+static void refresh_status_labels(void);
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
 static void sleep_display_timer_cb(lv_timer_t *timer);
 #endif
+static void status_refresh_timer_cb(lv_timer_t *timer);
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -280,6 +283,72 @@ static void sleep_display_timer_cb(lv_timer_t *timer)
 
 #endif
 
+/* ---- Status refresh helper ---- */
+
+/**
+ * @brief Read status inputs and update lid/face labels.
+ *
+ * Called on screen entry (via home_screen_loaded_cb) and periodically
+ * via status_refresh_timer_cb (every 30s).
+ */
+static void refresh_status_labels(void)
+{
+#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
+    lockbox_status_inputs_t inputs = {0};
+    bool read_ok = false;
+    if (status_inputs_read(&inputs) == ESP_OK) {
+        read_ok = true;
+    }
+
+    /* Lid status */
+    if (s_lid_label && lv_obj_is_valid(s_lid_label)) {
+        if (read_ok) {
+            lv_label_set_text(s_lid_label, inputs.lid_open ? "Lid: Open" : "Lid: Closed");
+            lv_obj_set_style_text_color(s_lid_label,
+                inputs.lid_open ? lv_color_hex(0xff8800) : lv_color_hex(0x44ff44), 0);
+        } else {
+            lv_label_set_text(s_lid_label, "Lid: Closed");
+            lv_obj_set_style_text_color(s_lid_label, lv_color_hex(0x44ff44), 0);
+        }
+    }
+
+    /* Face module stow status */
+    if (s_face_stow_label && lv_obj_is_valid(s_face_stow_label)) {
+        if (read_ok) {
+            lv_label_set_text(s_face_stow_label,
+                inputs.face_module_stowed ? "Face: Stowed" : "Face: Active");
+            lv_obj_set_style_text_color(s_face_stow_label,
+                inputs.face_module_stowed ? lv_color_hex(0x888888) : lv_color_hex(0x44ff44), 0);
+        } else {
+            lv_label_set_text(s_face_stow_label, "Face: --");
+            lv_obj_set_style_text_color(s_face_stow_label, lv_color_hex(0x888888), 0);
+        }
+    }
+#else  /* !STATUS_INPUTS */
+    if (s_lid_label && lv_obj_is_valid(s_lid_label)) {
+        lv_label_set_text(s_lid_label, "Lid: Closed");
+        lv_obj_set_style_text_color(s_lid_label, lv_color_hex(0x44ff44), 0);
+    }
+    if (s_face_stow_label && lv_obj_is_valid(s_face_stow_label)) {
+        lv_label_set_text(s_face_stow_label, "Face: --");
+        lv_obj_set_style_text_color(s_face_stow_label, lv_color_hex(0x888888), 0);
+    }
+#endif  /* STATUS_INPUTS */
+}
+
+/* ---- Periodic status refresh ---- */
+
+/**
+ * @brief Timer callback to refresh lid/face status labels every 30 seconds.
+ *
+ * Keeps the home screen status display current without polling on every event.
+ */
+static void status_refresh_timer_cb(lv_timer_t *timer)
+{
+    (void)timer;  /* unused */
+    refresh_status_labels();
+}
+
 static void home_screen_loaded_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_SCREEN_LOADED) return;
@@ -307,35 +376,8 @@ static void home_screen_loaded_cb(lv_event_t *e)
         }
     }
 
-    // Lid status
-    if (s_lid_label && lv_obj_is_valid(s_lid_label)) {
-#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
-        lockbox_status_inputs_t inputs = {0};
-        if (status_inputs_read(&inputs) == ESP_OK) {
-            lv_label_set_text(s_lid_label, inputs.lid_open ? "Lid: Open" : "Lid: Closed");
-            lv_obj_set_style_text_color(s_lid_label,
-                inputs.lid_open ? lv_color_hex(0xff8800) : lv_color_hex(0x44ff44), 0);
-        }
-#else
-        lv_label_set_text(s_lid_label, "Lid: Closed");
-        lv_obj_set_style_text_color(s_lid_label, lv_color_hex(0x44ff44), 0);
-#endif
-    }
-
-    // Face module stow status
-    if (s_face_stow_label && lv_obj_is_valid(s_face_stow_label)) {
-#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
-        lockbox_status_inputs_t inputs = {0};
-        if (status_inputs_read(&inputs) == ESP_OK) {
-            lv_label_set_text(s_face_stow_label, inputs.face_module_stowed ? "Face: Stowed" : "Face: Active");
-            lv_obj_set_style_text_color(s_face_stow_label,
-                inputs.face_module_stowed ? lv_color_hex(0x888888) : lv_color_hex(0x44ff44), 0);
-        }
-#else
-        lv_label_set_text(s_face_stow_label, "Face: --");
-        lv_obj_set_style_text_color(s_face_stow_label, lv_color_hex(0x888888), 0);
-#endif
-    }
+    /* Refresh lid/face status labels (also called periodically via timer) */
+    refresh_status_labels();
 
         // Start sleep countdown refresh timer (every 1s to update label)
         // Note: sleep_service_tick() is driven by the main screen's sleep tick timer,
@@ -379,6 +421,12 @@ static void home_screen_loaded_cb(lv_event_t *e)
             lv_label_set_text(s_battery_debug_label, "");
         }
 #endif
+    }
+
+    /* Periodic refresh of lid/face status labels (every 30s) */
+    static lv_timer_t *s_status_refresh_timer = NULL;
+    if (s_status_refresh_timer == NULL) {
+        s_status_refresh_timer = lv_timer_create(status_refresh_timer_cb, 30000, NULL);
     }
 }
 
@@ -424,9 +472,36 @@ static void register_btn_event_cb(lv_event_t *e)
 static void signout_btn_event_cb(lv_event_t *e)
 {
     if (lv_event_get_code(e) != LV_EVENT_CLICKED) return;
+
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
     sleep_service_activity_detected();
 #endif
+
+#if CONFIG_LOCKBOX_FEATURE_STATUS_INPUTS
+    /* Check preconditions: lid closed and face module stowed */
+    lockbox_status_inputs_t status = {0};
+    esp_err_t ret = status_service_get_inputs(&status);
+    if (ret != ESP_OK) {
+        ESP_LOGW(SCREEN_TAG, "Failed to read status inputs: %s", esp_err_to_name(ret));
+    } else {
+        bool lid_is_open         = status.lid_open;
+        bool face_not_stowed     = !status.face_module_stowed;
+
+        if (lid_is_open && face_not_stowed) {
+            create_toast("Lid is open — close the lid to lock", 3000);
+            return;
+        }
+        if (lid_is_open) {
+            create_toast("Lid is open — close the lid to lock", 3000);
+            return;
+        }
+        if (face_not_stowed) {
+            create_toast("Face module not stowed — stow the module to lock", 3000);
+            return;
+        }
+    }
+#endif
+
     lock_service_lock(NULL);
     session_service_clear();
     lv_scr_load_anim(ui_screen_main, LV_SCR_LOAD_ANIM_MOVE_BOTTOM, 500, 0, false);

@@ -42,6 +42,8 @@ void ui_screen_home_create(void);
 void ui_screen_user_mgmt_create(void);
 void ui_screen_enroll_create(void);
 void ui_screen_fp_manage_create(void);
+void ui_screen_rtc_date_create(void);
+extern lv_obj_t *ui_screen_rtc_date;
 lv_obj_t *ui_screen_start_get(void);
 lv_obj_t *ui_screen_main_get(void);
 lv_obj_t *ui_screen_biometric_get(void);

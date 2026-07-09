@@ -5,6 +5,9 @@
 #include "services/battery_service.h"
 #include "services/ina219_service.h"
 #include "services/sleep_service.h"
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+#include "services/ds3231_service.h"
+#endif
 #include "esp_log.h"
 #include "sdkconfig.h"
 
@@ -30,6 +33,16 @@ esp_err_t lockbox_app_init(void)
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "status_service_init returned %s", esp_err_to_name(err));
     }
+
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+    ESP_LOGI(TAG, "Initializing DS3231 RTC service");
+    err = ds3231_service_init(0, 0x68);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "ds3231_service_init returned %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "DS3231 RTC service initialized");
+    }
+#endif
 
 #if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
     ESP_LOGI(TAG, "Initializing sleep service");

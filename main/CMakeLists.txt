@@ -28,10 +28,13 @@ idf_component_register(
          "ui/screens/ui_screen_home.c"
          "ui/screens/ui_screen_enroll.c"
          "ui/screens/ui_screen_fp_manage.c"
+         "ui/screens/ui_screen_rtc_date.c"
          "devices/ina219_monitor.c"
+         "devices/ds3231_rtc.c"
          "sd/sd_card.c"
          "cJSON/cJSON.c"
          "services/ina219_service.c"
+         "services/ds3231_service.c"
 
     INCLUDE_DIRS "."
                  "comm"

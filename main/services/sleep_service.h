@@ -35,8 +35,9 @@ extern "C" {
 typedef enum {
     SLEEP_STATE_ACTIVE = 0,       /**< Normal operation, no sleep pending */
     SLEEP_STATE_COUNTDOWN,        /**< Inactivity timeout reached, showing countdown */
-    SLEEP_STATE_LIGHT_SLEEP,      /**< Currently in light sleep (waking on RTC) */
-    SLEEP_STATE_PRE_SLEEP,        /**< Countdown finished, powering down peripherals */
+    SLEEP_STATE_PRE_SLEEP,        /**< Countdown finished, about to enter sleep */
+    SLEEP_STATE_DEEP_SLEEP,       /**< In deep sleep phase (20s RTC wake) */
+    SLEEP_STATE_POLLING,          /**< In R503 polling phase (10s, 500ms intervals) */
 } sleep_state_t;
 
 /**

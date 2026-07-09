@@ -1,4 +1,8 @@
 #include "services/session_service.h"
+#include "user_service.h"
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+#include "services/ds3231_service.h"
+#endif
 #include "esp_log.h"
 #include <string.h>
 
@@ -18,6 +22,14 @@ esp_err_t session_service_set_user(const user_t *user)
              s_current_user.username,
              s_current_user.userid,
              s_current_user.admin ? "true" : "false");
+
+    /* Record last_logon with RTC date */
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+    if (ds3231_rtc_is_initialized()) {
+        user_service_record_last_logon(s_current_user.userid);
+    }
+#endif
+
     return ESP_OK;
 }
 

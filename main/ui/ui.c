@@ -15,6 +15,7 @@
 #include "screens/ui_screen_home.h"
 #include "screens/ui_screen_enroll.h"
 #include "screens/ui_screen_fp_manage.h"
+#include "screens/ui_screen_rtc_date.h"
 #include "user_mgmt_ui.h"
 #include "esp_log.h"
 
@@ -32,6 +33,7 @@ lv_obj_t *ui_screen_home = NULL;
 lv_obj_t *ui_screen_user_mgmt = NULL;
 lv_obj_t *ui_screen_enroll = NULL;
 lv_obj_t *ui_screen_fp_manage = NULL;
+lv_obj_t *ui_screen_rtc_date = NULL;
 
 
 void ui_init(void)
@@ -50,6 +52,7 @@ void ui_init(void)
     ui_screen_user_mgmt_create();
     ui_screen_enroll_create();
     ui_screen_fp_manage_create();
+    /* RTC screen created on-demand from admin button, not at init */
     ESP_LOGI(UI_TAG, "UI initialization complete");
 }
 

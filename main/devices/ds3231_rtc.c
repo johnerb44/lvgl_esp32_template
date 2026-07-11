@@ -88,21 +88,31 @@ static esp_err_t rtc_read_regs(uint8_t reg, uint8_t *buf, size_t len)
 }
 
 /* Write count bytes starting from a register (reg auto-increment) */
+/* Matches working ds3231-test: register pointer + data in ONE I2C transaction */
 static esp_err_t rtc_write_regs(uint8_t reg, const uint8_t *buf, size_t len)
 {
+    /* Combined buffer: [register_pointer][data...] */
+    uint8_t *combined = malloc(len + 1);
+    if (!combined) {
+        return ESP_ERR_NO_MEM;
+    }
+    combined[0] = reg;
+    memcpy(combined + 1, buf, len);
+
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     if (!cmd) {
+        free(combined);
         return ESP_ERR_NO_MEM;
     }
 
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (DS3231_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, reg, true);
-    i2c_master_write(cmd, buf, len, true);
+    i2c_master_write(cmd, combined, len + 1, true);  // ptr + data in single write
     i2c_master_stop(cmd);
 
-    esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(100));
+    esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(1000));
     i2c_cmd_link_delete(cmd);
+    free(combined);
     return ret;
 }
 

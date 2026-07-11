@@ -1,8 +1,4 @@
 {
-  "idf.customExtraVars": {
-    "OPENOCD_SCRIPTS": "d:\\vscode\\vsc-lvgl\\tools\\openocd-esp32\\v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
-    "IDF_CCACHE_ENABLE": "1",
-    "ESP_ROM_ELF_DIR": "d:\\vscode\\vsc-lvgl\\tools\\esp-rom-elfs\\20220823/"
-  },
-  "idf.currentSetup": "/home/erbj/esp/v5.1.6/esp-idf"
+    "idf.currentSetup": "/home/erbj/.espressif/v5.2.7/esp-idf",
+    "idf.customExtraVars": {}
 }

@@ -133,7 +133,7 @@ esp_err_t ds3231_rtc_init(int i2c_port, uint8_t i2c_addr)
 
     ESP_LOGI(TAG, "Initializing DS3231 RTC on I2C port %d, address 0x%02X", i2c_port, i2c_addr);
 
-    /* Install I2C driver if not already installed */
+    /* I2C config — will be applied if bus not yet configured */
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = DS3231_I2C_MASTER_SDA_IO,
@@ -142,19 +142,27 @@ esp_err_t ds3231_rtc_init(int i2c_port, uint8_t i2c_addr)
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         .master.clk_speed = DS3231_I2C_FREQ_HZ,
     };
+
+    /* Handle I2C bus configuration — may already be configured by another driver */
     esp_err_t ret = i2c_param_config(I2C_NUM_0, &conf);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
         ESP_LOGE(TAG, "i2c_param_config failed: %s", esp_err_to_name(ret));
         return ret;
     }
 
+    /* Install I2C driver — may already be installed by INA219/SC16IS752/etc */
     ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
         ESP_LOGE(TAG, "i2c_driver_install failed: %s", esp_err_to_name(ret));
         return ret;
     }
-
-    s_i2c_port = I2C_NUM_0;
+    if (ret == ESP_ERR_INVALID_STATE) {
+        /* Driver already installed — just make sure port is set */
+        ESP_LOGI(TAG, "I2C driver already installed on port %d, using existing", I2C_NUM_0);
+    } else {
+        /* We installed the driver */
+        s_i2c_port = I2C_NUM_0;
+    }
 
     /* Probe: read status register to verify DS3231 is present */
     uint8_t status_reg = 0;

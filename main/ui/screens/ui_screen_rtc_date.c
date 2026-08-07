@@ -221,9 +221,25 @@ static void clear_all_fields(void)
     update_display();
 }
 
+/* ── AM/PM visual-sync helpers ── */
+
+static void set_ampm_checked_from_var(void) {
+    if (s_is_pm) {
+        lv_obj_add_state(s_pm_checkbox, LV_STATE_CHECKED);
+        lv_obj_clear_state(s_am_checkbox, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(s_am_checkbox, LV_STATE_CHECKED);
+        lv_obj_clear_state(s_pm_checkbox, LV_STATE_CHECKED);
+    }
+}
+
 static void reset_all(void)
 {
     load_from_rtc();
+    /* Sync checkbox VISUAL states to the RTC-read time (guard for first-open when checkboxes are not yet created) */
+    if (s_am_checkbox != NULL && s_pm_checkbox != NULL) {
+        set_ampm_checked_from_var();
+    }
     s_focus_field = FIELD_DAY;
     update_display();
 }
@@ -411,14 +427,24 @@ static void cancel_button_event_cb(lv_event_t *e)
 static void ampm_toggle_event_cb(lv_event_t *e)
 {
     /* VALUE_CHANGED fires AFTER LVGL toggles the clicked checkbox.
-     * So just read s_pm_checkbox's CHECKED state — that IS the user's intent. */
-    s_is_pm = lv_obj_has_state(s_pm_checkbox, LV_STATE_CHECKED);
+     * Determine which checkbox was clicked to set s_is_pm correctly. */
+    lv_obj_t *target = lv_event_get_target(e);
+    bool pm_clicked = (target == s_pm_checkbox);
+    s_is_pm = pm_clicked ? true : false;
 
-    /* Enforce mutual exclusion: clear CHECKED on the opposite one */
+    /* Mutual exclusion: clear CHECKED on the opposite one */
     if (s_is_pm) {
         lv_obj_clear_state(s_am_checkbox, LV_STATE_CHECKED);
     } else {
         lv_obj_clear_state(s_pm_checkbox, LV_STATE_CHECKED);
+    }
+
+    /* Guard: ensure exactly-one is always checked.
+     * If neither is checked (e.g. user clicked the only-checked AM box),
+     * re-check AM as the default. */
+    if (!lv_obj_has_state(s_am_checkbox, LV_STATE_CHECKED) &&
+        !lv_obj_has_state(s_pm_checkbox, LV_STATE_CHECKED)) {
+        lv_obj_add_state(s_am_checkbox, LV_STATE_CHECKED);
     }
 
     (void)e;
@@ -552,7 +578,6 @@ void ui_screen_rtc_date_create(void)
     lv_obj_set_size(s_am_checkbox, 68, LV_SIZE_CONTENT);       /* Keep original size for touch usability */
     lv_checkbox_set_text(s_am_checkbox, "AM");
     lv_obj_set_style_text_font(s_am_checkbox, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_add_state(s_am_checkbox, LV_STATE_CHECKED);
 
     s_pm_checkbox = lv_checkbox_create(ampm_row);
     lv_obj_set_size(s_pm_checkbox, 68, LV_SIZE_CONTENT);       /* Keep original size for touch usability */
@@ -561,6 +586,9 @@ void ui_screen_rtc_date_create(void)
 
     lv_obj_add_event_cb(s_am_checkbox, ampm_toggle_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(s_pm_checkbox, ampm_toggle_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    /* Sync AM/PM checkbox to the RTC-read time (first-open path) */
+    set_ampm_checked_from_var();
 
     /* ── Input label ── */
     s_input_label = lv_label_create(s_overlay);

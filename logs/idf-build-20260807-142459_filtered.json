@@ -1,0 +1,122 @@
+[
+  {
+    "line_number": 624,
+    "type": "first_error",
+    "content": "[ 28%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/panic.c.obj",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 635,
+    "type": "panic",
+    "content": "[ 28%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/panic_handler.c.obj",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 647,
+    "type": "panic",
+    "content": "[ 29%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/xtensa/panic_arch.c.obj",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 648,
+    "type": "panic",
+    "content": "[ 29%] Building ASM object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/xtensa/panic_handler_asm.S.obj",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1869,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/managed_components/lvgl__lvgl/demos/benchmark/lv_demo_benchmark.c:34:6: warning: #warning \"It's recommended to have at least 128kB RAM for the benchmark\" [-Wcpp]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1934,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:138:13: warning: 'servo_sweep_task' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1937,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:91:18: warning: 'pca9685_set_frequency' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1940,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:38:18: warning: 'ensure_i2c_ready' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1949,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:317:18: warning: 'sc16is752_transport_read_timed' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1952,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:150:18: warning: 'configure_sc16_uart' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1955,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:133:18: warning: 'wait_for_tx_complete' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1958,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:116:18: warning: 'wait_for_tx_ready' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1961,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:55:18: warning: 'ensure_i2c_ready' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1974,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1977,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1981,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/lvgl_port.c:453:5: warning: 'esp_lcd_touch_get_coordinates' is deprecated: This API will be removed in version 2.0.0. Use esp_lcd_touch_get_data instead! [-Wdeprecated-declarations]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1990,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1993,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1996,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  },
+  {
+    "line_number": 1999,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-07 14:28:34"
+  }
+]

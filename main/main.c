@@ -8,6 +8,7 @@
 #include "freertos/task.h"
 #include "waveshare_rgb_lcd_port.h"
 #include "ch422g_driver.h"
+#include "i2c_bus.h"
 #include "cJSON.h"
 #include "sd/sd_card.h"
 #include "ui/ui.h"
@@ -96,6 +97,12 @@ void app_main()
     ESP_LOGI(APP_TAG, "Turning on backlight");
     waveshare_rgb_lcd_bl_on();  // Turn on the screen backlight 
     vTaskDelay(pdMS_TO_TICKS(100)); // Small delay to let backlight stabilize
+    
+    ESP_LOGI(APP_TAG, "Initializing I2C bus mutex");
+    esp_err_t i2c_err = i2c_bus_init();
+    if (i2c_err != ESP_OK) {
+        ESP_LOGE(APP_TAG, "I2C bus mutex init FAILED (%s) — I2C operations will not be protected!", esp_err_to_name(i2c_err));
+    }
     
     ESP_LOGI(APP_TAG, "Initializing SD card");
     esp_err_t sd_err = waveshare_sd_card_init();

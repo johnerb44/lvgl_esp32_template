@@ -7,10 +7,13 @@
  */
 
 #include "user_store.h"
+#include "i2c_bus.h"
 #include "cJSON/cJSON.h"
 #include "esp_log.h"
 #include "ch422g_driver.h"
 #include "sd/sd_card.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -160,6 +163,10 @@ esp_err_t user_store_load(user_list_t *out_list)
     out_list->count = 0;
     out_list->capacity = USER_STORE_MAX_USERS;
     
+    // Acquire I2C bus lock for entire SD operation
+    ESP_LOGD(TAG, "Acquiring I2C bus lock for SD read operation");
+    i2c_bus_lock("USER_STORE_load");
+    
     // Enable SD card
     ESP_LOGI(TAG, "Enabling SD card for read");
     ch422g_sd_card_enable(I2C_MASTER_NUM, true);
@@ -174,15 +181,17 @@ esp_err_t user_store_load(user_list_t *out_list)
         out_list->items = (user_t*)malloc(sizeof(user_t) * USER_STORE_MAX_USERS);
         if (!out_list->items) {
             ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+            i2c_bus_unlock("USER_STORE_load");
             return ESP_ERR_NO_MEM;
         }
         
         create_default_admin(&out_list->items[0]);
         out_list->count = 1;
         
-        // Save the default user
+        // Save the default user (handles its own lock and SD disable)
         esp_err_t ret = user_store_save(out_list);
-        ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));  // Let I2C stabilize
+        i2c_bus_unlock("USER_STORE_load");
         return ret;
     }
     
@@ -191,6 +200,7 @@ esp_err_t user_store_load(user_list_t *out_list)
     if (!f) {
         ESP_LOGE(TAG, "Failed to open file: %s", s_file_path);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        i2c_bus_unlock("USER_STORE_load");
         return ESP_FAIL;
     }
     
@@ -203,6 +213,7 @@ esp_err_t user_store_load(user_list_t *out_list)
         ESP_LOGE(TAG, "Invalid file size: %ld", file_size);
         fclose(f);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        i2c_bus_unlock("USER_STORE_load");
         return ESP_FAIL;
     }
     
@@ -211,6 +222,7 @@ esp_err_t user_store_load(user_list_t *out_list)
     if (!json_str) {
         fclose(f);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        i2c_bus_unlock("USER_STORE_load");
         return ESP_ERR_NO_MEM;
     }
     
@@ -236,6 +248,7 @@ esp_err_t user_store_load(user_list_t *out_list)
         out_list->items = (user_t*)malloc(sizeof(user_t) * USER_STORE_MAX_USERS);
         if (!out_list->items) {
             ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+            i2c_bus_unlock("USER_STORE_load");
             return ESP_ERR_NO_MEM;
         }
         
@@ -243,7 +256,8 @@ esp_err_t user_store_load(user_list_t *out_list)
         out_list->count = 1;
         
         esp_err_t ret = user_store_save(out_list);
-        ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));  // Let I2C stabilize
+        i2c_bus_unlock("USER_STORE_load");
         return ret;
     }
     
@@ -253,6 +267,7 @@ esp_err_t user_store_load(user_list_t *out_list)
         ESP_LOGE(TAG, "Invalid JSON structure: missing or invalid 'users' array");
         cJSON_Delete(root);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        i2c_bus_unlock("USER_STORE_load");
         return ESP_FAIL;
     }
     
@@ -268,6 +283,7 @@ esp_err_t user_store_load(user_list_t *out_list)
     if (!out_list->items) {
         cJSON_Delete(root);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        i2c_bus_unlock("USER_STORE_load");
         return ESP_ERR_NO_MEM;
     }
     
@@ -286,6 +302,9 @@ esp_err_t user_store_load(user_list_t *out_list)
     cJSON_Delete(root);
     
     ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+    /* Allow I2C bus to stabilize after SD operations complete */
+    vTaskDelay(pdMS_TO_TICKS(100));
+    i2c_bus_unlock("USER_STORE_load");
     
     ESP_LOGI(TAG, "Loaded %zu users from file", out_list->count);
     return ESP_OK;
@@ -300,6 +319,10 @@ esp_err_t user_store_save(const user_list_t *list)
     
     ESP_LOGI(TAG, "Saving %zu users to file", list->count);
     
+    // Acquire I2C bus lock for entire SD operation
+    ESP_LOGD(TAG, "Acquiring I2C bus lock for SD write operation");
+    i2c_bus_lock("USER_STORE_save");
+    
     // Enable SD card
     ch422g_sd_card_enable(I2C_MASTER_NUM, true);
     vTaskDelay(pdMS_TO_TICKS(100)); // Increased delay for filesystem stability
@@ -308,6 +331,8 @@ esp_err_t user_store_save(const user_list_t *list)
     cJSON *root = cJSON_CreateObject();
     if (!root) {
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        i2c_bus_unlock("USER_STORE_save");
         return ESP_ERR_NO_MEM;
     }
     
@@ -315,6 +340,8 @@ esp_err_t user_store_save(const user_list_t *list)
     if (!users_array) {
         cJSON_Delete(root);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        i2c_bus_unlock("USER_STORE_save");
         return ESP_ERR_NO_MEM;
     }
     
@@ -336,6 +363,8 @@ esp_err_t user_store_save(const user_list_t *list)
     
     if (!json_str) {
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        i2c_bus_unlock("USER_STORE_save");
         return ESP_ERR_NO_MEM;
     }
     
@@ -368,6 +397,8 @@ esp_err_t user_store_save(const user_list_t *list)
         
         free(json_str);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        i2c_bus_unlock("USER_STORE_save");
         return ESP_FAIL;
     }
     
@@ -383,10 +414,16 @@ esp_err_t user_store_save(const user_list_t *list)
     if (written != len) {
         ESP_LOGE(TAG, "Write error: %zu/%zu bytes", written, len);
         ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+        /* Allow I2C bus to stabilize after failed write */
+        vTaskDelay(pdMS_TO_TICKS(100));
+        i2c_bus_unlock("USER_STORE_save");
         return ESP_FAIL;
     }
     
     ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+    /* Allow I2C bus to stabilize after SD operations complete */
+    vTaskDelay(pdMS_TO_TICKS(100));
+    i2c_bus_unlock("USER_STORE_save");
     
     ESP_LOGI(TAG, "Successfully saved users to file");
     return ESP_OK;

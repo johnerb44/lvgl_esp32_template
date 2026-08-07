@@ -559,7 +559,7 @@ static void load_user_to_form(int index)
     }
     
     const char *logon_text = (strlen(user->last_logon) > 0) ? user->last_logon : "Never";
-    snprintf(buf, sizeof(buf), "Last Logon: %s", logon_text);
+    snprintf(buf, sizeof(buf), "Logon: %s", logon_text);
     lv_label_set_text(s_lastlogon_label, buf);
     
     ESP_LOGI(TAG, "Loaded user '%s' to form", user->username);
@@ -585,7 +585,7 @@ static void clear_form(void)
     lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
     lv_label_set_text(s_faceid_label, "Face: Not enrolled");
     lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
-    lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
+    lv_label_set_text(s_lastlogon_label, "Logon: Never");
 }
 
 static void show_error(const char *msg)
@@ -1160,24 +1160,10 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_text_font(s_faceid_label, &lv_font_montserrat_24, 0);
     
     s_lastlogon_label = lv_label_create(bio_cont);
-    lv_label_set_text(s_lastlogon_label, "Last Logon: Never");
+    lv_label_set_text(s_lastlogon_label, "Logon: Never");
     lv_obj_set_style_text_color(s_lastlogon_label, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_text_font(s_lastlogon_label, &lv_font_montserrat_24, 0);
     
-#if CONFIG_LOCKBOX_FEATURE_DS3231
-    /* Set RTC Date button */
-    s_btn_rtc_date = lv_button_create(bio_cont);
-    lv_obj_set_size(s_btn_rtc_date, 160, 35);
-    lv_obj_set_style_bg_color(s_btn_rtc_date, lv_color_hex(0x1e6bb5), 0);
-    {
-        lv_obj_t *rtc_lbl = lv_label_create(s_btn_rtc_date);
-        lv_label_set_text(rtc_lbl, "Set RTC Date");
-        lv_obj_center(rtc_lbl);
-        lv_obj_set_style_text_font(rtc_lbl, &lv_font_montserrat_16, 0);
-        lv_obj_set_style_text_color(rtc_lbl, lv_color_hex(0xffffff), 0);
-    }
-    lv_obj_add_event_cb(s_btn_rtc_date, rtc_date_button_event_cb, LV_EVENT_CLICKED, NULL);
-#endif
     
     // Right pane - form
     lv_obj_t *right_pane = lv_obj_create(main_cont);
@@ -1339,24 +1325,40 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_pad_column(unenroll_row_cont, 20, 0);
     lv_obj_clear_flag(unenroll_row_cont, LV_OBJ_FLAG_SCROLLABLE);
 
+#if CONFIG_LOCKBOX_FEATURE_DS3231
+    /* Set Clock button (left of Finger Unenroll) */
+    s_btn_rtc_date = lv_button_create(unenroll_row_cont);
+    lv_obj_set_size(s_btn_rtc_date, 140, 44);
+    lv_obj_set_style_bg_color(s_btn_rtc_date, lv_color_hex(0x1e6bb5), 0);
+    lv_obj_set_style_radius(s_btn_rtc_date, 4, 0);
+    {
+        lv_obj_t *rtc_lbl = lv_label_create(s_btn_rtc_date);
+        lv_label_set_text(rtc_lbl, "Set Clock");
+        lv_obj_set_style_text_font(rtc_lbl, &lv_font_montserrat_18, 0);
+        lv_obj_center(rtc_lbl);
+        lv_obj_set_style_text_color(rtc_lbl, lv_color_hex(0xffffff), 0);
+    }
+    lv_obj_add_event_cb(s_btn_rtc_date, rtc_date_button_event_cb, LV_EVENT_CLICKED, NULL);
+#endif
+
     s_btn_unenroll_finger = lv_button_create(unenroll_row_cont);
-    lv_obj_set_size(s_btn_unenroll_finger, 185, 44);
+    lv_obj_set_size(s_btn_unenroll_finger, 160, 44);
     lv_obj_set_style_bg_color(s_btn_unenroll_finger, lv_color_hex(0xcc2222), 0);
     lv_obj_set_style_radius(s_btn_unenroll_finger, 4, 0);
     lv_obj_t *uf_lbl = lv_label_create(s_btn_unenroll_finger);
     lv_label_set_text(uf_lbl, "Finger Unenroll");
-    lv_obj_set_style_text_font(uf_lbl, &lv_font_montserrat_22, 0);
+    lv_obj_set_style_text_font(uf_lbl, &lv_font_montserrat_18, 0);
     lv_obj_center(uf_lbl);
     lv_obj_add_event_cb(s_btn_unenroll_finger, unenroll_finger_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(s_btn_unenroll_finger, LV_OBJ_FLAG_HIDDEN);
 
     s_btn_unenroll_face = lv_button_create(unenroll_row_cont);
-    lv_obj_set_size(s_btn_unenroll_face, 185, 44);
+    lv_obj_set_size(s_btn_unenroll_face, 160, 44);
     lv_obj_set_style_bg_color(s_btn_unenroll_face, lv_color_hex(0xcc2222), 0);
     lv_obj_set_style_radius(s_btn_unenroll_face, 4, 0);
     lv_obj_t *ufac_lbl = lv_label_create(s_btn_unenroll_face);
     lv_label_set_text(ufac_lbl, "Face Unenroll");
-    lv_obj_set_style_text_font(ufac_lbl, &lv_font_montserrat_22, 0);
+    lv_obj_set_style_text_font(ufac_lbl, &lv_font_montserrat_18, 0);
     lv_obj_center(ufac_lbl);
     lv_obj_add_event_cb(s_btn_unenroll_face, unenroll_face_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(s_btn_unenroll_face, LV_OBJ_FLAG_HIDDEN);
@@ -1381,7 +1383,6 @@ lv_obj_t* user_mgmt_ui_create(int current_admin_userid)
     lv_obj_set_style_radius(button_row, 0, 0);
     lv_obj_clear_flag(button_row, LV_OBJ_FLAG_SCROLLABLE);
     
-    // Add button
     s_btn_add = lv_button_create(button_row);
     lv_obj_set_size(s_btn_add, 160, 50);
     lv_obj_set_style_bg_color(s_btn_add, lv_color_hex(0xe19419), 0);

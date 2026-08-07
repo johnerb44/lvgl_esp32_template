@@ -1,0 +1,118 @@
+Executing action: all (aliases: build)
+Running make in directory /home/erbj/lvgl-projects/lvgl_esp32_template/build
+Executing "make -j 22 all"...
+[  0%] Built target partition_table_bin
+[  0%] Built target _project_elf_src
+[  0%] Built target memory_ld
+[  1%] Built target blank_ota_data
+[  1%] Built target custom_bundle
+[  1%] Performing build step for 'bootloader'
+[  1%] Built target __idf_ulp
+[  1%] Built target __idf_esp_psram
+[  3%] Built target __idf_log
+[  3%] Built target _project_elf_src
+[  1%] Built target __idf_esp_https_ota
+[ 14%] Built target __idf_esp_rom
+[ 16%] Built target __idf_esp_common
+[  1%] Built target __idf_esp_http_server
+[ 25%] Built target __idf_esp_hw_support
+[  2%] Built target __idf_esp_http_client
+[ 26%] Built target __idf_esp_system
+[  3%] Built target __idf_tcp_transport
+[ 35%] Built target __idf_efuse
+[  3%] Built target __idf_esp_gdbstub
+[ 55%] Built target __idf_bootloader_support
+[  4%] Built target __idf_esp_eth
+[ 57%] Built target __idf_esp_app_format
+[  5%] Built target __idf_esp_adc
+[ 59%] Built target __idf_spi_flash
+[  5%] Built target __idf_esp-tls
+[ 65%] Built target __idf_hal
+[  5%] Built target __idf_http_parser
+[ 68%] Built target __idf_micro-ecc
+[  5%] Built target __idf_esp_wifi
+[ 90%] Built target __idf_soc
+[  5%] Built target __idf_esp_coex
+[ 93%] Built target __idf_xtensa
+[ 95%] Built target __idf_main
+[ 98%] Built target bootloader.elf
+[100%] Built target gen_project_binary
+[ 10%] Built target __idf_wpa_supplicant
+[ 10%] Built target __idf_esp_netif
+Bootloader binary size 0x5790 bytes. 0x2870 bytes (32%) free.
+[100%] Built target bootloader_check_size
+[100%] Built target app
+[ 10%] No install step for 'bootloader'
+[ 10%] Completed 'bootloader'
+[ 15%] Built target __idf_lwip
+[ 15%] Built target bootloader
+[ 15%] Built target __idf_vfs
+[ 15%] Built target __idf_esp_phy
+[ 16%] Built target __idf_nvs_flash
+[ 16%] Built target __idf_esp_event
+[ 17%] Built target __idf_esp_timer
+[ 17%] Built target __idf_esp_common
+[ 17%] Built target __idf_cxx
+[ 17%] Built target __idf_newlib
+[ 19%] Built target __idf_freertos
+[ 22%] Built target __idf_esp_hw_support
+[ 24%] Built target __idf_soc
+[ 25%] Built target __idf_heap
+[ 25%] Built target __idf_log
+[ 27%] Built target __idf_hal
+[ 27%] Built target __idf_esp_rom
+[ 29%] Built target __idf_esp_system
+[ 30%] Built target __idf_pthread
+[ 31%] Built target __idf_spi_flash
+[ 31%] Built target __idf_esp_mm
+[ 31%] Built target __idf_app_update
+[ 32%] Built target __idf_esp_partition
+[ 33%] Built target __idf_bootloader_support
+[ 33%] Built target __idf_esp_app_format
+[ 34%] Built target mbedtls
+[ 35%] Built target mbedx509
+[ 40%] Built target mbedcrypto
+[ 40%] Built target p256m
+[ 40%] Built target everest
+[ 40%] Built target __idf_mbedtls
+[ 40%] Built target __idf_esp_pm
+[ 43%] Built target __idf_driver
+[ 44%] Built target __idf_efuse
+[ 45%] Built target __idf_esp_ringbuf
+[ 45%] Built target __idf_xtensa
+[ 45%] Built target __idf_esp-idf-lib__i2cdev
+[ 46%] Built target __idf_wear_levelling
+[ 47%] Built target __idf_espcoredump
+[ 47%] Built target __idf_esp_hid
+[ 47%] Built target __idf_app_trace
+[ 47%] Built target __idf_esp_lcd
+[ 48%] Built target __idf_protobuf-c
+[ 49%] Built target __idf_mqtt
+[ 49%] Built target __idf_spiffs
+[ 49%] Built target __idf_perfmon
+[ 50%] Built target __idf_usb
+[ 50%] Built target __idf_json
+[ 50%] Built target __idf_unity
+[ 50%] Built target __idf_sdmmc
+[ 50%] Built target __idf_touch_element
+[ 51%] Built target __idf_console
+[ 51%] Built target __idf_esp-idf-lib__ina219
+[ 51%] Built target __idf_espressif__esp_lcd_touch
+[ 51%] Built target __idf_cmock
+[ 51%] Built target __idf_fatfs
+[ 51%] Built target __idf_protocomm
+[ 51%] Built target __idf_espressif__esp_lcd_touch_gt911
+[ 52%] Built target __idf_esp_local_ctrl
+[ 52%] Built target __idf_wifi_provisioning
+[ 96%] Built target __idf_lvgl__lvgl
+[ 98%] Built target __idf_main
+[ 98%] Built target __ldgen_output_sections.ld
+[100%] Built target lvgl_porting.elf
+[100%] Built target gen_project_binary
+lvgl_porting.bin binary size 0x100d90 bytes. Smallest app partition is 0x300000 bytes. 0x1ff270 bytes (67%) free.
+[100%] Built target app_check_size
+[100%] Built target app
+
+Project build complete. To flash, run this command:
+/home/erbj/.espressif/python_env/idf5.1_py3.12_env/bin/python ../../esp/v5.1.6/esp-idf/components/esptool_py/esptool/esptool.py -p (PORT) -b 460800 --before no_reset --after hard_reset --chip esp32s3  write_flash --flash_mode dio --flash_size 8MB --flash_freq 80m 0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0xd000 build/ota_data_initial.bin 0x10000 build/lvgl_porting.bin
+or run 'idf.py -p (PORT) flash'

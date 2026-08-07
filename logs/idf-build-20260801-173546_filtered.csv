@@ -1,0 +1,31 @@
+line_number,type,content
+122,first_error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c:158:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+130,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c:361:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+136,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:270:44: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+142,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c:315:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+148,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:290:47: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+155,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1080:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+160,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:237:51: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+166,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:278:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+172,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:72:47: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+177,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1337:46: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+181,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:255:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+185,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:308:43: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+189,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:79:55: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+194,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]
+197,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]
+200,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:100:45: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+205,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c:33:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+216,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c:350:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+222,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:401:48: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+228,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:467:9: error: implicit declaration of function 'load_rtc_and_update_display' [-Werror=implicit-function-declaration]
+232,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:418:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+236,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:525:45: error: 'lv_font_montserrat_32' undeclared (first use in this function); did you mean 'lv_font_montserrat_12'?
+241,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:565:48: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+246,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:611:46: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+251,error,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c:90:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+257,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]
+260,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]
+263,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]
+266,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:224:13: warning: 'reset_all' defined but not used [-Wunused-function]
+269,warning,/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]

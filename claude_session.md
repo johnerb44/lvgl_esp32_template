@@ -57,12 +57,12 @@ static lv_obj_t *s_overlay     = NULL;
 static lv_obj_t *s_input_label  = NULL;
 static lv_obj_t *s_date_ind     = NULL;
 static lv_obj_t *s_time_ind     = NULL;
-static lv_obj_t *s_am_checkbox  = NULL;
-static lv_obj_t *s_pm_checkbox  = NULL;
+static lv_obj_t *s_ampm_lbl     = NULL;
 static lv_obj_t *s_err_lbl      = NULL;
 static lv_obj_t *s_ok_lbl       = NULL;
 static lv_obj_t *s_btn_apply    = NULL;
 static lv_obj_t *s_btnmatrix    = NULL;
+static lv_obj_t *s_ampm_toggle  = NULL;
 
 static rtc_field_t s_fields[FIELD_COUNT] = {
     [FIELD_DAY]    = { .digits = "", .max_digits = 2, .min_val = 1,   .max_val = 31  },
@@ -171,7 +171,9 @@ static void insert_digit(char c)
                     lv_obj_set_style_text_color(s_time_ind, lv_color_hex(0xff4444), 0);
                     lv_timer_t *t = lv_timer_create(unflash_time_ind, 1000, NULL);
                     lv_timer_set_repeat_count(t, 1);
-               }           }            focus_next();
+                }
+            }
+            focus_next();
         } else {
             update_display();
         }
@@ -266,7 +268,7 @@ static void update_all_indicators(void)
 {
     update_date_ind();
     update_time_ind();
-    /* AM/PM text-color is handled by LVGL checkbox styling (CHECKED → primary color, UNCHECKED → light) */
+    lv_label_set_text(s_ampm_lbl, s_is_pm ? "PM" : "AM");
 }
 
 static void update_display(void)
@@ -410,20 +412,11 @@ static void cancel_button_event_cb(lv_event_t *e)
 
 static void ampm_toggle_event_cb(lv_event_t *e)
 {
-    /* VALUE_CHANGED fires AFTER LVGL toggles the clicked checkbox.
-     * So just read s_pm_checkbox's CHECKED state — that IS the user's intent. */
-    s_is_pm = lv_obj_has_state(s_pm_checkbox, LV_STATE_CHECKED);
-
-    /* Enforce mutual exclusion: clear CHECKED on the opposite one */
-    if (s_is_pm) {
-        lv_obj_clear_state(s_am_checkbox, LV_STATE_CHECKED);
-    } else {
-        lv_obj_clear_state(s_pm_checkbox, LV_STATE_CHECKED);
-    }
-
     (void)e;
+    lv_obj_t *cb = lv_event_get_target(e);
+    s_is_pm = lv_obj_has_state(cb, LV_STATE_CHECKED);
+    lv_label_set_text(s_ampm_lbl, s_is_pm ? "PM" : "AM");
 }
-
 
 static void keypad_event_cb(lv_event_t *e)
 {
@@ -488,41 +481,13 @@ void ui_screen_rtc_date_create(void)
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_pad_top(title, 6, 0);
 
-    // /* ── date tip ── */
-    // lv_obj_t *date_tip = lv_label_create(s_overlay);
-    // lv_label_set_text(date_tip, "dd/mm/yyyy");
-    // //lv_obj_set_pos(date_tip, 700, 200);
-    // //lv_obj_set_size(date_tip, 100, 50);
-    // lv_obj_set_style_text_font(date_tip, &lv_font_montserrat_24, 0);
-    // lv_obj_set_style_text_color(date_tip, lv_color_hex(0xffffff), 0);
-    // //lv_obj_align(date_tip, LV_ALIGN_TOP_RIGHT, -20, 400);
-    // lv_obj_set_style_text_align(date_tip, LV_TEXT_ALIGN_RIGHT, 0);
-    // lv_obj_set_style_width(date_tip, LV_PCT(80), 0);
-    // lv_obj_set_style_pad_top(date_tip, 6, 0);
-
-    // /* ── Date / Time indicators ── */
-    // s_date_ind = lv_label_create(s_overlay);
-    // lv_label_set_text(s_date_ind, "__ / __ / ______");
-    // lv_obj_set_style_text_font(s_date_ind, &lv_font_montserrat_32, 0);
-    // lv_obj_set_style_text_color(s_date_ind, lv_color_hex(0x00ff00), 0);
-    // lv_obj_set_style_text_align(s_date_ind, LV_TEXT_ALIGN_CENTER, 0);
-    // lv_obj_set_style_width(s_date_ind, LV_PCT(80), 0);
-
-    /* ── Date indicator (keeps its flex slot / position unchanged) ── */
+    /* ── Date / Time indicators ── */
     s_date_ind = lv_label_create(s_overlay);
-    lv_label_set_text(s_date_ind, "__ / __ / ____");
+    lv_label_set_text(s_date_ind, "__ / __ / ______");
     lv_obj_set_style_text_font(s_date_ind, &lv_font_montserrat_32, 0);
     lv_obj_set_style_text_color(s_date_ind, lv_color_hex(0x00ff00), 0);
     lv_obj_set_style_text_align(s_date_ind, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_width(s_date_ind, LV_PCT(80), 0);
-
-    /* ── date tip: floating, anchored to the right of date_ind ── */
-    lv_obj_t *date_tip = lv_label_create(s_overlay);
-    lv_label_set_text(date_tip, "dd/mm/yyyy");
-    lv_obj_set_style_text_font(date_tip, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(date_tip, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_add_flag(date_tip, LV_OBJ_FLAG_FLOATING);                 /* no flex slot */
-    lv_obj_align_to(date_tip, s_date_ind, LV_ALIGN_OUT_RIGHT_MID, -175, -202);  /* 12px gap */
 
     s_time_ind = lv_label_create(s_overlay);
     lv_label_set_text(s_time_ind, "__ : __");
@@ -531,36 +496,22 @@ void ui_screen_rtc_date_create(void)
     lv_obj_set_style_text_align(s_time_ind, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_width(s_time_ind, LV_PCT(80), 0);
 
-    /* ── time tip: floating, anchored to the right of time_ind ── */
-    lv_obj_t *time_tip = lv_label_create(s_overlay);
-    lv_label_set_text(time_tip, "hh:mm");
-    lv_obj_set_style_text_font(time_tip, &lv_font_montserrat_24, 0);
-    lv_obj_set_style_text_color(time_tip, lv_color_hex(0xaaaaaa), 0);
-    lv_obj_add_flag(time_tip, LV_OBJ_FLAG_FLOATING);                 /* no flex slot */
-    lv_obj_align_to(time_tip, s_time_ind, LV_ALIGN_OUT_RIGHT_MID, -155, -180);  /* 12px gap */
-
-/* ── AM/PM row ── */
-    /* ── AM/PM row — more compact but maintain checkbox usability ── */
+    /* ── AM/PM row ── */
     lv_obj_t *ampm_row = lv_obj_create(s_overlay);
-    lv_obj_set_size(ampm_row, LV_PCT(35), 40);   /* Reduced from 54px to 48px for better fit */
+    lv_obj_set_size(ampm_row, LV_PCT(40), 36);
     lv_obj_clear_flag(ampm_row, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_flex_flow(ampm_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_column(ampm_row, 35, 0); /* 30px gap between checkboxes */
     lv_obj_set_flex_align(ampm_row, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-    s_am_checkbox = lv_checkbox_create(ampm_row);
-    lv_obj_set_size(s_am_checkbox, 68, LV_SIZE_CONTENT);       /* Keep original size for touch usability */
-    lv_checkbox_set_text(s_am_checkbox, "AM");
-    lv_obj_set_style_text_font(s_am_checkbox, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_add_state(s_am_checkbox, LV_STATE_CHECKED);
+    s_ampm_toggle = lv_checkbox_create(ampm_row);
+    lv_checkbox_set_text(s_ampm_toggle, "PM");
+    lv_obj_set_style_text_font(s_ampm_toggle, &lv_font_montserrat_18, 0);
 
-    s_pm_checkbox = lv_checkbox_create(ampm_row);
-    lv_obj_set_size(s_pm_checkbox, 68, LV_SIZE_CONTENT);       /* Keep original size for touch usability */
-    lv_checkbox_set_text(s_pm_checkbox, "PM");
-    lv_obj_set_style_text_font(s_pm_checkbox, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    lv_obj_add_event_cb(s_am_checkbox, ampm_toggle_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_add_event_cb(s_pm_checkbox, ampm_toggle_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    s_ampm_lbl = lv_label_create(ampm_row);
+    lv_label_set_text(s_ampm_lbl, "AM");
+    lv_obj_set_style_text_font(s_ampm_lbl, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_color(s_ampm_lbl, lv_color_hex(0xaaaaaa), 0);
+    lv_obj_add_event_cb(s_ampm_toggle, ampm_toggle_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     /* ── Input label ── */
     s_input_label = lv_label_create(s_overlay);

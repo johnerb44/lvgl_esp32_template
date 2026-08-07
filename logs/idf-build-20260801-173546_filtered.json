@@ -1,0 +1,182 @@
+[
+  {
+    "line_number": 122,
+    "type": "first_error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c:158:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 130,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c:361:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 136,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:270:44: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 142,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c:315:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 148,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:290:47: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 155,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1080:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 160,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:237:51: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 166,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:278:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 172,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:72:47: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 177,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1337:46: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 181,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:255:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 185,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:308:43: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 189,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:79:55: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 194,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 197,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 200,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:100:45: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 205,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c:33:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 216,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c:350:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 222,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:401:48: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 228,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:467:9: error: implicit declaration of function 'load_rtc_and_update_display' [-Werror=implicit-function-declaration]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 232,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:418:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 236,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:525:45: error: 'lv_font_montserrat_32' undeclared (first use in this function); did you mean 'lv_font_montserrat_12'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 241,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:565:48: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 246,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:611:46: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 251,
+    "type": "error",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c:90:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 257,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 260,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 263,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 266,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:224:13: warning: 'reset_all' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-01 17:45:37"
+  },
+  {
+    "line_number": 269,
+    "type": "warning",
+    "content": "/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]",
+    "timestamp": "2026-08-01 17:45:37"
+  }
+]

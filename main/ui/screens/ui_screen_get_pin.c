@@ -16,6 +16,7 @@
 #include "services/auth_service.h"
 #include "services/lock_service.h"
 #include "services/session_service.h"
+#include "user_service.h"
 #include "ui/screens/ui_screen_enroll.h"
 #include "user_store.h"
 #include <string.h>
@@ -283,6 +284,9 @@ static void pin_verify_task(void *arg)
         }
         if (user_loaded) {
             session_service_set_user(&matched_user);
+            if (!enroll_mode) {
+                user_service_record_last_logon(resolved_userid);
+            }
         }
         if (!enroll_mode) {
             // Lock is not driven here — user must press "Unlock Secure Box" on the home screen

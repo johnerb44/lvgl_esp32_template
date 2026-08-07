@@ -125,7 +125,7 @@ menu "Example Configuration"
 
         config LOCKBOX_INTEGRATION_USE_MOCK_DEVICES
             bool "Use mock device behavior for integration modules"
-            default y
+            default n
             depends on LOCKBOX_INTEGRATION_ENABLE
             help
                 Keeps integration modules in non-hardware mock mode until
@@ -133,22 +133,22 @@ menu "Example Configuration"
 
         config LOCKBOX_FEATURE_SC16IS752
             bool "Enable SC16IS752 transport path"
-            default n
+            default y
             depends on LOCKBOX_INTEGRATION_ENABLE
 
         config LOCKBOX_FEATURE_R503
             bool "Enable R503 fingerprint feature"
-            default n
+            default y
             depends on LOCKBOX_FEATURE_SC16IS752
 
         config LOCKBOX_FEATURE_HLK_TX510
             bool "Enable HLK-TX510 face recognition feature"
-            default n
+            default y
             depends on LOCKBOX_FEATURE_SC16IS752
 
         config LOCKBOX_FEATURE_PCA9685
             bool "Enable PCA9685 lock servo driver"
-            default n
+            default y
             depends on LOCKBOX_INTEGRATION_ENABLE
 
         config LOCKBOX_FEATURE_STATUS_INPUTS
@@ -158,7 +158,7 @@ menu "Example Configuration"
 
         config LOCKBOX_FEATURE_DS3231
             bool "Enable DS3231 RTC (Real-Time Clock)"
-            default n
+            default y
             depends on LOCKBOX_INTEGRATION_ENABLE
             help
                 Enables the DS3231 I2C RTC for persistent date/time storage.
@@ -167,12 +167,12 @@ menu "Example Configuration"
 
         config LOCKBOX_FEATURE_INA219
            bool "Enable INA219 power monitoring"
-           default n
+           default y
            depends on LOCKBOX_INTEGRATION_ENABLE
 
         config LOCKBOX_FEATURE_SLEEP_MODE
             bool "Enable sleep mode"
-            default n
+            default y
             depends on LOCKBOX_FEATURE_STATUS_INPUTS
             help
                 Enables sleep mode functionality. When idle conditions

@@ -7,6 +7,7 @@
  */
 
 #include "user_service.h"
+#include "i2c_bus.h"
 #include "esp_log.h"
 #include <string.h>
 #include <ctype.h>
@@ -321,37 +322,21 @@ int user_service_count_admins(const user_list_t *list)
     return count;
 }
 
-/*
- * @brief Record the current RTC date as last_logon for a user and save to storage
- * @param userid User ID to update
- * @return ESP_OK on success
- */
 esp_err_t user_service_record_last_logon(int userid)
 {
     if (userid < 0) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    /* Load, update, save */
-    user_list_t list = {0};
-    esp_err_t ret = user_store_load(&list);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to load users for last_logon update: %s", esp_err_to_name(ret));
-        return ret;
-    }
-
-    int idx = user_service_find_by_userid(&list, userid);
-    if (idx < 0) {
-        ESP_LOGW(TAG, "User ID %d not found for last_logon update", userid);
-        user_store_free(&list);
-        return ESP_ERR_NOT_FOUND;
-    }
+    /* 1. Read current date from RTC */
+    ESP_LOGI(TAG, "Recording last_logon for userid=%d", userid);
+    i2c_bus_lock("USER_SERVICE_logon");
 
     char date_str[USER_STORE_MAX_LOGON_LEN] = {0};
 #if CONFIG_LOCKBOX_FEATURE_DS3231
     ds3231_date_t rtc_date = {0};
     if (ds3231_rtc_is_initialized()) {
-        ret = ds3231_rtc_get_date(&rtc_date);
+        esp_err_t ret = ds3231_rtc_get_date(&rtc_date);
         if (ret != ESP_OK) {
             ESP_LOGW(TAG, "RTC date read failed, using 01-01-2026");
             rtc_date = (ds3231_date_t){.day = 1, .month = 1, .year = 2026};
@@ -361,23 +346,37 @@ esp_err_t user_service_record_last_logon(int userid)
     }
     ds3231_date_to_string(&rtc_date, date_str);
 #else
-    /* DS3231 not available — use placeholder */
     strncpy(date_str, "01-01-2026", sizeof(date_str) - 1);
     date_str[sizeof(date_str) - 1] = '\0';
 #endif
 
-    strncpy(list.items[idx].last_logon, date_str, sizeof(list.items[idx].last_logon) - 1);
-    list.items[idx].last_logon[sizeof(list.items[idx].last_logon) - 1] = '\0';
+    i2c_bus_unlock("USER_SERVICE_logon");
 
-    ret = user_store_save(&list);
-    user_store_free(&list);
-
+    /* 2. Update user's last_logon and persist to storage */
+    user_list_t ulist = {0};
+    esp_err_t ret = user_store_load(&ulist);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to save last_logon for user %d: %s", userid, esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Failed to load user store: %s", esp_err_to_name(ret));
         return ret;
     }
 
-    ESP_LOGI(TAG, "Recorded last_logon = '%s' for user %d (%s)",
-             date_str, userid, list.items[idx].username);
-    return ESP_OK;
+    int idx = user_service_find_by_userid(&ulist, userid);
+    if (idx < 0) {
+        ESP_LOGW(TAG, "User %d not found in store (cannot update last_logon)", userid);
+        user_store_free(&ulist);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    strncpy(ulist.items[idx].last_logon, date_str, sizeof(ulist.items[idx].last_logon) - 1);
+    ulist.items[idx].last_logon[sizeof(ulist.items[idx].last_logon) - 1] = '\0';
+
+    ret = user_store_save(&ulist);
+    user_store_free(&ulist);
+
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "User %d last_logon updated to %s", userid, date_str);
+    } else {
+        ESP_LOGE(TAG, "Failed to save user store after last_logon update: %s", esp_err_to_name(ret));
+    }
+    return ret;
 }

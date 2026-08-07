@@ -1,6 +1,8 @@
 idf_component_register(
     SRCS "user_mgmt_ui.c" "user_service.c" "user_store.c" "ch422g_driver.c" "waveshare_rgb_lcd_port.c"
          "main.c"
+         "i2c_bus.c"
+         "rtc_diagnostic.c"
          "lvgl_port.c"
          "comm/sc16is752_transport.c"
          "devices/r503_device.c"

@@ -6,6 +6,7 @@
  */
 
 #include "ch422g_driver.h"
+#include "i2c_bus.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -145,8 +146,12 @@ esp_err_t ch422g_write_gpio(i2c_port_t i2c_num, uint8_t gpio_state)
 
     // Direct write - overwrites all pins
     ch422g_gpio_state = gpio_state;
+    
+    // Protect I2C bus access with global mutex
+    i2c_bus_lock("CH422G_write_gpio");
     esp_err_t ret = i2c_master_write_to_device(i2c_num, CH422G_ADDR_GPIO, 
                                                &ch422g_gpio_state, 1, I2C_TIMEOUT_TICKS);
+    i2c_bus_unlock("CH422G_write_gpio");
     
     xSemaphoreGive(ch422g_mutex);
 

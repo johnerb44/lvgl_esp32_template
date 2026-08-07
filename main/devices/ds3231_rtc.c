@@ -2,8 +2,8 @@
  * @file ds3231_rtc.c
  * @brief DS3231 RTC I2C driver implementation
  *
- * Uses the legacy ESP-IDF I2C driver (i2c_param_config + i2c_driver_install)
- * to coexist on the shared I2C bus with SC16IS752, PCA9685, and INA219.
+ * Uses a pre-configured shared I2C bus (initialized by SC16IS752/INA219/etc).
+ * Does NOT call i2c_driver_install — only verifies communication with the device.
  *
  * DS3231 register map:
  *   0x00 - Seconds   (BCD)
@@ -16,6 +16,7 @@
  */
 
 #include "ds3231_rtc.h"
+#include "i2c_bus.h"
 #include "esp_log.h"
 #include "esp_err.h"
 #include "driver/i2c.h"
@@ -54,14 +55,28 @@ static esp_err_t rtc_read_regs(uint8_t reg, uint8_t *buf, size_t len)
         return ESP_ERR_NO_MEM;
     }
 
+    i2c_master_start(cmd);  // ← START condition before writing slave address
     i2c_master_write_byte(cmd, (DS3231_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, reg, true);
 
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(100));
+    esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(200));
     i2c_cmd_link_delete(cmd);
 
     if (ret != ESP_OK) {
+        /* Bus may be stuck — send clock pulses to recover */
+        for (int i = 0; i < 16; i++) {
+            i2c_cmd_handle_t pulse = i2c_cmd_link_create();
+            if (pulse) {
+                i2c_master_start(pulse);
+                i2c_master_write_byte(pulse, 0xFF, true);  /* dummy byte */
+                i2c_master_stop(pulse);
+                i2c_master_cmd_begin(s_i2c_port, pulse, pdMS_TO_TICKS(10));
+                i2c_cmd_link_delete(pulse);
+                vTaskDelay(pdMS_TO_TICKS(1));
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(50));  /* give DS3231 time to settle */
         return ret;
     }
 
@@ -74,14 +89,14 @@ static esp_err_t rtc_read_regs(uint8_t reg, uint8_t *buf, size_t len)
     i2c_master_write_byte(cmd, (DS3231_I2C_ADDRESS << 1) | I2C_MASTER_READ, true);
 
     if (len > 1) {
-        i2c_master_write(cmd, buf, len - 1, false); /* ACK on intermediate bytes */
-        i2c_master_write_byte(cmd, buf[len - 1], true);  /* NACK on last */
+        i2c_master_read(cmd, buf, len - 1, false); /* ACK on intermediate bytes */
+        i2c_master_read_byte(cmd, &buf[len - 1], true);  /* NACK on last */
     } else {
-        i2c_master_write_byte(cmd, buf[0], true);  /* NACK */
+        i2c_master_read_byte(cmd, &buf[0], true);  /* NACK */
     }
 
     i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(100));
+    ret = i2c_master_cmd_begin(s_i2c_port, cmd, pdMS_TO_TICKS(200));
     i2c_cmd_link_delete(cmd);
 
     return ret;
@@ -131,58 +146,37 @@ esp_err_t ds3231_rtc_init(int i2c_port, uint8_t i2c_addr)
         return ESP_OK;
     }
 
-    ESP_LOGI(TAG, "Initializing DS3231 RTC on I2C port %d, address 0x%02X", i2c_port, i2c_addr);
+    ESP_LOGI(TAG, "Initializing DS3231 RTC on I2C port %d, address 0x%02X (shared bus)", i2c_port, i2c_addr);
 
-    /* I2C config — will be applied if bus not yet configured */
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = DS3231_I2C_MASTER_SDA_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = DS3231_I2C_MASTER_SCL_IO,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = DS3231_I2C_FREQ_HZ,
-    };
-
-    /* Handle I2C bus configuration — may already be configured by another driver */
-    esp_err_t ret = i2c_param_config(I2C_NUM_0, &conf);
-    if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
-        ESP_LOGE(TAG, "i2c_param_config failed: %s", esp_err_to_name(ret));
-        return ret;
-    }
-
-    /* Install I2C driver — may already be installed by INA219/SC16IS752/etc */
-    ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-    if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
-        ESP_LOGE(TAG, "i2c_driver_install failed: %s", esp_err_to_name(ret));
-        return ret;
-    }
-    if (ret == ESP_ERR_INVALID_STATE) {
-        /* Driver already installed — just make sure port is set */
-        ESP_LOGI(TAG, "I2C driver already installed on port %d, using existing", I2C_NUM_0);
-    } else {
-        /* We installed the driver */
-        s_i2c_port = I2C_NUM_0;
-    }
+    /* I2C bus should already be initialized by another driver (SC16IS752/INA219/etc).
+     * We do NOT call i2c_driver_install here — only verify the bus is usable. */
+    s_i2c_port = (i2c_port >= 0) ? (i2c_port_t)i2c_port : I2C_NUM_0;
+    ESP_LOGI(TAG, "Using I2C port %d (bus already configured by another driver)", s_i2c_port);
 
     /* Probe: read status register to verify DS3231 is present */
+    i2c_bus_lock("DS3231_probe");
     uint8_t status_reg = 0;
-    ret = rtc_read_regs(DS3231_REG_status, &status_reg, 1);
+    esp_err_t ret = rtc_read_regs(DS3231_REG_status, &status_reg, 1);
+    i2c_bus_unlock("DS3231_probe");
+    
     if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "DS3231 not found on I2C bus (reg 0x0F read failed: %s) — operating in software RTC mode", esp_err_to_name(ret));
-        /* Allow operation even without hardware — use software time until device is added */
+        ESP_LOGW(TAG, "DS3231 not found on I2C bus (probe reg 0x0F failed: %s) — software RTC mode", esp_err_to_name(ret));
         s_initialized = true;
         return ESP_OK;
     }
+    ESP_LOGI(TAG, "DS3231 probe OK, status=0x%02X", status_reg);
 
-    /* Clear oscillator-stop flag (bit 7) if set — device was offline */
+    /* Clear oscillator-stop flag (bit 7) if set */
     if (status_reg & (1 << 7)) {
         ESP_LOGW(TAG, "OSF detected, clearing oscillator-stop flag");
         uint8_t clear_stat = status_reg & ~(1 << 7);
+        i2c_bus_lock("DS3231_clear_osf");
         rtc_write_reg8(DS3231_REG_status, clear_stat);
+        i2c_bus_unlock("DS3231_clear_osf");
     }
 
     s_initialized = true;
-    ESP_LOGI(TAG, "DS3231 RTC initialized successfully");
+    ESP_LOGI(TAG, "DS3231 initialized OK (port=%d, s_initialized=%d)", s_i2c_port, s_initialized);
     return ESP_OK;
 }
 
@@ -205,8 +199,11 @@ esp_err_t ds3231_rtc_get_datetime(ds3231_datetime_t *dt)
     }
 
     /* Read all 7 time/date registers in one burst (0x00-0x06) */
+    i2c_bus_lock("DS3231_get_datetime");
     uint8_t regs[7];
     esp_err_t ret = rtc_read_regs(DS3231_REG_sec, regs, 7);
+    i2c_bus_unlock("DS3231_get_datetime");
+    
     if (ret != ESP_OK) {
         /* No hardware — return default date/time */
         ESP_LOGW(TAG, "RTC read failed (%s), returning default 01-01-2026 00:00:00", esp_err_to_name(ret));
@@ -243,7 +240,10 @@ esp_err_t ds3231_rtc_set_datetime(const ds3231_datetime_t *dt)
     regs[5] = byte_to_bcd(dt->date.month) | (1 << 7);   /* set century bit (2000s) */
     regs[6] = byte_to_bcd((dt->date.year - 2000) % 100);
 
+    i2c_bus_lock("DS3231_set_datetime");
     esp_err_t ret = rtc_write_regs(DS3231_REG_sec, regs, 7);
+    i2c_bus_unlock("DS3231_set_datetime");
+    
     if (ret != ESP_OK) {
         /* No hardware — silently succeed */
         ESP_LOGW(TAG, "RTC datetime write failed (%s), no hardware", esp_err_to_name(ret));
@@ -258,8 +258,11 @@ esp_err_t ds3231_rtc_get_time(ds3231_time_t *t)
         return ESP_ERR_INVALID_ARG;
     }
 
+    i2c_bus_lock("DS3231_get_time");
     uint8_t regs[3];
     esp_err_t ret = rtc_read_regs(DS3231_REG_sec, regs, 3);
+    i2c_bus_unlock("DS3231_get_time");
+    
     if (ret != ESP_OK) {
         /* No hardware — return default time */
         ESP_LOGW(TAG, "RTC time read failed (%s), returning default 00:00:00", esp_err_to_name(ret));
@@ -282,8 +285,13 @@ esp_err_t ds3231_rtc_set_time(const ds3231_time_t *t)
     uint8_t regs[3];
     regs[0] = byte_to_bcd(t->seconds);
     regs[1] = byte_to_bcd(t->minutes);
-        regs[2] = byte_to_bcd(t->hour);  // DS3231 is always in 24h mode
-    return rtc_write_regs(DS3231_REG_sec, regs, 3);
+    regs[2] = byte_to_bcd(t->hour);  // DS3231 is always in 24h mode
+    
+    i2c_bus_lock("DS3231_set_time");
+    esp_err_t ret = rtc_write_regs(DS3231_REG_sec, regs, 3);
+    i2c_bus_unlock("DS3231_set_time");
+    
+    return ret;
 }
 
 esp_err_t ds3231_rtc_get_date(ds3231_date_t *d)
@@ -292,11 +300,25 @@ esp_err_t ds3231_rtc_get_date(ds3231_date_t *d)
         return ESP_ERR_INVALID_ARG;
     }
 
+    i2c_bus_lock("DS3231_get_date");
     uint8_t regs[3];  /* read date (0x04) through year (0x06) */
     esp_err_t ret = rtc_read_regs(DS3231_REG_date, regs, 3);
+    i2c_bus_unlock("DS3231_get_date");
+    
     if (ret != ESP_OK) {
-        /* No hardware — return default date */
-        ESP_LOGW(TAG, "RTC date read failed (%s), returning default 01-01-2026", esp_err_to_name(ret));
+        /* Bus recovery: toggle SDA to unstick any stuck I2C transaction */
+        ESP_LOGW(TAG, "RTC date read failed (%s), toggling bus recovery", esp_err_to_name(ret));
+        /* Clear the I2C peripheral state by sending clock cycles */
+        for (int i = 0; i < 20; i++) {
+            i2c_cmd_handle_t pulse = i2c_cmd_link_create();
+            if (pulse) {
+                i2c_master_start(pulse);
+                i2c_master_write_byte(pulse, 0xFF, true);  /* dummy byte, clock cycles */
+                i2c_master_stop(pulse);
+                i2c_master_cmd_begin(s_i2c_port, pulse, pdMS_TO_TICKS(5));
+                i2c_cmd_link_delete(pulse);
+            }
+        }
         d->day = 1; d->month = 1; d->year = 2026;
         return ESP_OK;
     }
@@ -310,6 +332,7 @@ esp_err_t ds3231_rtc_get_date(ds3231_date_t *d)
 esp_err_t ds3231_rtc_set_date(const ds3231_date_t *d)
 {
     if (!d || !s_initialized) {
+        ESP_LOGE(TAG, "set_date called but s_initialized=%d (i2c_port=%d)", s_initialized, s_i2c_port);
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -317,7 +340,11 @@ esp_err_t ds3231_rtc_set_date(const ds3231_date_t *d)
     regs[0] = byte_to_bcd(d->day);
     regs[1] = byte_to_bcd(d->month) | DS3231_MONTH_CENTURY_BIT;  /* century = 20xx */
     regs[2] = byte_to_bcd((d->year - 2000) % 100);
+    
+    i2c_bus_lock("DS3231_set_date");
     esp_err_t ret = rtc_write_regs(DS3231_REG_date, regs, 3);
+    i2c_bus_unlock("DS3231_set_date");
+    
     if (ret != ESP_OK) {
         /* No hardware — silently succeed (write will take effect when RTC is added) */
         ESP_LOGW(TAG, "RTC date write failed (%s), no hardware — date will take effect later", esp_err_to_name(ret));

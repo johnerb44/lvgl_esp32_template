@@ -72,6 +72,8 @@ esp_err_t ds3231_service_init(int i2c_port, uint8_t i2c_addr)
     }
 
     s_initialized = true;
+    ESP_LOGI(TAG, "RTC driver initialized: s_initialized=%d (ret=%s)",
+             ds3231_rtc_is_initialized() ? 1 : 0, esp_err_to_name(ret));
     ESP_LOGI(TAG, "DS3231 service initialized (RTC=%s)",
              (ret == ESP_OK) ? "found" : "not found (software mode)");
     return ESP_OK;

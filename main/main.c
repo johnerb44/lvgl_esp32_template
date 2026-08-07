@@ -1,383 +1,175 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "waveshare_rgb_lcd_port.h"
+#include "ch422g_driver.h"
+#include "i2c_bus.h"
+#include "cJSON.h"
+#include "sd/sd_card.h"
+#include "ui/ui.h"
+#include "user_store.h"
+#include "user_mgmt_ui.h"
+#include "app/lockbox_app.h"
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+#include "services/sleep_service.h"
+#include "esp_sleep.h"
+#endif
+#include <string.h>
+#include <inttypes.h>
+#include "sdkconfig.h"
+#include "driver/rtc_io.h"
+#include "esp_system.h"
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
+// #include "esp_chip_info.h"
+// #include "esp_flash.h"
+
 
 // Define APP_TAG for application logging
-static const char *APP_TAG = "SECURE_BOX";
+static const char *APP_TAG = "LVGL_TEMPLATE";
 
-// Screen state management
-typedef enum {
-    SCREEN_MAIN_MENU,
-    SCREEN_PIN_ENTRY,
-    SCREEN_FINGERPRINT,
-    SCREEN_FACIAL_RECOGNITION
-} screen_t;
-
-static screen_t current_screen = SCREEN_MAIN_MENU;
-
-// Forward declarations of screen creation functions
-static void create_main_menu(lv_obj_t *parent);
-static void create_pin_entry_screen(lv_obj_t *parent);
-static void create_fingerprint_screen(lv_obj_t *parent);
-static void create_facial_recognition_screen(lv_obj_t *parent);
-
-// Global variables for our UI elements
-static lv_obj_t *display_label;  // Label to show entered digits
-static char input_buffer[9];     // Buffer for storing input (8 digits + null terminator)
-static uint8_t input_pos = 0;    // Current position in input buffer
-
-// Function to handle smooth screen transitions
-static void change_screen(screen_t new_screen)
+ /* Restart the board into UART download mode without a power cycle.
+ *
+ * GPIO0 is shared between the BOOT strapping pin and LCD RGB DATA6.  Once the
+ * LCD panel initialises and actively drives DATA6 HIGH, the CH343P DTR signal
+ * can no longer pull GPIO0 LOW during esptool's --before default_reset reset
+ * sequence, blocking subsequent flashes (most visible on laptops whose USB
+ * host controller has higher DTR/RTS latency than a desktop).
+ *
+ * This function:
+ *  1. Reconfigures GPIO0 as a regular digital output driven LOW (overrides the
+ *     LCD peripheral's I/O-MUX claim on the pin).
+ *  2. Switches the pin to RTC GPIO mode and holds the LOW state via
+ *     rtc_gpio_hold_en().  The RTC domain survives esp_restart() (a digital-
+ *     domain / software reset), so GPIO0 remains LOW through the reset.
+ *  3. Calls esp_restart().  The ROM bootloader samples GPIO0=LOW and enters
+ *     UART download mode on UART0.
+ *
+ * esptool must be configured with --before no_reset (CONFIG_ESPTOOLPY_BEFORE=
+ * "no_reset") so that it does NOT perform its own DTR/RTS reset sequence that
+ * would toggle EN and trigger a hard reset, clearing the RTC GPIO hold.
+ *
+ * After flashing, esptool's --after hard_reset toggles EN (full chip reset),
+ * which clears the RTC domain and the GPIO hold, allowing normal LCD operation
+ * in the new firmware.
+ */
+static void enter_flash_mode(void)
 {
-    // Create the new screen on top of the current one
-    lv_obj_t *new_scr = lv_obj_create(NULL);
-    lv_obj_set_size(new_scr, LV_PCT(100), LV_PCT(100));
-    
-    // Create content on the new screen based on screen type
-    switch (new_screen) {
-        case SCREEN_MAIN_MENU:
-            create_main_menu(new_scr);
-            break;
-        case SCREEN_PIN_ENTRY:
-            create_pin_entry_screen(new_scr);
-            break;
-        case SCREEN_FINGERPRINT:
-            wavesahre_rgb_lcd_bl_off();
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            wavesahre_rgb_lcd_bl_on();
-            create_fingerprint_screen(new_scr);
-            break;
-        case SCREEN_FACIAL_RECOGNITION:
-            create_facial_recognition_screen(new_scr);
-            break;
-    }
-    
-    // Use fade transition effect
-    lv_scr_load_anim(new_scr, LV_SCR_LOAD_ANIM_OVER_TOP, 500, 0, false);
-    
-    // Update the current screen state
-    current_screen = new_screen;
+    ESP_LOGI(APP_TAG, "Entering UART download mode — restarting with GPIO0 held LOW...");
+
+    // Step 1: override LCD peripheral's mux claim; drive GPIO0 LOW as digital output
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_0),
+        .mode         = GPIO_MODE_OUTPUT,
+        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_NUM_0, 0);
+
+    // Step 2: switch to RTC GPIO and hold LOW through the upcoming soft reset
+    rtc_gpio_init(GPIO_NUM_0);
+    rtc_gpio_set_direction(GPIO_NUM_0, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_NUM_0, 0);
+    rtc_gpio_hold_en(GPIO_NUM_0);
+
+    vTaskDelay(pdMS_TO_TICKS(200));  // allow log to flush before restart
+    esp_restart();
 }
 
-// Button event handler for the main menu
-static void menu_btn_event_cb(lv_event_t *event)
+static void flash_mode_btn_cb(lv_event_t *e)
 {
-    lv_obj_t *btn = lv_event_get_target(event);
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
-        const char *btn_text = lv_obj_get_user_data(btn);
-        
-        // Change screen based on button clicked
-        if (strcmp(btn_text, "PIN") == 0) {
-            change_screen(SCREEN_PIN_ENTRY);
-        }
-        else if (strcmp(btn_text, "Fingerprint") == 0) {
-            change_screen(SCREEN_FINGERPRINT);
-        }
-        else if (strcmp(btn_text, "Facial Recognition") == 0) {
-            change_screen(SCREEN_FACIAL_RECOGNITION);
-        }
-        else if (strcmp(btn_text, "Back") == 0) {
-            change_screen(SCREEN_MAIN_MENU);
-        }
-    }
+    enter_flash_mode();
 }
-
-// Button event handler for PIN keypad
-static void pin_keypad_event_cb(lv_event_t *event)
-{
-    lv_obj_t *btn = lv_event_get_target(event);
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
-        const char *txt = lv_btnmatrix_get_btn_text(btn, lv_btnmatrix_get_selected_btn(btn));
-        
-        // Handle clear button
-        if (strcmp(txt, "Clear") == 0) {
-            input_pos = 0;
-            input_buffer[0] = '\0';
-        } 
-        // Handle back button
-        else if (strcmp(txt, "Back") == 0) {
-            change_screen(SCREEN_MAIN_MENU);
-        }
-        // Handle digit buttons
-        else if (input_pos < 8) {  // Limit to 8 digits
-            input_buffer[input_pos] = txt[0];
-            input_pos++;
-            input_buffer[input_pos] = '\0';
-        }
-        
-        // Update display
-        lv_label_set_text(display_label, input_buffer);
-    }
-}// Function to create the PIN entry screen
-static void create_pin_entry_screen(lv_obj_t *parent)
-{
-    // Clear input buffer
-    input_pos = 0;
-    input_buffer[0] = '\0';
-    lv_color_t cxb = lv_color_hex(0xf5f5f5);
-
-    
-    // Create main container
-    lv_obj_t *main_cont = lv_obj_create(parent);
-    lv_obj_set_size(main_cont, lv_pct(100), lv_pct(100));
-    lv_obj_set_layout(main_cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(main_cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(main_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(main_cont, 10, 0);
-    
-    // Create display box
-    lv_obj_t *display_box = lv_obj_create(main_cont);
-    lv_obj_set_size(display_box, lv_pct(90), 60);
-    lv_obj_set_style_border_width(display_box, 2, 0);
-    lv_obj_set_style_border_color(display_box, lv_color_black(), 0);
-    lv_obj_set_style_bg_color(display_box, lv_color_white(), 0);
-    //lv_obj_set_style_bg_color(display_box, cxb , 0);
-    lv_obj_set_style_radius(display_box, 5, 0); 
-
-     // Create display label inside box
-    display_label = lv_label_create(display_box);
-    lv_obj_center(display_label);
-    lv_obj_set_style_text_align(display_label, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_obj_set_style_text_font(display_label, &lv_font_montserrat_28, 0);
-    lv_label_set_text(display_label, "");
-
-    // Create keypad matrix
-    static const char * keypad_map[] = {"1", "2", "3", "\n",
-                                       "4", "5", "6", "\n",
-                                       "7", "8", "9", "\n",
-                                       "Back", "0", "Clear", ""};
-    
-    lv_obj_t *keypad = lv_btnmatrix_create(main_cont);
-    lv_obj_set_size(keypad, lv_pct(90), lv_pct(70));
-    lv_obj_add_event_cb(keypad, pin_keypad_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_btnmatrix_set_map(keypad, keypad_map);
-
-     // Style the Clear button differently
-    lv_btnmatrix_set_btn_ctrl(keypad, 11, LV_BTNMATRIX_CTRL_CHECKABLE);
-    lv_btnmatrix_set_btn_width(keypad, 11, 1);  // Make "Clear" button normal width
-    
-    // Style the Back button differently
-    lv_btnmatrix_set_btn_ctrl(keypad, 9, LV_BTNMATRIX_CTRL_CHECKABLE);
-    lv_btnmatrix_set_btn_width(keypad, 9, 1);  // Make "Back" button normal width
-    
-    lv_obj_set_style_bg_color(keypad, lv_color_hex(0xf5f5f5), 0); 
-    
-    // Set button styles
-    lv_obj_set_style_bg_color(keypad, lv_color_hex(0xc5f5f5), LV_PART_ITEMS);
-    lv_obj_set_style_border_width(keypad, 1, LV_PART_ITEMS);
-    lv_obj_set_style_border_color(keypad, lv_color_hex(0xdedede), LV_PART_ITEMS);
-    lv_obj_set_style_text_font(keypad, &lv_font_montserrat_22, 0);
-    
-       // Set active button styles
-    lv_obj_set_style_bg_color(keypad, lv_color_hex(0x2196f3), LV_PART_ITEMS | LV_STATE_PRESSED);
-    lv_obj_set_style_bg_opa(keypad, LV_OPA_50, LV_PART_ITEMS | LV_STATE_PRESSED);
-}
-
-// Function to create the main menu screen
-static void create_main_menu(lv_obj_t *parent)
-{
-    // Create main container
-    lv_obj_t *main_cont = lv_obj_create(parent);
-    lv_obj_set_size(main_cont, lv_pct(100), lv_pct(100));
-    lv_obj_set_layout(main_cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(main_cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(main_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(main_cont, 10, 0);
-    
-    // Create title label
-    lv_obj_t *title_label = lv_label_create(main_cont);
-    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_28, 0);
-    lv_label_set_text(title_label, "Secure Box Access");
-    lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(title_label, 20, 0);
-    
-    // Create subtitle
-    lv_obj_t *subtitle = lv_label_create(main_cont);
-    lv_label_set_text(subtitle, "Select Access Method:");
-    lv_obj_set_style_text_font(subtitle, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_pad_bottom(subtitle, 30, 0);
-    
-    // Create buttons container
-    lv_obj_t *btn_cont = lv_obj_create(main_cont);
-    lv_obj_set_size(btn_cont, lv_pct(90), lv_pct(50));
-    lv_obj_set_layout(btn_cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(btn_cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(btn_cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY);
-    lv_obj_set_style_bg_opa(btn_cont, LV_OPA_0, 0);
-    lv_obj_set_style_border_width(btn_cont, 0, 0);
-    
-    // Create PIN button
-    lv_obj_t *pin_btn = lv_btn_create(btn_cont);
-    lv_obj_set_size(pin_btn, lv_pct(90), 60);
-    lv_obj_set_style_radius(pin_btn, 10, 0);
-    lv_obj_set_style_bg_color(pin_btn, lv_color_hex(0x2196f3), 0);
-    lv_obj_set_user_data(pin_btn, "PIN");
-    lv_obj_add_event_cb(pin_btn, menu_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t *pin_label = lv_label_create(pin_btn);
-    lv_label_set_text(pin_label, "PIN Code");
-    lv_obj_center(pin_label);
-    lv_obj_set_style_text_font(pin_label, &lv_font_montserrat_20, 0);
-    
-    // Create Fingerprint button
-    lv_obj_t *fp_btn = lv_btn_create(btn_cont);
-    lv_obj_set_size(fp_btn, lv_pct(90), 60);
-    lv_obj_set_style_radius(fp_btn, 10, 0);
-    lv_obj_set_style_bg_color(fp_btn, lv_color_hex(0x4caf50), 0);
-    lv_obj_set_user_data(fp_btn, "Fingerprint");
-    lv_obj_add_event_cb(fp_btn, menu_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t *fp_label = lv_label_create(fp_btn);
-    lv_label_set_text(fp_label, "Fingerprint");
-    lv_obj_center(fp_label);
-    lv_obj_set_style_text_font(fp_label, &lv_font_montserrat_20, 0);
-    
-    // Create Facial Recognition button
-    lv_obj_t *face_btn = lv_btn_create(btn_cont);
-    lv_obj_set_size(face_btn, lv_pct(90), 60);
-    lv_obj_set_style_radius(face_btn, 10, 0);
-    lv_obj_set_style_bg_color(face_btn, lv_color_hex(0xff9800), 0);
-    lv_obj_set_user_data(face_btn, "Facial Recognition");
-    lv_obj_add_event_cb(face_btn, menu_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t *face_label = lv_label_create(face_btn);
-    lv_label_set_text(face_label, "Facial Recognition");
-    lv_obj_center(face_label);
-    lv_obj_set_style_text_font(face_label, &lv_font_montserrat_20, 0);
-}
-
-// Function to create the fingerprint screen
-static void create_fingerprint_screen(lv_obj_t *parent)
-{
-    // Create main container
-    lv_obj_t *main_cont = lv_obj_create(parent);
-    lv_obj_set_size(main_cont, lv_pct(100), lv_pct(100));
-    lv_obj_set_layout(main_cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(main_cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(main_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(main_cont, 10, 0);
-    
-    // Create title
-    lv_obj_t *title = lv_label_create(main_cont);
-    lv_label_set_text(title, "Fingerprint Access");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
-    lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(title, 30, 0);
-    
-    // Create instruction
-    lv_obj_t *instruction = lv_label_create(main_cont);
-    lv_label_set_text(instruction, "Place your finger on the scanner");
-    lv_obj_set_style_text_font(instruction, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_text_align(instruction, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(instruction, 50, 0);
-    
-    // Create fingerprint icon placeholder
-    lv_obj_t *icon_area = lv_obj_create(main_cont);
-    lv_obj_set_size(icon_area, 150, 150);
-    lv_obj_set_style_radius(icon_area, 75, 0);
-    lv_obj_set_style_bg_color(icon_area, lv_color_hex(0xeeeeee), 0);
-    lv_obj_set_style_border_width(icon_area, 2, 0);
-    lv_obj_set_style_border_color(icon_area, lv_color_hex(0x4caf50), 0);
-    
-    // Create icon label
-    lv_obj_t *icon_label = lv_label_create(icon_area);
-    lv_label_set_text(icon_label, "👆");
-    lv_obj_set_style_text_font(icon_label, &lv_font_montserrat_48, 0);
-    lv_obj_center(icon_label);
-    
-    // Create back button
-    lv_obj_t *back_btn = lv_btn_create(main_cont);
-    lv_obj_set_size(back_btn, 120, 50);
-    lv_obj_set_style_radius(back_btn, 10, 0);
-    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x3196f3), 0);
-    lv_obj_set_style_pad_top(back_btn, 10, 0);
-    lv_obj_set_user_data(back_btn, "Back");
-    lv_obj_add_event_cb(back_btn, menu_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    lv_obj_t *back_label = lv_label_create(back_btn);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_center(back_label);
-    lv_obj_set_style_text_align(back_label, LV_TEXT_ALIGN_CENTER, 0);
-    
-    // Add event callback for back button
-    //lv_obj_add_event_cb(back_btn, menu_btn_event_cb, LV_EVENT_CLICKED, "Back");
-}
-
-// Function to create the facial recognition screen
-static void create_facial_recognition_screen(lv_obj_t *parent)
-{
-    // Create main container
-    lv_obj_t *main_cont = lv_obj_create(parent);
-    lv_obj_set_size(main_cont, lv_pct(100), lv_pct(100));
-    lv_obj_set_layout(main_cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(main_cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(main_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(main_cont, 10, 0);
-    
-    // Create title
-    lv_obj_t *title = lv_label_create(main_cont);
-    lv_label_set_text(title, "Facial Recognition");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
-    lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(title, 30, 0);
-    
-    // Create instruction
-    lv_obj_t *instruction = lv_label_create(main_cont);
-    lv_label_set_text(instruction, "Look at the camera");
-    lv_obj_set_style_text_font(instruction, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_text_align(instruction, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(instruction, 50, 0);
-    
-    // Create camera view placeholder
-    lv_obj_t *camera_area = lv_obj_create(main_cont);
-    lv_obj_set_size(camera_area, 200, 160);
-    lv_obj_set_style_radius(camera_area, 10, 0);
-    lv_obj_set_style_bg_color(camera_area, lv_color_hex(0x333333), 0);
-    lv_obj_set_style_border_width(camera_area, 2, 0);
-    lv_obj_set_style_border_color(camera_area, lv_color_hex(0xff9800), 0);
-    
-    // Create icon label
-    lv_obj_t *icon_label = lv_label_create(camera_area);
-    lv_label_set_text(icon_label, "📷");
-    lv_obj_set_style_text_font(icon_label, &lv_font_montserrat_48, 0);
-    lv_obj_center(icon_label);
-    
-    // Create back button
-    lv_obj_t *back_btn = lv_btn_create(main_cont);
-    lv_obj_set_size(back_btn, 120, 50);
-    lv_obj_set_style_radius(back_btn, 10, 0);
-    lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x2196f3), 0);
-    lv_obj_set_style_pad_top(back_btn, 10, 0);
-    lv_obj_set_user_data(back_btn, "Back");
-    lv_obj_add_event_cb(back_btn, menu_btn_event_cb, LV_EVENT_CLICKED, NULL);
-    
-    
-    lv_obj_t *back_label = lv_label_create(back_btn);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_center(back_label);
-    lv_obj_set_style_text_align(back_label, LV_TEXT_ALIGN_CENTER, 0);
-    
-    // Add event callback for back button
-    //lv_obj_add_event_cb(back_btn, menu_btn_event_cb, LV_EVENT_CLICKED, "Back");
-}
-
-
 
 void app_main()
 {
+    // Initialize hardware
     waveshare_esp32_s3_rgb_lcd_init(); // Initialize the Waveshare ESP32-S3 RGB LCD 
-    wavesahre_rgb_lcd_bl_on();  //Turn on the screen backlight 
-    //wavesahre_rgb_lcd_bl_off(); //Turn off the screen backlight 
     
-    ESP_LOGI(APP_TAG, "Display menu UI");
+    // Turn on backlight immediately after LCD init, before SD card
+    ESP_LOGI(APP_TAG, "Turning on backlight");
+    waveshare_rgb_lcd_bl_on();  // Turn on the screen backlight 
+    vTaskDelay(pdMS_TO_TICKS(100)); // Small delay to let backlight stabilize
+    
+    ESP_LOGI(APP_TAG, "Initializing I2C bus mutex");
+    esp_err_t i2c_err = i2c_bus_init();
+    if (i2c_err != ESP_OK) {
+        ESP_LOGE(APP_TAG, "I2C bus mutex init FAILED (%s) — I2C operations will not be protected!", esp_err_to_name(i2c_err));
+    }
+    
+    ESP_LOGI(APP_TAG, "Initializing SD card");
+    esp_err_t sd_err = waveshare_sd_card_init();
+    if (sd_err != ESP_OK) {
+        ESP_LOGE(APP_TAG, "SD card init FAILED (%s) - file operations will not work", esp_err_to_name(sd_err));
+    } else {
+        ESP_LOGI(APP_TAG, "SD card mounted successfully");
+        waveshare_sd_card_info();
+        waveshare_sd_card_list_files();
+    }
+
+    // Initialize user store
+    ESP_LOGI(APP_TAG, "Initializing user store");
+    user_store_init(NULL); // Use default path
+
+    ESP_LOGI(APP_TAG, "Initializing Secure Lockbox services");
+    esp_err_t lockbox_err = lockbox_app_init();
+    if (lockbox_err != ESP_OK) {
+        ESP_LOGW(APP_TAG, "lockbox_app_init returned %s", esp_err_to_name(lockbox_err));
+    }
+
+#if CONFIG_LOCKBOX_FEATURE_SLEEP_MODE
+    /* Check if we woke from deep sleep — restore display and show start screen */
+    esp_sleep_wakeup_cause_t wake_cause = esp_sleep_get_wakeup_cause();
+    if (wake_cause != ESP_SLEEP_WAKEUP_UNDEFINED) {
+        ESP_LOGI(APP_TAG, "Wake cause: %d (not undefined) — checking sleep service", (int)wake_cause);
+        sleep_service_wake();
+    } else {
+        ESP_LOGI(APP_TAG, "Wake cause: undefined (normal power-on or reset)");
+    }
+#endif
+
+    // End SD session - restore backlight (SD operations complete)
+    ESP_LOGI(APP_TAG, "SD init complete, restoring backlight");
+    ch422g_sd_card_enable(I2C_MASTER_NUM, false);
+    
+    // Small delay to allow LVGL task to fully start
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    ESP_LOGI(APP_TAG, "LVGL 9.3 Template - Creating UI");
+    
     // Lock the mutex due to the LVGL APIs are not thread-safe
     if (lvgl_port_lock(-1)) {
-        // Create our main menu UI using the new transition system
-        lv_obj_t *initial_scr = lv_obj_create(NULL);
-        lv_obj_set_size(initial_scr, LV_PCT(100), LV_PCT(100));
-        create_main_menu(initial_scr);
-        lv_scr_load(initial_scr);
-        current_screen = SCREEN_MAIN_MENU;
+        // Initialize all UI screens
+        ui_init();
+        
+        ESP_LOGI(APP_TAG, "Screen pointer before load: %p", (void*)ui_screen_change_pin);
+        
+        // Load the initial screen — always start at the main landing screen
+        lv_scr_load(ui_screen_main);
+
+        // Developer flash button: tap to restart into UART download mode.
+        // Workflow: tap this button, then click Flash in VS Code.
+        lv_obj_t *flash_btn = lv_btn_create(lv_scr_act());
+        lv_obj_set_size(flash_btn, 90, 40);
+        lv_obj_align(flash_btn, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+        lv_obj_t *flash_lbl = lv_label_create(flash_btn);
+        lv_label_set_text(flash_lbl, "FLASH");
+        lv_obj_center(flash_lbl);
+        lv_obj_add_event_cb(flash_btn, flash_mode_btn_cb, LV_EVENT_CLICKED, NULL);
+        
+        ESP_LOGI(APP_TAG, "Screen loaded successfully");
         
         // Release the mutex
         lvgl_port_unlock();
     }
+    
+    ESP_LOGI(APP_TAG, "UI created successfully");
+    ESP_LOGI(APP_TAG, "UI ready - showing main screen");
 }

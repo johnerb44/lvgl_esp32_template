@@ -1,0 +1,277 @@
+Executing action: all (aliases: build)
+Running make in directory /home/erbj/lvgl-projects/lvgl_esp32_template/build
+Executing "make -j 22 all"...
+[  0%] Built target _project_elf_src
+[  0%] Built target memory_ld
+[  0%] Built target custom_bundle
+[  0%] Built target partition_table_bin
+[  0%] Performing build step for 'bootloader'
+[  0%] Built target __idf_ulp
+[  0%] Built target __idf_esp_psram
+[  0%] Built target _project_elf_src
+[  3%] Built target __idf_log
+[  0%] Built target __idf_esp_https_ota
+[ 14%] Built target __idf_esp_rom
+[ 16%] Built target __idf_esp_common
+[  0%] Built target __idf_esp_http_server
+[ 25%] Built target __idf_esp_hw_support
+[  1%] Built target __idf_esp_http_client
+[ 26%] Built target __idf_esp_system
+[ 35%] Built target __idf_efuse
+[  2%] Built target __idf_tcp_transport
+[ 55%] Built target __idf_bootloader_support
+[  2%] Built target __idf_esp_gdbstub
+[ 57%] Built target __idf_esp_app_format
+[  3%] Built target __idf_esp_eth
+[ 59%] Built target __idf_spi_flash
+[  4%] Built target __idf_esp_adc
+[ 65%] Built target __idf_hal
+[  4%] Built target __idf_esp-tls
+[ 68%] Built target __idf_micro-ecc
+[  4%] Built target __idf_http_parser
+[ 90%] Built target __idf_soc
+[  4%] Built target __idf_esp_wifi
+[ 93%] Built target __idf_xtensa
+[ 95%] Built target __idf_main
+[  4%] Built target __idf_esp_coex
+[ 98%] Built target bootloader.elf
+[100%] Built target gen_project_binary
+Bootloader binary size 0x5790 bytes. 0x2870 bytes (32%) free.
+[100%] Built target bootloader_check_size
+[  8%] Built target __idf_wpa_supplicant
+[100%] Built target app
+[  8%] No install step for 'bootloader'
+[  8%] Completed 'bootloader'
+[  8%] Built target __idf_esp_netif
+[  8%] Built target bootloader
+[ 13%] Built target __idf_lwip
+[ 13%] Built target __idf_vfs
+[ 13%] Built target __idf_esp_phy
+[ 13%] Built target __idf_nvs_flash
+[ 13%] Built target __idf_esp_event
+[ 14%] Built target __idf_esp_timer
+[ 14%] Built target __idf_esp_common
+[ 14%] Built target __idf_cxx
+[ 15%] Built target __idf_newlib
+[ 17%] Built target __idf_freertos
+[ 20%] Built target __idf_esp_hw_support
+[ 22%] Built target __idf_soc
+[ 23%] Built target __idf_heap
+[ 23%] Built target __idf_log
+[ 25%] Built target __idf_hal
+[ 25%] Built target __idf_esp_rom
+[ 27%] Built target __idf_esp_system
+[ 27%] Built target __idf_pthread
+[ 28%] Built target __idf_spi_flash
+[ 28%] Built target __idf_esp_mm
+[ 28%] Built target __idf_app_update
+[ 29%] Built target __idf_esp_partition
+[ 30%] Built target __idf_bootloader_support
+[ 30%] Built target __idf_esp_app_format
+[ 31%] Built target mbedtls
+[ 32%] Built target mbedx509
+[ 37%] Built target mbedcrypto
+[ 37%] Built target p256m
+[ 37%] Built target everest
+[ 37%] Built target __idf_mbedtls
+[ 37%] Built target __idf_esp_pm
+[ 40%] Built target __idf_driver
+[ 41%] Built target __idf_efuse
+[ 42%] Built target __idf_esp_ringbuf
+[ 43%] Built target __idf_xtensa
+[ 43%] Built target __idf_esp-idf-lib__i2cdev
+[ 44%] Built target __idf_wear_levelling
+[ 44%] Built target __idf_protobuf-c
+[ 44%] Built target __idf_esp_hid
+[ 44%] Built target __idf_touch_element
+[ 45%] Built target __idf_mqtt
+[ 46%] Built target __idf_console
+[ 46%] Built target __idf_sdmmc
+[ 46%] Built target __idf_app_trace
+[ 46%] Built target __idf_spiffs
+[ 47%] Built target __idf_perfmon
+[ 47%] Built target __idf_json
+[ 48%] Built target __idf_unity
+[ 48%] Built target __idf_usb
+[ 48%] Built target __idf_esp_lcd
+[ 49%] Built target __idf_espcoredump
+[ 49%] Built target __idf_esp-idf-lib__ina219
+[ 49%] Built target __idf_cmock
+[ 50%] Built target __idf_protocomm
+[ 50%] Built target __idf_espressif__esp_lcd_touch
+[ 50%] Built target __idf_fatfs
+[ 51%] Built target __idf_esp_local_ctrl
+[ 51%] Built target __idf_espressif__esp_lcd_touch_gt911
+[ 52%] Built target __idf_wifi_provisioning
+[ 96%] Built target __idf_lvgl__lvgl
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_biometric.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/user_mgmt_ui.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_facescan.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_main.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_start.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_fpscan.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_fp_manage.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_rtc_date.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_get_pin.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_change_pin.c.obj
+[ 96%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/services/ina219_service.c.obj
+[ 97%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_home.c.obj
+[ 97%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_enroll.c.obj
+[ 97%] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/services/ds3231_service.c.obj
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c: In function 'ui_screen_biometric_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c:158:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  158 |     lv_obj_set_style_text_font(lv_label_0, &lv_font_montserrat_28, 0);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c:158:45: note: each undeclared identifier is reported only once for each function it appears in
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:440: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_biometric.c.obj] Error 1
+make[2]: *** Waiting for unfinished jobs....
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c: In function 'ui_screen_facescan_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c:361:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  361 |     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~
+      |                                        lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c:361:40: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c: In function 'create_confirm_dialog':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:270:44: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  270 |     lv_obj_set_style_text_font(title_lbl, &lv_font_montserrat_22, 0);
+      |                                            ^~~~~~~~~~~~~~~~~~~~~
+      |                                            lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:270:44: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c: In function 'ui_screen_fpscan_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c:315:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  315 |     lv_obj_set_style_text_font(lv_label_0, &lv_font_montserrat_28, 0);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c:315:45: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c: In function 'style_confirm_footer_button':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:290:47: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  290 |     if (lbl) lv_obj_set_style_text_font(lbl, &lv_font_montserrat_22, 0);
+      |                                               ^~~~~~~~~~~~~~~~~~~~~
+      |                                               lv_font_montserrat_26
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:468: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_facescan.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:454: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_fpscan.c.obj] Error 1
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c: In function 'user_mgmt_ui_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1080:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+ 1080 |     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~
+      |                                        lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c: In function 'ui_screen_change_pin_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:237:51: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  237 |     lv_obj_set_style_text_font(change_pin_title, &lv_font_montserrat_28, 0);
+      |                                                   ^~~~~~~~~~~~~~~~~~~~~
+      |                                                   lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:237:51: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c: In function 'ui_screen_enroll_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:278:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  278 |     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~
+      |                                        lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:278:40: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c: In function 'ui_screen_main_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:72:47: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+   72 |     lv_obj_set_style_text_font(welcome_name, &lv_font_montserrat_28, 0);
+      |                                               ^~~~~~~~~~~~~~~~~~~~~
+      |                                               lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:72:47: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1337:46: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+ 1337 |         lv_obj_set_style_text_font(rtc_lbl, &lv_font_montserrat_18, 0);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~
+      |                                              lv_font_montserrat_16
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:255:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+  255 |     lv_obj_set_style_text_font(pin_display_label, &lv_font_montserrat_30, 0);
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~
+      |                                                    lv_font_montserrat_20
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:308:43: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  308 |     lv_obj_set_style_text_font(fp_label, &lv_font_montserrat_22, 0);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~
+      |                                           lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:79:55: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+   79 |     lv_obj_set_style_text_font(s_sleep_status_label, &lv_font_montserrat_18, 0);
+      |                                                       ^~~~~~~~~~~~~~~~~~~~~
+      |                                                       lv_font_montserrat_16
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c: At top level:
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]
+   48 | static lv_obj_t *s_current_textarea = NULL;
+      |                  ^~~~~~~~~~~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]
+   47 | static lv_obj_t *s_keyboard = NULL;
+      |                  ^~~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:100:45: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  100 |     lv_obj_set_style_text_font(lv_label_0, &lv_font_montserrat_22, 0);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c: In function 'ui_screen_start_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c:33:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+   33 |     lv_obj_set_style_text_font(title_label, &lv_font_montserrat_28, 0);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~
+      |                                              lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c:33:46: note: each undeclared identifier is reported only once for each function it appears in
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:496: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_change_pin.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:524: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_enroll.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:76: esp-idf/main/CMakeFiles/__idf_main.dir/user_mgmt_ui.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:426: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_main.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:412: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_start.c.obj] Error 1
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c: In function 'ui_screen_fp_manage_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c:350:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  350 |     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, 0);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~
+      |                                        lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c:350:40: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c: In function 'ui_screen_get_pin_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:401:48: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  401 |     lv_obj_set_style_text_font(get_pin_title, &lv_font_montserrat_28, 0);
+      |                                                ^~~~~~~~~~~~~~~~~~~~~
+      |                                                lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:401:48: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c: In function 'ui_screen_rtc_date_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:467:9: error: implicit declaration of function 'load_rtc_and_update_display' [-Werror=implicit-function-declaration]
+  467 |         load_rtc_and_update_display();       /* reload RTC values on each open */
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:538: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_fp_manage.c.obj] Error 1
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:418:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+  418 |     lv_obj_set_style_text_font(pin_display_label, &lv_font_montserrat_30, 0);
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~
+      |                                                    lv_font_montserrat_20
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:525:45: error: 'lv_font_montserrat_32' undeclared (first use in this function); did you mean 'lv_font_montserrat_12'?
+  525 |     lv_obj_set_style_text_font(s_date_ind, &lv_font_montserrat_32, 0);
+      |                                             ^~~~~~~~~~~~~~~~~~~~~
+      |                                             lv_font_montserrat_12
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:525:45: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:565:48: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+  565 |     lv_obj_set_style_text_font(s_am_checkbox, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+      |                                                ^~~~~~~~~~~~~~~~~~~~~
+      |                                                lv_font_montserrat_16
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:482: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_get_pin.c.obj] Error 1
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:611:46: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+  611 |     lv_obj_set_style_text_font(s_btnmatrix, &lv_font_montserrat_22, 0);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~
+      |                                              lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c: In function 'ui_screen_home_create':
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c:90:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+   90 |     lv_obj_set_style_text_font(title_label, &lv_font_montserrat_28, 0);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~
+      |                                              lv_font_montserrat_26
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c:90:46: note: each undeclared identifier is reported only once for each function it appears in
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c: At top level:
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]
+   82 | static void load_rtc_datetime(void);
+      |             ^~~~~~~~~~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]
+  324 | static void apply_timer_cb(lv_timer_t *timer)
+      |             ^~~~~~~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]
+  302 | static void create_toast(const char *text, int timeout_ms)
+      |             ^~~~~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:224:13: warning: 'reset_all' defined but not used [-Wunused-function]
+  224 | static void reset_all(void)
+      |             ^~~~~~~~~
+/home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]
+   92 | static int field_filled(int idx)
+      |            ^~~~~~~~~~~~
+cc1: some warnings being treated as errors
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:552: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_rtc_date.c.obj] Error 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:510: esp-idf/main/CMakeFiles/__idf_main.dir/ui/screens/ui_screen_home.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:4944: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2
+make failed with exit code 2, output of the command is in the /home/erbj/lvgl-projects/lvgl_esp32_template/build/log/idf_py_stderr_output_511471 and /home/erbj/lvgl-projects/lvgl_esp32_template/build/log/idf_py_stdout_output_511471

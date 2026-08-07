@@ -1,4 +1,4 @@
 {
-    "idf.portWin": "COM3",
-    "idf.flashType": "UART"
+    "idf.currentSetup": "/home/erbj/.espressif/v5.2.7/esp-idf",
+    "idf.customExtraVars": {}
 }

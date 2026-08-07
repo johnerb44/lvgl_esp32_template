@@ -1,3 +1,12 @@
+## Secure Lockbox Integration Baseline (Phase 1)
+
+This repository is the integration target for the Secure Lockbox project.
+
+- **Primary integration codebase:** `lvgl_esp32_template`
+- **Reference/donor codebases:** `i2c_tools_2`, `uart_echo_1`, `hlk_tx510`, `servo_driver`
+- **Transport strategy:** biometric modules integrate through **SC16IS752** (I2C-to-serial path), not direct UART in the final integrated app
+- **Phase 1 scope:** establish module boundaries and build-time feature flags without changing live feature behavior
+
 | Supported Targets | ESP32-S3 |
 | ----------------- | -------- |
 
@@ -6,6 +15,26 @@
 
 | Supported Touch Controller  |  GT911 |
 | ----------------------------| -------|
+
+## Battery Monitoring System
+
+The system supports battery monitoring with:
+
+### ADC-based monitoring (Default)
+- Uses GPIO 6 with a 1:2 voltage divider circuit
+- Color indicators: Green (≥5.0V), Yellow (3.7-5.0V), Red (≤3.0V)
+- Home screen displays voltage readings with color transitions
+
+### INA219-based monitoring (Optional)
+- Uses INA219 I2C chip for power monitoring
+- When enabled via `CONFIG_LOCKBOX_FEATURE_INA219=y`:
+  - Shows High/Medium/Low capacity status indicators
+  - Displays voltage and percentage (e.g., "4.8V 72.5%")
+  - Takes precedence over ADC monitoring
+
+### Validation
+- 24-hour battery drain test completed successfully
+- System stable under real-world conditions
 
 # RGB Avoid Tearing Example
 

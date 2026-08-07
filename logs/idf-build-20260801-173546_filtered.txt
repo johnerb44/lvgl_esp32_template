@@ -1,0 +1,30 @@
+[first_error] Line 122: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_biometric.c:158:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 130: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_facescan.c:361:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 136: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:270:44: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 142: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fpscan.c:315:45: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 148: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:290:47: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 155: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1080:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 160: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:237:51: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 166: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:278:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 172: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:72:47: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 177: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:1337:46: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+[error] Line 181: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_change_pin.c:255:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+[error] Line 185: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_enroll.c:308:43: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 189: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:79:55: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+[warning] Line 194: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]
+[warning] Line 197: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]
+[error] Line 200: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_main.c:100:45: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 205: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_start.c:33:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 216: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_fp_manage.c:350:40: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 222: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:401:48: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 228: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:467:9: error: implicit declaration of function 'load_rtc_and_update_display' [-Werror=implicit-function-declaration]
+[error] Line 232: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_get_pin.c:418:52: error: 'lv_font_montserrat_30' undeclared (first use in this function); did you mean 'lv_font_montserrat_20'?
+[error] Line 236: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:525:45: error: 'lv_font_montserrat_32' undeclared (first use in this function); did you mean 'lv_font_montserrat_12'?
+[error] Line 241: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:565:48: error: 'lv_font_montserrat_18' undeclared (first use in this function); did you mean 'lv_font_montserrat_16'?
+[error] Line 246: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:611:46: error: 'lv_font_montserrat_22' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[error] Line 251: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_home.c:90:46: error: 'lv_font_montserrat_28' undeclared (first use in this function); did you mean 'lv_font_montserrat_26'?
+[warning] Line 257: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]
+[warning] Line 260: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]
+[warning] Line 263: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]
+[warning] Line 266: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:224:13: warning: 'reset_all' defined but not used [-Wunused-function]
+[warning] Line 269: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]

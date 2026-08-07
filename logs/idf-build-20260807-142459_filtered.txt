@@ -1,0 +1,20 @@
+[first_error] Line 624: [ 28%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/panic.c.obj
+[panic] Line 635: [ 28%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/panic_handler.c.obj
+[panic] Line 647: [ 29%] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/xtensa/panic_arch.c.obj
+[panic] Line 648: [ 29%] Building ASM object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/xtensa/panic_handler_asm.S.obj
+[warning] Line 1869: /home/erbj/lvgl-projects/lvgl_esp32_template/managed_components/lvgl__lvgl/demos/benchmark/lv_demo_benchmark.c:34:6: warning: #warning "It's recommended to have at least 128kB RAM for the benchmark" [-Wcpp]
+[warning] Line 1934: /home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:138:13: warning: 'servo_sweep_task' defined but not used [-Wunused-function]
+[warning] Line 1937: /home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:91:18: warning: 'pca9685_set_frequency' defined but not used [-Wunused-function]
+[warning] Line 1940: /home/erbj/lvgl-projects/lvgl_esp32_template/main/devices/pca9685_device.c:38:18: warning: 'ensure_i2c_ready' defined but not used [-Wunused-function]
+[warning] Line 1949: /home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:317:18: warning: 'sc16is752_transport_read_timed' defined but not used [-Wunused-function]
+[warning] Line 1952: /home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:150:18: warning: 'configure_sc16_uart' defined but not used [-Wunused-function]
+[warning] Line 1955: /home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:133:18: warning: 'wait_for_tx_complete' defined but not used [-Wunused-function]
+[warning] Line 1958: /home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:116:18: warning: 'wait_for_tx_ready' defined but not used [-Wunused-function]
+[warning] Line 1961: /home/erbj/lvgl-projects/lvgl_esp32_template/main/comm/sc16is752_transport.c:55:18: warning: 'ensure_i2c_ready' defined but not used [-Wunused-function]
+[warning] Line 1974: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:48:18: warning: 's_current_textarea' defined but not used [-Wunused-variable]
+[warning] Line 1977: /home/erbj/lvgl-projects/lvgl_esp32_template/main/user_mgmt_ui.c:47:18: warning: 's_keyboard' defined but not used [-Wunused-variable]
+[warning] Line 1981: /home/erbj/lvgl-projects/lvgl_esp32_template/main/lvgl_port.c:453:5: warning: 'esp_lcd_touch_get_coordinates' is deprecated: This API will be removed in version 2.0.0. Use esp_lcd_touch_get_data instead! [-Wdeprecated-declarations]
+[warning] Line 1990: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:82:13: warning: 'load_rtc_datetime' declared 'static' but never defined [-Wunused-function]
+[warning] Line 1993: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:324:13: warning: 'apply_timer_cb' defined but not used [-Wunused-function]
+[warning] Line 1996: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:302:13: warning: 'create_toast' defined but not used [-Wunused-function]
+[warning] Line 1999: /home/erbj/lvgl-projects/lvgl_esp32_template/main/ui/screens/ui_screen_rtc_date.c:92:12: warning: 'field_filled' defined but not used [-Wunused-function]
